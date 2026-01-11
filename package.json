@@ -1,0 +1,8 @@
+{
+  "name": "orrery",
+  "version": "1.0.0",
+  "description": "Agent skill management and workflow orchestration",
+  "scripts": {
+    "clone-agent-skills": "node tools/clone-agent-skills.js"
+  }
+}
