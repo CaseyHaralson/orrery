@@ -570,6 +570,540 @@ Error Handling & Rollback:
 
 Goal: Validate that the executed changes meet the acceptance criteria and that nothing is broken. This ensures quality and correctness before reporting completion.
 
+Agent Actions:
 
+  - Run test suites and linters. Agents have tools to execute tests (Claude can run commands, Gemini CLI has sandbox exec, Cursor can run code). For instance, run npm test or domain-specific tests.
 
+  - Perform static analysis or verification scripts (security checks, performance checks if applicable). This could leverage a verify skill that includes steps like running scripts/audit.sh or checking for any TODOs in code.
 
+  - For UI features, if supported, use a browser automation to test (Antigravity’s browser agent could do this, or headless browser via MCP in Claude/Gemini).
+
+  - Collect results: which tests passed/failed, any errors encountered.
+
+  - If everything passes, mark steps as complete. If something fails, decide whether to fix it (which might loop back to Execute for that step or create a new fix step). In an autonomous loop, an agent might iteratively go back to Execution until Verify passes (this is akin to an agentic loop that continues until done – we saw an example of using a hook to re-loop until tests pass in Cursor).
+
+Artifacts:
+
+  - Test results output (could be captured in a file, e.g., artifacts/test_results.txt).
+
+  - Screenshots or other artifacts for visual verification (Antigravity mentioned agents produce Artifacts like screenshots for UI changes).
+
+  - An updated plan or report note if new tasks were added due to verification (e.g., “Step 4 failed, added Step 5 to fix bug”).
+
+Example: After executing the backend and frontend, the verify agent runs all tests and finds a failing case for empty CSV files. It might then either fix it (if within capability) or at least log it. Suppose it fixes by adjusting code and retesting – this would be an Execute action within the Verify phase essentially. We expect our agents to handle minor fixes automatically. For bigger issues, they might signal for human input.
+
+### Phase 5: Report
+
+Goal: Present the outcome of the task clearly, either to the user or for record-keeping. Summarize what was done, confirm satisfaction of the request, and highlight any follow-ups.
+
+Agent Actions:
+
+  - Gather all relevant info: final status of each plan step, where the changes are (branch name or commit IDs), any remaining issues or suggestions.
+
+  - Format a report. This could be a markdown summary to the user: “✅ Feature implemented: CSV upload now available. All tests passing. Committed to feature/csv-upload branch. Here’s a summary of changes: ...”.
+
+  - Include pointers to artifacts: e.g., link to the pull request or attach the final diff (some agents can generate diff summaries automatically).
+
+  - Ensure the report is concise and clear. Possibly separate sections: “What was done,” “Results,” “Next Steps (if any).”
+
+  - If multiple agents were involved, the coordinator can compile their individual reports into one.
+
+Required Output:
+
+  - A REPORT.md (or comment in the chat) that contains the above summary.
+
+  - In a non-interactive context, the report might be the final console output. In a collaborative setting, it could be stored in agent/artifacts/final_report.md.
+
+The Report phase effectively closes the loop with the user, building trust by showing evidence of verification (Antigravity’s philosophy is to verify via Artifacts, not just logs– our report serves that role). It should be standardized enough that if different agents complete the same task, their reports are comparable (for consistency scoring).
+
+Workflow Enforcement: We will enforce that agents do not skip these phases. For example:
+
+  - Agents should not jump straight to writing code (Execute) without a plan. If they do, our evaluation framework (section 8) will flag it (protocol compliance score).
+
+  - If an agent tries to produce a plan without clarifying obvious ambiguities, that’s an Intake failure.
+
+  - Skipping Verify is not allowed; even if an agent is confident, it must at least run basic checks or explicitly state why verification is minimal (e.g., if it's a trivial change with no tests, then the verify step would note that).
+
+All tools are instructed to abide by this via system prompts or memory files:
+
+  - In Claude’s CLAUDE.md we might include: “All tasks must follow the 5-step workflow: intake, plan, execute, verify, report. Do not omit steps.”.
+
+  - Similarly, Gemini’s GEMINI.md could have a short reminder of the phases.
+
+  - Cursor’s rules can include a rule about workflow (ensuring even if user doesn’t explicitly prompt each, the agent self-adheres).
+
+If an agent session is interrupted mid-workflow (e.g., user stops the agent after plan is done), another agent can resume at the next phase by consulting artifacts (like the plan file) rather than starting from scratch. This handoff is possible because the workflow outputs (like the plan) are tangible.
+
+Error handling across phases:
+
+  - If at Verify something is wrong, the agent can either go back to Execute or include a remediation in the Report (depending on autonomy level).
+
+  - If at Report the agent realizes some acceptance criterion wasn’t met (“We did everything but forgot to update the user manual”), it could either add a step and loop again, or mention it. Ideally, such misses are caught in Plan or Verify, but the Report is last defense to note it.
+
+By mandating this workflow, we align all agents with a common operational process, much like a software development methodology that all team members follow. This dramatically improves consistency: no matter if it’s Claude or Gemini doing the work, the user will observe the same pattern – first some clarifying questions, then a plan outline, then stepwise implementation, tests running, and a final summary. It also provides multiple places to catch and correct errors, improving reliability.
+
+We will include a concise description of this protocol in the repository (likely in the agent/policies/WORKFLOW.md) and in any “system prompt” given to agents. For instance, the system prompt could say: “You are to function as a coding assistant following our 5-step workflow. Begin with Intake (clarify requirements), then Plan (outline tasks in YAML), then Execute (write code), Verify (test it), and Report (summarize). Adhere to this sequence strictly.” Ensuring the agent remembers this is crucial, hence the repetition in config files and skill instructions.
+
+Now that we have the workflow defined, we will compare how each tool (Gemini, Claude, etc.) supports these instructions, highlighting differences and how the repository setup bridges those gaps.
+
+## 6. Tool Capability Comparison
+
+Different coding AI tools have varying features and limitations. We need each to uphold our skills and workflow. Below is a comparison of the five tools in key areas:
+
+... table and limitations/special considerations skipped...
+
+As seen, each tool has its nuances, but our design leverages their strengths (like Claude/Gemini/Cursor’s native skill support and context integration) and compensates for weaknesses (wrapping OpenAI Codex with our own orchestrator to simulate the same capabilities). The repository acts as the common denominator: skills and plans are defined once, and each tool’s interface layer translates that into the respective agent’s prompt or configuration.
+
+We will maintain a Tool Adapters Guide in the repo (perhaps in agent/adapters.md) detailing any setup needed for each tool (e.g., “In Claude Code, ensure you have the latest version and add .claude/skills to your team settings.”, “For OpenAI API usage, run python tools/run_plan.py to use the plan executor.”). This helps developers know how to get each agent running with the system.
+
+With this comparison in mind, we proceed to how we keep the skills in sync across those directories, so that updates propagate correctly.
+
+## 7. Skills Synchronization Strategy
+
+To maintain a single source of truth for skills while making them available to each tool’s expected location, we implement a synchronization mechanism. The goals of the sync system are:
+
+  - Minimize duplication (we don’t want to manually edit the same instruction in 5 places).
+
+  - Prevent divergence (tool-specific copies should always match canonical unless a deliberate compatibility fork is needed).
+
+  - Keep things simple for developers (ideally editing the canonical agent/skills/ and running a command or CI job updates everything).
+
+Possible approaches:
+
+  1. Symbolic Links: On systems that support symlinks, we can symlink .claude/skills -> ../agent/skills, and similarly for .gemini/skills, etc. This way there is literally one set of files. This is the simplest if it works across dev environments.
+
+      - Tradeoff: Symlinks in Git on Windows can be problematic (need specific git settings or get converted to text). On Windows without proper permissions, symlinks might not work at all unless developer enables them. Also, some tools might not follow symlinks due to sandboxing.
+
+  2. Manual Copy on Change: Use a small script or Makefile target to copy agent/skills/* into each of the .tool/skills dirs. This could be run whenever skills change (perhaps as a git pre-commit hook or just manually). We could also have CI enforce that no discrepancy exists.
+
+      - Tradeoff: Developer might forget to run the sync script. But we can mitigate with a pre-commit hook or CI check.
+
+  3. Git submodule or subtree: Possibly treat agent/skills as its own submodule and include it in each tool dir. This seems overkill and complicates development flow.
+
+  4. Tool Config pointing to canonical skills: If any tool allowed configuring the skills directory path (e.g., a setting like skills.directory = agent/skills), that’d be ideal. Currently, not aware of such option in these CLIs, except Gemini’s context.fileName setting which is more for context files, not skill dirs.
+
+  5. Use an external library like SkillPort which loads the skills from one location for all. But that’s more at runtime than in file system.
+
+Our plan: Use copying with CI enforcement for broad compatibility. Symlinks where possible for convenience.
+
+### Development Workflow for Skills:
+
+  - Developers edit agent/skills/<skill>/SKILL.md. They can test changes using one of the agents (e.g., run a Claude session and manually load the skill, or in a dry-run mode of our coordinator script).
+
+  - After editing, run tools/sync_skills.py (for example) which will:
+
+    - Remove existing .tool/skills/<skill> dirs (or just overwrite specific files).
+
+    - Copy the entire agent/skills/<skill> folder into each .tool/skills/ location.
+
+    - Maybe adjust minor things if needed per tool (for instance, if we needed to strip out a part of a skill for a certain tool due to limitations, the sync script could apply a filter based on frontmatter compatibility flags).
+
+  - The script could also validate the skills via the skills-ref library’s validator to catch format issues.
+
+  - Then developers commit changes including the updated copies (so in Git, everything is consistent).
+
+We will add a check in CI that runs on pull requests: It re-runs the sync script and then checks git status to see if any changes would occur (meaning someone forgot to sync). If yes, the CI fails telling them to sync. This ensures no one merges an update to agent/skills without also updating the tool dirs.
+
+Alternatively, we could .gitignore the tool-specific skill copies (so that only agent/skills is versioned). Then have a post-checkout hook or initial setup script to populate them. But that complicates usage for others pulling the repo. It’s usually better to keep them in version control for transparency (others can see exactly what instructions each tool is getting and debug if needed).
+
+### Transformations for Tool Differences:
+
+In general, we want identical content. But if we had to tailor, how?
+
+  - The Agent Skills spec provides compatibility field that could be used by tools to decide if they should load a skill. E.g., a skill might say compatibility: "Designed for Claude Code". If we wrote such, perhaps other agents would ignore it. But ideally our skills are universal and we use compatibility only to add notes.
+
+  - If a tool needed a smaller context, we might shorten examples when syncing to that tool. For example, say OpenAI GPT-3.5 can’t handle a 300-line skill well; we could in sync script strip long examples from the GPT version (maybe maintain an alternate SKILL_gpt.md template). We prefer not to fork though.
+
+  - Another case: a skill uses a Bash script. Cursor might run Node (bun) for hooks, not Bash. But Cursor does support Bash commands too. If not, we could provide a JS equivalent script in assets for Cursor, or instruct it accordingly.
+
+At this time, we don’t foresee major tool-specific rewrites of skills. The standard’s whole point is one skill format works across agents. So likely minimal differences.
+
+### OS Compatibility:
+Our team might use different OS (Windows, Mac, Linux). The repository structure and sync should accommodate all:
+
+  - If using symlinks on Windows, they must be created in a way that works (developer might need admin or Developer Mode). We will document how to enable symlinks on Windows or suggest using the copy method there.
+
+  - The skills content themselves are OS-neutral (except any scripts: we might include both .sh and .ps1 if needed for any script in scripts/ directory, or just use Python which is cross-platform).
+
+  - CI (which often runs Linux) will test the sync and possibly run some agent tasks in a headless way to ensure nothing OS-specific is broken.
+
+### Automation in CI:
+We can integrate a job that runs a minimal scenario for each agent to ensure the sync and integration:
+
+  - For Claude/Gemini/Cursor: perhaps run a “plan only” command to see if skills are loaded (though those are interactive CLIs mostly – might be tricky to automate unless they have hidden API modes).
+
+  - More feasible: run our orchestrator (likely using OpenAI or local mode) on a sample task and verify the output matches expectations as a regression test (see next section about evaluation).
+
+  - Also, use the skills-ref validate command in CI to ensure all skills conform to spec.
+
+### Optional Transformation Layer:
+If needed, our sync could apply filters. For example:
+
+  - Remove any comments in SKILL.md that a certain agent might erroneously interpret (not likely, but just in case).
+
+  - Convert any non-UTF8 characters if a tool has an issue (all are modern so should be fine).
+
+  - Possibly compile an “available_skills.xml” snippet for tools that need to explicitly add it. Actually, we might generate that on the fly in prompts rather than store a static one. But we could place an available_skills.xml file in .claude/ for example, and instruct users to do /append-system-prompt available_skills.xml if needed. This might be too manual; better to let code handle it.
+
+Given the complexity of supporting many tools, we might also create a universal launcher script in Python that can interface with each:
+
+  - e.g. run_with_agent.py --agent=claude --prompt "XYZ" which ensures the skills are loaded and the workflow followed. For Claude/Gemini, it might simply spawn the CLI process with appropriate flags (like claude --append-system-prompt .claude/available_skills.xml – if such flag exists). For OpenAI, it would call the API. This script isn’t strictly sync, but part of making usage easier.
+
+In summary, our strategy:
+
+  - Use copying for broad reliability (with optional symlinks for advanced users).
+
+  - Automate with scripts and CI to avoid human error.
+
+  - Provide documentation and perhaps a one-step command to “sync and validate skills”.
+
+For example, make sync-skills could run the sync and make check-skills could run validations. If any differences or issues are found, developers fix them before committing.
+
+Finally, we ensure bidirectional awareness: If a tool-specific change happens (say, an emergency quick fix is made in .claude/skills/plan/SKILL.md during a troubleshooting session), developers must propagate it back to canonical. To avoid forgetting, we might discourage editing the copies directly. Possibly even add a note at top of each copied file: “(autogenerated from agent/skills/plan/SKILL.md – do not edit here)”. This can be inserted by the sync script as an HTML comment or so if the agent doesn’t read it. But since agents do read SKILL.md fully on activation, we wouldn’t want that note visible to them. Maybe a one-line HTML comment is fine; LLM would likely ignore it or at least it wouldn’t harm. Alternatively, trust process and code review to catch such mishaps.
+
+By keeping skills synchronized, we uphold the core promise: each agent is drawing from the same playbook. Now, we turn to how we will test and evaluate that consistency to ensure our system works as intended.
+
+## 8. Consistency Evaluation Framework
+
+To verify that our multi-tool agents truly behave consistently and meet our quality standards, we establish a Consistency Evaluation Framework. This is essentially a set of benchmark tasks and metrics to score the agents’ performance in a uniform way.
+
+### Benchmark Task Suite
+
+We will create a suite of tasks (in agent/benchmarks/ directory) that represent common coding scenarios:
+
+  - E.g., “Implement a Fibonacci function with tests”, “Refactor a function to improve performance”, “Find and fix a bug given a failing test”, “Add a new feature (like our CSV upload example)”.
+
+  - Each task will have:
+
+    - A brief description (problem statement).
+
+    - Possibly some initial repository state (we might include a minimal codebase or files to run the task on).
+
+    - Expected outcomes (e.g., what should the final code do, which tests should pass).
+
+    - If possible, a reference solution or steps (for evaluation, though not necessarily given to the agent).
+
+We aim for a variety: small algorithmic tasks, larger feature additions, front-end vs back-end focus, etc., to see how each agent handles them.
+
+### Scoring Rubric
+
+We will evaluate each agent’s output on several dimensions:
+
+  1. Correctness: Did the final solution actually solve the problem? (E.g., all provided tests pass, or manual inspection shows requirements met). This is binary/pass-fail for each task, but we can aggregate (like 8/10 tasks passed).
+
+  2. Style & Code Quality: Are the code changes in line with style guidelines and best practices? We can run linters or do code review. If we have a style guide (maybe enforced by verify skill), ideally style issues are minimal. We could have a score or just a pass/fail if there are significant style deviations.
+
+  3. Safety & Policy Compliance: Did the agent follow our protocol (no unauthorized operations, respected the workflow)? For example:
+
+      - Did it always produce a plan before coding?
+
+      - Did it run verification steps?
+
+      - Did it avoid accessing disallowed files? (We can seed a dummy secret file and see if agent tries to read it – it should not, given deny config).
+
+      - Did it handle errors appropriately rather than doing something reckless?
+
+      We can examine logs or artifacts for these. Each infraction (like skipping verify) is a penalty.
+
+  4. Adherence to Workflow (Protocol Compliance): More specifically, check the presence of each phase’s outputs. For instance, in the agent’s conversation or logs, do we see evidence of an Intake summary, a Plan file, test results, and a final Report? If an agent goes straight from user request to code, that’s non-compliance. We might assign a score like 0-5 on “follows process” where 5 means perfectly followed steps with clear demarcation.
+
+  5. Diff Quality & Minimality: Did the agent introduce only the necessary changes (not unrelated edits)? This can be measured by diff size or by checking that only whitelisted files were changed. E.g., if solving a small bug, the agent shouldn’t rewrite unrelated modules. A smaller, focused diff is preferred (except when task demands large additions). We can set thresholds or manually review diffs.
+
+  6. Communication & Reporting: How well did the agent explain what it did in the Report phase. Is the final report clear, accurate, and free of hallucination? This is a bit subjective, but we want consistent formatting (maybe each report starts with “Task Completed” or similar) and completeness (should mention any limitations or if more work needed). We can parse the Report for expected sections.
+
+  7. Time/Efficiency (optional): If one agent takes significantly more iterations or time, that’s also of note. But since they’re not truly concurrent in our testing, we might not emphasize speed. Still, if an agent requires a lot of back-and-forth vs another does it in one go, that indicates inconsistency.
+
+Each task run for each agent produces some logs and artifacts (like the final code, plan, report, etc.). We’ll create a small harness (maybe in Python or even a shell script) that can simulate or actually run the agents on these tasks in a headless way:
+
+  - For Claude Code and Gemini CLI, maybe use their CLI non-interactive modes (if none exists, we might have them run with predetermined inputs).
+
+  - For Cursor, might not have an automation interface, so we skip automated evaluation or rely on manual runs for Cursor. Or if SkillPort or ADK can simulate it, we use those.
+
+  - For OpenAI, our orchestrator can run the tasks easily by calling the API.
+
+We might focus automated evaluation on the ones with programmatic access (OpenAI, maybe Anthropic if using API version of Claude, and possibly Google via ADK – the ADK has an Agent class we can script).
+
+The result will be recorded and scored.
+
+We’ll sum up scores for each agent on all tasks and see if any agent is lagging. Our aim is consistency, so we expect similar performance. If one agent fails tests that others pass, that tool might need adjustment (maybe its prompt injection didn’t work or it needs a narrower context to avoid confusion). The framework helps pinpoint such issues.
+
+Additionally, we incorporate regression detection:
+
+  - When changes are made (to skills or workflow), run the benchmark tasks on at least one agent (maybe OpenAI one via CI, as it’s easiest through API) to ensure nothing major broke.
+
+  - If possible, periodically run through all agents (maybe not every commit, but maybe nightly if resources allow).
+
+  - For each task, we can store baseline outputs or at least baseline pass/fail. If suddenly an agent fails a task it used to pass, that’s a regression. CI can flag it.
+
+  - We also track if any new inconsistency arises: e.g., if previously all agents had identical reports but now one produces a weird report, that’s a consistency regression (though measuring “identical” is tricky; maybe we define expected structure not exact wording).
+
+CI Automation: We can integrate a subset of quick tasks in CI. Perhaps a small coding challenge that each agent should solve the same way:
+
+  - E.g., “Sort an array” with a unit test. All agents should produce a sorted function passing the test, and do so with similar style (like all create a function sortArray and test).
+
+  - We run each agent (with timeouts) and confirm all tests pass and outputs are okay. If one times out or fails, CI fails.
+
+This might require using cloud APIs (Claude, OpenAI) within CI which could be slow/costly, so we might mock or dry-run partial logic. Another approach: we trust our test harness to be run manually for heavy tasks and only do lightweight linting in CI (like validate skills, check sync).
+
+### Scoring Example:
+We might output a table after evaluation like:
+
+Task	Claude	Gemini	Codex	Cursor	Antigrav	Notes
+Fibonacci	✅	✅	✅	✅	✅	All passed tests.
+Bug Fix XYZ	✅	⚠️ (style)	✅	✅	✅	Gemini solution works but lint flagged style issues.
+Feature ABC	✅ (plan ok)	✅ (plan ok)	❌ (failed test)	✅	✅	Codex agent didn’t fully debug the issue.
+...						
+
+And perhaps an overall consistency score, e.g. “All tools solved 8/10 tasks correctly; Codex lagged on 2 tasks. All followed protocol well except minor deviations in style from Gemini CLI on one task.”
+
+We will use such results to refine the system (maybe tweak prompts or skills for the tool that had trouble).
+
+Long-term, as we update skills, the evaluation ensures we aren’t optimizing one agent at the expense of others. If a change makes Claude do better but confuses Cursor, we’ll detect that.
+
+### Regression Strategy
+
+  - Version Pinning: We note the version of each tool we test with (Claude Code vX, Gemini CLI vY, etc.). If a tool is updated (like a new model version), we run the benchmarks to see if any new problems arise or if things improve.
+
+  - If inconsistency grows (one agent diverges in output style or quality), we investigate and adjust skill or workflow to bring it back in line.
+
+For governance (next section), we might set thresholds: e.g., no merge of a skill change unless all benchmark tasks still pass for at least 3/5 agents, etc.
+
+Finally, it’s worth connecting this to existing benchmarks:
+
+  - Google’s blog mentioned a “SWE-bench Verified” metric for agentic coding. If that or similar benchmarks are accessible, we can incorporate them. For example, run a standard set of coding problems and measure success percentage. We can compare our multi-agent system’s results with known baselines (making sure each agent hits roughly that percentage).
+
+  - If possible, open-source test suites like HumanEval (for code correctness) could be used. But those are more for pure coding, not multi-step tasks.
+
+Our framework is custom-tuned to our workflow, which is fine for internal consistency testing.
+
+## 9. Governance Model
+
+As this system will be used and maintained by a software team, we need a governance process for making changes to skills, workflows, and overall architecture. This ensures quality and security over time.
+
+Key aspects of governance:
+
+### Skill Lifecycle: Proposal, Review, Versioning
+
+  - Proposing a New Skill: A team member can propose a new skill by creating a folder under agent/skills with a draft SKILL.md. This should be done via a pull request (PR). The PR description should include the rationale for the skill, intended use cases, and perhaps an example scenario demonstrating it.
+
+  - Review Process: At least one other team member (and ideally someone who has context on multiple agents) must review. They will check:
+
+    - Clarity of instructions (would an agent know when/how to use this?).
+
+    - No conflict with existing skills (if overlapping, maybe they should be merged or clearly distinguished).
+
+    - Security implications (does the skill tell the agent to do something potentially destructive?). For any skill that executes commands or modifies data, the reviewer must ensure it’s appropriately scoped (e.g., uses sandbox or has confirmation steps if risky).
+
+    - Compatibility: Check frontmatter compatibility – if the skill only makes sense for certain environments (like a skill for deploying to AWS might not be used in offline mode), ensure that’s noted.
+
+    - Licensing: If skill references external code or data, ensure we have license compliance via the license field.
+
+  - Testing New Skill: The contributor should add or adapt a benchmark task to utilize the skill, proving it works (or at least run an ad-hoc test demonstrating an agent using it correctly).
+
+  - Versioning: As noted, each skill can have a version in metadata. When a skill is significantly changed (breaking change in instructions or behavior), bump the version. We could adopt semantic versioning across the board. For example, all initial skills start at 1.0. Minor improvements (typo fixes, clarifications) can be 1.0.1 etc., major rewrites 2.0. The version is mainly informational, but we might leverage it if an older agent only supports older skill format (then compatibility can mention version).
+
+  - Deprecation: If we find a skill is no longer needed or should be replaced by another, mark it as deprecated in the description. Possibly move it to an agent/skills_deprecated/ folder rather than delete immediately, to avoid breaking older workflows. We could then remove after a few release cycles.
+
+### Workflow/Protocol Changes:
+
+  - If we ever need to change the core workflow (e.g., add a phase, or change sequence), that’s a significant decision. It would involve updating WORKFLOW.md, all skill instructions that assume 5 phases, and possibly all agents’ prompts.
+
+  - Such changes should be proposed in an ADR (Architectural Decision Record) or at least a GitHub Issue/Discussion to get team consensus.
+
+  - Agents might have to support backward compatibility. For instance, if we add a “Review” phase as mandatory where it wasn’t before, older versions of an agent’s CLI might not support that concept. We either coordinate to update tools or ensure our instructions account for it (maybe the agent just treats review as part of verify if it doesn’t know separate).
+
+  - Rollout: Possibly do a trial where we enable the new protocol on one agent first, see results, then others.
+
+  - Maintain a changelog for protocol changes for the team.
+
+### Compatibility Policy:
+
+  - We aim to keep the skill set working on all supported agent tools. If a new tool comes into play, we either confirm it supports the standard or implement an adapter.
+
+  - If an agent product reaches end-of-life or becomes too outdated (e.g., OpenAI Codex might be superseded by GPT-4 fully), we might drop official support for it and update compatibility notes.
+
+  - Ensure we don't rely on proprietary features of one agent in our canonical instructions that others can’t do. If we absolutely need something special (like only Antigravity can do a certain UI action), handle it with conditional instructions or note it in compatibility.
+
+### Security Review:
+
+  - Given agents can execute code, we treat our instructions as code as well. A malicious or poorly written skill could cause an agent to do harm (like a skill that says “delete all user data to start fresh” without caution). Thus, any skill that involves data deletion, external network access, or modifying infra must be scrutinized heavily.
+
+  - Possibly involve a security engineer in reviewing those PRs.
+
+  - We can also add automated scans: for instance, grep skill files for dangerous patterns (like rm -rf or database drop commands) and flag them unless explicitly allowed.
+
+  - The sandbox and permission settings should be reviewed whenever changed. We maintain a baseline of what’s allowed: e.g., maybe by policy, agents are never allowed to push to production or access the internet in automated mode. Those things should require human approval outside the agent’s scope. We’d encode that in permissions (no tool for curl http:// for instance).
+
+  - Audit logs: We should capture logs of agent actions especially in CI runs, so if something odd happens, we can trace it. Possibly integrate with the tools’ own logging (Claude and Gemini can produce transcripts in verbose mode, etc.).
+
+### Continuous Improvement:
+
+  - We encourage team members to share findings (maybe in a wiki or notes in the repo) of agent behavior quirks, so we can refine skills. E.g., “Claude tends to ignore step 3 of plan unless explicitly reminded; added a note in plan skill to reiterate steps.”
+
+  - There could be periodic meetings or async reviews of how the multi-agent system is performing in real tasks, to plan improvements.
+
+### Coordination with Tool Vendors:
+
+  - Since we’re building on external tools, we should maintain awareness of their updates. E.g., if Anthropic releases Claude 5 with new capabilities or changes in prompt format, adapt our system accordingly. Possibly join their forums or check release notes regularly (like the Claude Code changelog).
+
+  - Similarly, if Google’s ADK or Antigravity add features (maybe a native skill marketplace or something), we might leverage that instead of our own mechanism.
+
+  - Being part of the open standard community (AgentSkills.io is open), our team could contribute back: e.g., if we create a great skill or find a bug in the spec, contribute on GitHub.
+
+### Documentation & Knowledge Sharing:
+
+  - Keep documentation up-to-date: README explaining how to set up each agent tool with our repo, guidelines for writing skills (maybe point to AgentSkills spec or our own conventions like always include “When to use/How to use” sections).
+
+  - Possibly maintain a “FAQ” or troubleshooting guide (e.g., “If Gemini CLI is not loading skills, ensure experimental.skills is true and you have version >= 0.21”).
+
+### Governance Example:
+
+Imagine a developer wants to change the execute skill to use a different code formatting tool. Process:
+
+  1. They make a PR, version bump execute skill to 1.1, and note in description: “Switch to Black formatter for Python code in execute skill. This affects how code style is enforced.”
+
+  2. Reviewer sees that Black requires adding pip install black somewhere. They question: will agents handle installing it? Perhaps propose to instead use an existing tool agent knows. After discussion, they decide to keep using existing formatting for now, and table Black integration.
+
+  3. The PR might be revised or rejected in favor of a different approach (governance prevents a hasty merge that might have broken things).
+
+  4. If approved, after merge, they run benchmark tasks to ensure the new formatting instruction doesn’t confuse any agent (like maybe Codex doesn’t know Black). If it did, they might add compatibility: "exclude openai" or adjust accordingly.
+
+### Release Management:
+
+Though not a product per se, we might tag certain repository states as “releases” (v1.0, v1.1 etc.) especially if distributing to others or if rolling out to teams internally. Then governance ensures each release is stable (passing all tests) and includes release notes.
+
+In essence, governance is about maintaining the integrity of this multi-agent system as it evolves, making sure it remains consistent, safe, and effective across all the moving parts (various AI agents and team contributions).
+
+## 10. Week 1 Implementation Checklist
+
+To kickstart this project, we outline a checklist for the first week of implementation:
+
+  - Repository Setup:
+
+    1. Initialize the repository with the base structure:
+
+        - Create agent/skills/ directory and subfolders for core skills (intake, plan, execute, verify, report, review, security).
+
+        - Add placeholder SKILL.md files for each core skill with a basic outline (YAML frontmatter with name/description and a skeleton of sections).
+
+        - Create agent/policies/WORKFLOW.md describing the 5-phase workflow in a few paragraphs (later to refine).
+
+        - Create agent/schemas/plan-schema.json (draft as per section 4) and perhaps a stub for report-schema.json.
+
+        - Set up .gemini, .claude, .cursor, .codex, .antigravity directories. Inside each, put a skills/ (can be empty for now or symlink to agent/skills if easy on your OS). Also add example config files:
+
+          - .gemini/settings.json with "experimental.skills": true and any needed basic config.
+
+          - .claude/settings.json with a basic allowed tools list (maybe allow Edit, Read, Write to project).
+
+          - .cursor/rules/WORKFLOW.RULE.md (to persist the workflow reminder).
+
+          - Others possibly empty or containing a README about how to configure if we don’t know yet.
+
+    2. Version control: commit this initial structure. Also possibly set up a GitHub repository if not already, and configure branch protection if needed (to enforce reviews).
+
+  - Tool Configuration & Testing:
+
+    3. Install/set up latest versions of:
+
+        - Claude Code CLI (or ensure access to Claude API).
+
+        - Gemini CLI (register if needed, install via npm as docs suggest).
+
+        - Cursor IDE (or CLI if exists; if only GUI, plan how to test maybe manually).
+
+        - Confirm we have access to Google Antigravity (public preview download). If yes, install it and create a sample project to integrate with.
+
+        - Ensure OpenAI API keys or access is available for Codex/GPT.
+
+    4. For each tool, do a quick manual test in the project:
+
+        - For Claude: Run claude in the repo directory. Ensure it picks up CLAUDE.md if present. We might not have content yet, but just verify it loads (the startup log often indicates loaded memory files).
+
+        - For Gemini: Run gemini in the project. Check if it acknowledges skills (maybe run /skills list if such command exists, or see if it loaded our context).
+
+        - For Cursor: Open the repo in Cursor editor, see if it recognizes the rules (type something to trigger it maybe). This might require more time, possibly skip deep test week1.
+
+        - For OpenAI: Write a small Python script to simulate an agent using the plan skill. For example, prompt GPT-4: “You have skills X, you will plan etc.” to gauge response.
+
+    5. Address any immediate issues (like if tools need a different file placement or naming to detect the skills).
+
+  - Implement Sync Script:
+
+    6. Write tools/sync_skills.py (or a Makefile) to copy agent/skills to each .*/skills. At first, it can be straightforward copy for all files. Run it and git-add the copied files. Commit “Sync initial skills to tool directories.”
+
+    7. Test the symlink approach on one platform (maybe on a Unix-like system: ln -s agent/skills .gemini/skills). Decide if we include that or stick to copy. Document the choice.
+
+  - Basic Skill Content Drafting:
+
+    8. Flesh out at least the plan skill content with a first draft (since it’s central). For example, add the sections “When to use: at start of task”, “How to do: list steps...”, maybe a basic example. Use the info from this design.
+
+    9. Similarly, draft execute and verify with a simple approach (like “Write code for the task. Then run tests.” etc.). These will be improved later but we want something to test end-to-end.
+
+    10. intake skill: write a basic instruction like “Always restate the request and clarify anything unclear before proceeding.”
+
+    11. report skill: instruct to summarize changes and outcomes.
+
+    12. Keep these drafts short initially (we can refine with more detail after initial tests).
+
+  - Simple End-to-End Test:
+
+    13. Choose a trivial task (e.g., “Create a Python function add(a,b) with a test”). Try running through the workflow with one agent:
+
+        - As user, input the request. Check that agent (say Claude via CLI) goes to Intake (maybe it asks a clarifying question or confirms).
+
+        - If that works, have it proceed to Plan (maybe use --auto or just see if it creates a plan, if not, maybe we have to prompt “make a plan”).
+
+        - This might require manually telling it phase by phase at first. This will reveal if our instructions are being heeded.
+
+    14. If the agent doesn’t follow the workflow, tweak the approach: we might need to explicitly prompt it in this test (“Now do the Plan phase.”). That’s okay; note down how we can automate that with a coordinator later.
+
+    15. Review outputs and adjust skill content as obvious (like if it made a poor plan, maybe our plan instructions need clarity).
+
+  - Plan Schema Finalize:
+
+    16. Finalize plan-schema.json based on what we want after seeing an example. Add a validation step in the sync or a separate script to validate a YAML plan file against it (maybe using a Python JSON schema library).
+
+    17. Possibly create a agent/examples/sample_plan.yaml as a reference for developers, taken from our test.
+
+  - CI Setup:
+
+    18. Set up a minimal continuous integration workflow (GitHub Actions or similar) that:
+
+        - Installs any dependencies (like Python for our scripts, maybe the skills-ref validator via pip if needed).
+
+        - Runs tools/sync_skills.py and then checks for changes (to ensure sync was up-to-date).
+        
+        - Runs skills-ref validate agent/skills/* to validate skill frontmatters.
+
+        - (Later, we can add actual agent runs or test tasks, but in week1 just ensure repository integrity).
+
+    19. Also, perhaps run a markdown linter or YAML linter on our files to keep format tidy.
+
+  - Governance Bootstrap:
+
+    20. Create GitHub Issue templates for “New Skill Proposal” and “Skill/Workflow Change” to guide contributors to provide needed info.
+
+    21. Document contribution guidelines in CONTRIBUTING.md: explain to propose changes via PR, require review, mention running sync and tests locally before PR.
+
+    22. Set up codeowners or at least assign roles: e.g., certain senior devs as reviewers for skill changes, maybe security team as reviewer for high-risk skill changes.
+
+  - Knowledge Share:
+
+    23. Present this architecture to the team (maybe a meeting or an internal doc). Walk through how to add a skill, how an agent uses them, and where to find results.
+
+    24. Ensure each team member has the needed access (API keys, installed tools) and environment to run the multi-agent system, so they can start experimenting in week 2.
+
+By end of week 1, we should have:
+
+  - The skeleton of the system in place, under version control.
+
+  - At least one simple example of the whole workflow executed on one agent, proving viability.
+
+  - Basic CI to guard structure.
+
+  - Team alignment on how to proceed.
+
+This primes us to then iterate: Week 2 could deepen each skill’s content and start complex testing; Week 3 could implement the coordinator automation for agent handoff; and so on.
+
+Overall, following this checklist will create the foundation of the cross-agent skills and planning system, allowing us to progressively refine and expand it with confidence.
