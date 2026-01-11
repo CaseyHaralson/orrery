@@ -1,0 +1,79 @@
+$schema: http://json-schema.org/draft-07/schema#
+type: object
+title: Plan Schema
+description: Schema for plans used in agent-to-agent handoff
+
+properties:
+  metadata:
+    type: object
+    description: Plan metadata including creation time and creator
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      created_by:
+        type: string
+      version:
+        type: string
+
+  steps:
+    type: array
+    description: Array of plan steps defining the work to be done
+    items:
+      $ref: '#/definitions/Step'
+
+required:
+  - steps
+
+definitions:
+  Step:
+    type: object
+    description: Individual step in the plan
+    required:
+      - id
+      - description
+      - owner
+    properties:
+      id:
+        type: string
+        description: Unique identifier for the step
+      description:
+        type: string
+        description: Natural language summary of the task
+      owner:
+        type: string
+        description: Agent or role responsible for this step
+      status:
+        type: string
+        enum:
+          - pending
+          - in_progress
+          - complete
+          - blocked
+        default: pending
+        description: Current status of the step
+      deps:
+        type: array
+        description: List of step IDs this step depends on
+        items:
+          type: string
+      parallel:
+        type: boolean
+        description: Whether this step can run in parallel with others
+        default: false
+      criteria:
+        type: string
+        description: Acceptance criteria for completion
+      commands:
+        type: array
+        description: Specific commands to execute
+        items:
+          type: string
+      files:
+        type: array
+        description: Files this step will create or modify
+        items:
+          type: string
+      risk_notes:
+        type: string
+        description: Warnings or things to watch out for
