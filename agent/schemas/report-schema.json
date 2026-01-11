@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Report Schema",
+  "description": "Schema for execution reports produced after Execute/Verify phases",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Report metadata - to be expanded"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of work completed - to be expanded"
+    },
+    "changes": {
+      "type": "array",
+      "description": "List of changes made - to be expanded"
+    },
+    "results": {
+      "type": "object",
+      "description": "Test results and validation outcomes - to be expanded"
+    }
+  }
+}
