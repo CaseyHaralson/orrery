@@ -2,8 +2,6 @@
 name: report
 description: >
   Summarize execution results and communicate status to stakeholders
-license: CC-BY-4.0
-compatibility: Works with any coding agent (Claude, Gemini, etc.)
 metadata:
   version: "1.0"
 ---

@@ -2,8 +2,6 @@
 name: intake
 description: >
   Clarify user requirements and gather context before planning
-license: CC-BY-4.0
-compatibility: Works with any coding agent (Claude, Gemini, etc.)
 metadata:
   version: "1.0"
 ---

@@ -2,8 +2,6 @@
 name: security
 description: >
   Analyze code for security vulnerabilities and compliance issues
-license: CC-BY-4.0
-compatibility: Works with any coding agent (Claude, Gemini, etc.)
 metadata:
   version: "1.0"
 ---

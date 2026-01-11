@@ -2,8 +2,6 @@
 name: execute
 description: >
   Write or modify code according to a plan step
-license: CC-BY-4.0
-compatibility: Works with any coding agent (Claude, Gemini, etc.)
 metadata:
   version: "1.0"
 ---

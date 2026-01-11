@@ -2,8 +2,6 @@
 name: verify
 description: >
   Run tests and validation to ensure changes meet acceptance criteria
-license: CC-BY-4.0
-compatibility: Works with any coding agent (Claude, Gemini, etc.)
 metadata:
   version: "1.0"
 ---
