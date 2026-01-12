@@ -15,6 +15,22 @@ properties:
         type: string
       version:
         type: string
+      source_branch:
+        type: string
+        description: Branch where the plan originated (e.g., main or a feature branch)
+      work_branch:
+        type: string
+        description: Branch where work is being done (set by orchestrator when dispatched)
+      completed_at:
+        type: string
+        format: date-time
+        description: Timestamp when plan was completed
+      outcome:
+        type: string
+        enum:
+          - success
+          - partial
+        description: Final outcome of the plan (success if all steps complete, partial if some blocked)
 
   steps:
     type: array

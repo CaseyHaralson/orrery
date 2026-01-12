@@ -5,6 +5,12 @@
  *
  * Scans work/plans/ for YAML plan files, dispatches agents to execute steps,
  * tracks completion, and archives finished plans to work/completed/.
+ *
+ * Branch Management:
+ * - Plans are discovered on the source branch (e.g., main)
+ * - Each plan gets a dedicated work branch (e.g., plan/add-feature)
+ * - All agent work happens on the work branch
+ * - When complete, a PR is created and orchestrator returns to source branch
  */
 
 const fs = require("fs");
@@ -33,6 +39,17 @@ const {
   waitForAny,
 } = require("./lib/agent-invoker");
 
+const {
+  getCurrentBranch,
+  branchExists,
+  createBranch,
+  checkoutBranch,
+  commit,
+  createPullRequest,
+  deriveBranchName,
+  hasUncommittedChanges,
+} = require("./lib/git-helpers");
+
 const config = require("./config/orchestrator.config");
 
 const REPO_ROOT = path.join(__dirname, "..", "..");
@@ -52,48 +69,197 @@ async function orchestrate() {
   ensureDir(completedDir);
   ensureDir(reportsDir);
 
+  // Record the source branch we're starting from
+  const sourceBranch = getCurrentBranch(REPO_ROOT);
+  console.log(`Source branch: ${sourceBranch}\n`);
+
+  // Check for uncommitted changes
+  if (hasUncommittedChanges(REPO_ROOT)) {
+    console.error("Error: Uncommitted changes detected. Please commit or stash before running orchestrator.");
+    process.exit(1);
+  }
+
   // Get list of completed plan filenames (to exclude)
   const completedNames = getCompletedPlanNames(completedDir);
 
   // Scan for active plans
-  const planFiles = getPlanFiles(plansDir).filter(
+  const allPlanFiles = getPlanFiles(plansDir).filter(
     (f) => !completedNames.has(path.basename(f))
   );
 
+  // Filter out plans that are already dispatched (have work_branch set)
+  const planFiles = [];
+  const dispatchedPlans = [];
+
+  for (const planFile of allPlanFiles) {
+    const plan = loadPlan(planFile);
+    if (plan.metadata.work_branch) {
+      dispatchedPlans.push({
+        file: path.basename(planFile),
+        workBranch: plan.metadata.work_branch,
+      });
+    } else {
+      planFiles.push(planFile);
+    }
+  }
+
+  if (dispatchedPlans.length > 0) {
+    console.log(`Skipping ${dispatchedPlans.length} already-dispatched plan(s):`);
+    for (const dp of dispatchedPlans) {
+      console.log(`  - ${dp.file} (work branch: ${dp.workBranch})`);
+    }
+    console.log();
+  }
+
   if (planFiles.length === 0) {
-    console.log(`No active plans found in ${config.paths.plans}/`);
-    console.log("Create a plan file to get started.");
+    console.log(`No new plans to process in ${config.paths.plans}/`);
+    console.log("Create a plan file without work_branch metadata to get started.");
     return;
   }
 
-  console.log(`Found ${planFiles.length} active plan(s):\n`);
+  console.log(`Found ${planFiles.length} plan(s) to process:\n`);
   for (const pf of planFiles) {
     console.log(`  - ${path.basename(pf)}`);
   }
   console.log();
 
-  // Process each plan
+  // Process each plan (one at a time, with branch switching)
   for (const planFile of planFiles) {
-    await processPlan(planFile, completedDir, reportsDir);
+    await processPlanWithBranching(planFile, sourceBranch, completedDir, reportsDir);
+
+    // Return to source branch for next plan
+    const currentBranch = getCurrentBranch(REPO_ROOT);
+    if (currentBranch !== sourceBranch) {
+      console.log(`\nReturning to source branch: ${sourceBranch}`);
+      checkoutBranch(sourceBranch, REPO_ROOT);
+    }
   }
 
   console.log("\n=== Orchestrator Complete ===");
 }
 
 /**
- * Process a single plan file
+ * Process a single plan with branch management
+ */
+async function processPlanWithBranching(planFile, sourceBranch, completedDir, reportsDir) {
+  const planFileName = path.basename(planFile);
+  console.log(`\n--- Processing: ${planFileName} ---\n`);
+
+  // Step 1: Determine work branch name
+  const workBranch = deriveBranchName(planFileName);
+  console.log(`Work branch: ${workBranch}`);
+
+  // Step 2: Update plan metadata on source branch to mark as dispatched
+  let plan = loadPlan(planFile);
+  plan.metadata.source_branch = sourceBranch;
+  plan.metadata.work_branch = workBranch;
+  savePlan(plan);
+
+  // Commit the metadata update on source branch
+  const metadataCommit = commit(
+    `chore: dispatch plan ${planFileName} to ${workBranch}`,
+    [planFile],
+    REPO_ROOT
+  );
+  if (metadataCommit) {
+    console.log(`Marked plan as dispatched on ${sourceBranch} (${metadataCommit.slice(0, 7)})`);
+  }
+
+  // Step 3: Create and switch to work branch
+  if (branchExists(workBranch, REPO_ROOT)) {
+    console.log(`Work branch ${workBranch} already exists, checking out...`);
+    checkoutBranch(workBranch, REPO_ROOT);
+  } else {
+    console.log(`Creating work branch: ${workBranch}`);
+    createBranch(workBranch, REPO_ROOT);
+  }
+
+  // Step 4: Process the plan (main execution logic)
+  await processPlan(planFile, completedDir, reportsDir);
+
+  // Step 5: Reload plan to check final state
+  plan = loadPlan(planFile);
+  const isComplete = plan.isComplete();
+
+  if (isComplete) {
+    // Step 6: Archive the plan (on work branch)
+    archivePlan(planFile, plan, completedDir, reportsDir);
+
+    // Step 7: Commit all work branch changes
+    const workCommit = commit(
+      `chore: complete plan ${planFileName}`,
+      [], // Stage all changes
+      REPO_ROOT
+    );
+    if (workCommit) {
+      console.log(`Committed plan completion (${workCommit.slice(0, 7)})`);
+    }
+
+    // Step 8: Create PR
+    try {
+      const prTitle = `Plan: ${planFileName.replace(/\.ya?ml$/, "").replace(/^\d{4}-\d{2}-\d{2}-/, "")}`;
+      const prBody = generatePRBody(plan);
+      const prUrl = createPullRequest(prTitle, prBody, sourceBranch, REPO_ROOT);
+      console.log(`\nPull request created: ${prUrl}`);
+    } catch (error) {
+      console.error(`\nFailed to create PR: ${error.message}`);
+      console.log("You can create the PR manually from the work branch.");
+    }
+  } else {
+    // Plan not complete (still has pending steps or was interrupted)
+    // Commit any progress made
+    const progressCommit = commit(
+      `wip: progress on plan ${planFileName}`,
+      [],
+      REPO_ROOT
+    );
+    if (progressCommit) {
+      console.log(`Committed work-in-progress (${progressCommit.slice(0, 7)})`);
+    }
+    console.log("\nPlan not complete. Work branch preserved for later continuation.");
+  }
+}
+
+/**
+ * Generate PR body from completed plan
+ */
+function generatePRBody(plan) {
+  const steps = plan.steps || [];
+  const completed = steps.filter((s) => s.status === "complete").length;
+  const blocked = steps.filter((s) => s.status === "blocked").length;
+  const total = steps.length;
+
+  let body = `## Plan Summary\n\n`;
+  body += `- **Status:** ${plan.metadata.outcome === "success" ? "All steps complete" : "Partial (some steps blocked)"}\n`;
+  body += `- **Steps:** ${completed}/${total} complete`;
+  if (blocked > 0) {
+    body += `, ${blocked} blocked`;
+  }
+  body += `\n\n`;
+
+  body += `## Steps\n\n`;
+  for (const step of steps) {
+    const icon = step.status === "complete" ? "x" : step.status === "blocked" ? "-" : " ";
+    body += `- [${icon}] **${step.id}**: ${step.description}\n`;
+    if (step.status === "blocked" && step.blocked_reason) {
+      body += `  - Blocked: ${step.blocked_reason}\n`;
+    }
+  }
+
+  body += `\n---\n*Generated by Plan Orchestrator*`;
+  return body;
+}
+
+/**
+ * Process a single plan file (core execution logic)
  */
 async function processPlan(planFile, completedDir, reportsDir) {
-  const planName = path.basename(planFile);
-  console.log(`\n--- Processing: ${planName} ---\n`);
-
   let plan = loadPlan(planFile);
   const activeAgents = []; // Array of {handle, stepIds}
 
   // Check initial state
   if (plan.isComplete()) {
-    console.log("Plan is already complete. Archiving...");
-    archivePlan(planFile, plan, completedDir, reportsDir);
+    console.log("Plan is already complete.");
     return;
   }
 
@@ -149,12 +315,6 @@ async function processPlan(planFile, completedDir, reportsDir) {
       await waitForAgentCompletion(planFile, activeAgents, reportsDir);
       plan = loadPlan(planFile); // Reload to get status updates
     }
-  }
-
-  // Plan complete (all steps complete or blocked) - archive it
-  plan = loadPlan(planFile);
-  if (plan.isComplete()) {
-    archivePlan(planFile, plan, completedDir, reportsDir);
   }
 }
 

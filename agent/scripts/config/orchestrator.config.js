@@ -18,6 +18,9 @@ module.exports = {
     claude: {
       command: "claude",
       args: [
+        "--model",
+        "sonnet",
+        "--dangerously-skip-permissions",
         "-p",
         "You are a Worker Agent. Execute the following steps from the plan.\n\n" +
           "Plan file: {planFile}\n" +

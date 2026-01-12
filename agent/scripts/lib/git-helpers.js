@@ -1,0 +1,223 @@
+#!/usr/bin/env node
+
+const { execSync } = require("child_process");
+
+/**
+ * Git helper functions for branch management and PR creation
+ */
+
+/**
+ * Execute a git command and return the output
+ * @param {string} command - Git command (without 'git' prefix)
+ * @param {string} cwd - Working directory
+ * @returns {string} - Command output (trimmed)
+ */
+function git(command, cwd) {
+  try {
+    return execSync(`git ${command}`, {
+      cwd,
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+  } catch (error) {
+    // Return stderr if available, otherwise throw
+    if (error.stderr) {
+      throw new Error(`git ${command} failed: ${error.stderr.trim()}`);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Get the current branch name
+ * @param {string} cwd - Working directory
+ * @returns {string} - Current branch name
+ */
+function getCurrentBranch(cwd) {
+  return git("rev-parse --abbrev-ref HEAD", cwd);
+}
+
+/**
+ * Check if a branch exists (locally or remotely)
+ * @param {string} branchName - Branch name to check
+ * @param {string} cwd - Working directory
+ * @returns {boolean} - True if branch exists
+ */
+function branchExists(branchName, cwd) {
+  try {
+    git(`rev-parse --verify ${branchName}`, cwd);
+    return true;
+  } catch {
+    // Also check remote
+    try {
+      git(`rev-parse --verify origin/${branchName}`, cwd);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+/**
+ * Create a new branch from current HEAD
+ * @param {string} branchName - Name for the new branch
+ * @param {string} cwd - Working directory
+ */
+function createBranch(branchName, cwd) {
+  git(`checkout -b ${branchName}`, cwd);
+}
+
+/**
+ * Switch to an existing branch
+ * @param {string} branchName - Branch to switch to
+ * @param {string} cwd - Working directory
+ */
+function checkoutBranch(branchName, cwd) {
+  git(`checkout ${branchName}`, cwd);
+}
+
+/**
+ * Stage and commit changes
+ * @param {string} message - Commit message
+ * @param {string[]} files - Files to stage (empty array = all changes)
+ * @param {string} cwd - Working directory
+ * @returns {string} - Commit hash
+ */
+function commit(message, files, cwd) {
+  if (files && files.length > 0) {
+    git(`add ${files.map((f) => `"${f}"`).join(" ")}`, cwd);
+  } else {
+    git("add -A", cwd);
+  }
+
+  // Check if there are changes to commit
+  try {
+    git("diff --cached --quiet", cwd);
+    // No changes to commit
+    return null;
+  } catch {
+    // There are changes, proceed with commit
+  }
+
+  git(`commit -m "${message.replace(/"/g, '\\"')}"`, cwd);
+  return git("rev-parse HEAD", cwd);
+}
+
+/**
+ * Push current branch to origin
+ * @param {string} cwd - Working directory
+ * @param {boolean} setUpstream - Whether to set upstream tracking
+ */
+function push(cwd, setUpstream = true) {
+  const branch = getCurrentBranch(cwd);
+  if (setUpstream) {
+    git(`push -u origin ${branch}`, cwd);
+  } else {
+    git("push", cwd);
+  }
+}
+
+/**
+ * Create a pull request using GitHub CLI
+ * @param {string} title - PR title
+ * @param {string} body - PR body/description
+ * @param {string} baseBranch - Target branch for the PR
+ * @param {string} cwd - Working directory
+ * @returns {string} - PR URL
+ */
+function createPullRequest(title, body, baseBranch, cwd) {
+  // Ensure we're pushed first
+  try {
+    push(cwd, true);
+  } catch (error) {
+    // May already be pushed, continue
+  }
+
+  const result = execSync(
+    `gh pr create --title "${title.replace(/"/g, '\\"')}" --body "${body.replace(/"/g, '\\"')}" --base ${baseBranch}`,
+    {
+      cwd,
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }
+  );
+
+  return result.trim();
+}
+
+/**
+ * Check if there are uncommitted changes
+ * @param {string} cwd - Working directory
+ * @returns {boolean} - True if there are uncommitted changes
+ */
+function hasUncommittedChanges(cwd) {
+  try {
+    git("diff --quiet", cwd);
+    git("diff --cached --quiet", cwd);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Derive a branch name from a plan filename
+ * @param {string} planFileName - Plan filename (e.g., "2026-01-11-add-dummy-script.yaml")
+ * @returns {string} - Branch name (e.g., "plan/add-dummy-script")
+ */
+function deriveBranchName(planFileName) {
+  // Remove .yaml/.yml extension
+  let name = planFileName.replace(/\.ya?ml$/, "");
+
+  // Remove date prefix if present (YYYY-MM-DD-)
+  name = name.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+
+  // Sanitize for git branch name
+  name = name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return `plan/${name}`;
+}
+
+/**
+ * Stash any uncommitted changes
+ * @param {string} cwd - Working directory
+ * @returns {boolean} - True if changes were stashed
+ */
+function stash(cwd) {
+  if (!hasUncommittedChanges(cwd)) {
+    return false;
+  }
+  git("stash push -m 'orchestrator-auto-stash'", cwd);
+  return true;
+}
+
+/**
+ * Pop the most recent stash
+ * @param {string} cwd - Working directory
+ */
+function stashPop(cwd) {
+  try {
+    git("stash pop", cwd);
+  } catch {
+    // No stash to pop or conflict - ignore
+  }
+}
+
+module.exports = {
+  git,
+  getCurrentBranch,
+  branchExists,
+  createBranch,
+  checkoutBranch,
+  commit,
+  push,
+  createPullRequest,
+  hasUncommittedChanges,
+  deriveBranchName,
+  stash,
+  stashPop,
+};

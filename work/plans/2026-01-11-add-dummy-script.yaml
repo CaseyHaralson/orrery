@@ -6,7 +6,7 @@ steps:
   - id: step-1
     description: Create dummy.js script that outputs a message to the console
     owner: self
-    status: in_progress
+    status: pending
     deps: []
     criteria: Script exists at agent/scripts/dummy.js and outputs 'Hello from the dummy script!' when run with node
     files:
