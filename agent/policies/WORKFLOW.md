@@ -226,3 +226,105 @@ Since all tools use the same plan schema and skill definitions:
 - Agent C (Codex) can verify and report
 
 The shared protocol makes this seamless.
+
+---
+
+## Orchestrated Workflow Mode
+
+For automated execution of plans, an orchestration system coordinates worker agents to execute plan steps.
+
+### Workflow Split
+
+The 5-phase workflow can be split into two modes:
+
+1. **Planning Mode** (Intake → Plan)
+   - Human or agent creates a plan through intake and planning phases
+   - Plan is saved to `work/plans/` directory
+   - Execution stops after plan creation
+
+2. **Orchestration Mode** (Execute → Verify → Report)
+   - Orchestrator script scans `work/plans/` for pending plans
+   - Dispatches worker agents to execute steps
+   - Tracks completion and archives finished plans
+
+### Running the Orchestrator
+
+```bash
+npm run orchestrate
+```
+
+The orchestrator will:
+1. Scan `work/plans/` for YAML plan files
+2. Exclude plans already in `work/completed/`
+3. For each plan, identify steps ready to execute (pending with deps satisfied)
+4. Spawn agent subprocesses to execute steps
+5. Update plan statuses based on agent results
+6. Write reports to `work/reports/`
+7. Move completed plans to `work/completed/`
+
+### Worker Agent Contract
+
+When invoked by the orchestrator, a worker agent:
+
+**Receives:**
+- Plan file path (read-only reference)
+- Step ID(s) to execute
+
+**Must:**
+1. Read plan file to understand step requirements (DO NOT edit plan file)
+2. Load execute, verify, and report skills
+3. Implement the step changes
+4. Verify work meets acceptance criteria
+5. Output structured result to stdout as JSON:
+
+```json
+{
+  "stepId": "step-1",
+  "status": "complete",
+  "summary": "What was done",
+  "blockedReason": null,
+  "artifacts": ["src/file.js"],
+  "testResults": { "passed": 5, "failed": 0 }
+}
+```
+
+6. Exit with code 0 (success) or 1 (failure)
+
+**Important:** Agents do NOT edit the plan file directly. The orchestrator handles all plan updates to avoid concurrent write conflicts.
+
+### Configuration
+
+Orchestrator settings are in `agent/scripts/config/orchestrator.config.js`:
+
+- **paths**: Directories for plans, completed, reports
+- **agents**: Per-agent command configurations (claude, codex, gemini)
+- **defaultAgent**: Which agent to use when step.owner is "self"
+- **concurrency**: Max parallel agents, poll interval
+- **retry**: Retry policy for failed steps
+
+### Directory Structure
+
+```
+work/
+├── plans/           # Active plan files awaiting execution
+├── completed/       # Archived plans that finished
+└── reports/         # Step execution reports
+```
+
+### Parallel Execution
+
+Steps marked with `parallel: true` can run concurrently:
+
+```yaml
+steps:
+  - id: "test-frontend"
+    parallel: true
+    deps: ["build"]
+    # ...
+  - id: "test-backend"
+    parallel: true
+    deps: ["build"]
+    # ...
+```
+
+The orchestrator respects `maxParallel` limit and groups parallel steps together.
