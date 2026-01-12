@@ -1,0 +1,26 @@
+metadata:
+  created_at: "2026-01-11T21:00:00Z"
+  created_by: Claude
+  version: "1.0"
+steps:
+  - id: step-1
+    description: Create dummy.js script that outputs a message to the console
+    owner: self
+    status: in_progress
+    deps: []
+    criteria: Script exists at agent/scripts/dummy.js and outputs 'Hello from the dummy script!' when run with node
+    files:
+      - agent/scripts/dummy.js
+    commands:
+      - node agent/scripts/dummy.js
+  - id: step-2
+    description: Register the script in package.json
+    owner: self
+    status: pending
+    deps:
+      - step-1
+    criteria: Running 'npm run dummy' executes the script and outputs the expected message
+    files:
+      - package.json
+    commands:
+      - npm run dummy
