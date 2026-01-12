@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const SOURCE_DIR = 'agent/skills';
-const REPO_ROOT = path.join(__dirname, '..');
-const AGENT_DIRECTORIES = ['.claude', '.codex', '.gemini'];
+const SOURCE_DIR = "agent/skills";
+const REPO_ROOT = path.join(__dirname, "..", "..");
+const AGENT_DIRECTORIES = [".claude", ".codex", ".gemini"];
 
 /**
  * Recursively copy directory contents
@@ -38,7 +38,7 @@ function copyDirectory(source, destination) {
  * Main execution
  */
 function main() {
-  console.log('🔍 Scanning for agent directories...\n');
+  console.log("🔍 Scanning for agent directories...\n");
 
   const sourcePath = path.join(REPO_ROOT, SOURCE_DIR);
 
@@ -49,27 +49,31 @@ function main() {
   }
 
   // Filter to only agent directories that exist
-  const agentDirs = AGENT_DIRECTORIES.filter(dir => {
+  const agentDirs = AGENT_DIRECTORIES.filter((dir) => {
     const fullPath = path.join(REPO_ROOT, dir);
     return fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory();
   });
 
   if (agentDirs.length === 0) {
-    console.log('⚠️  No target agent directories found');
-    console.log(`   Looking for: ${AGENT_DIRECTORIES.join(', ')}`);
-    console.log('   Create one of these directories to clone skills to them.');
+    console.log("⚠️  No target agent directories found");
+    console.log(`   Looking for: ${AGENT_DIRECTORIES.join(", ")}`);
+    console.log("   Create one of these directories to clone skills to them.");
     process.exit(0);
   }
 
-  console.log(`Found ${agentDirs.length} agent director${agentDirs.length === 1 ? 'y' : 'ies'}:`);
-  agentDirs.forEach(dir => console.log(`  - ${dir}`));
+  console.log(
+    `Found ${agentDirs.length} agent director${
+      agentDirs.length === 1 ? "y" : "ies"
+    }:`
+  );
+  agentDirs.forEach((dir) => console.log(`  - ${dir}`));
   console.log();
 
   // Clone skills to each agent directory
   let totalCloned = 0;
 
   for (const agentDir of agentDirs) {
-    const targetPath = path.join(REPO_ROOT, agentDir, 'skills');
+    const targetPath = path.join(REPO_ROOT, agentDir, "skills");
 
     console.log(`📦 Cloning skills to ${agentDir}/skills/`);
 
@@ -77,11 +81,11 @@ function main() {
       copyDirectory(sourcePath, targetPath);
 
       // Count skills cloned
-      const skills = fs.readdirSync(sourcePath).filter(item => {
+      const skills = fs.readdirSync(sourcePath).filter((item) => {
         return fs.statSync(path.join(sourcePath, item)).isDirectory();
       });
 
-      console.log(`   ✓ Cloned ${skills.length} skills: ${skills.join(', ')}`);
+      console.log(`   ✓ Cloned ${skills.length} skills: ${skills.join(", ")}`);
       totalCloned += skills.length;
     } catch (error) {
       console.error(`   ✗ Error cloning to ${agentDir}: ${error.message}`);
@@ -90,7 +94,13 @@ function main() {
     console.log();
   }
 
-  console.log(`✨ Done! Cloned ${totalCloned} total skill${totalCloned === 1 ? '' : 's'} across ${agentDirs.length} agent director${agentDirs.length === 1 ? 'y' : 'ies'}.`);
+  console.log(
+    `✨ Done! Cloned ${totalCloned} total skill${
+      totalCloned === 1 ? "" : "s"
+    } across ${agentDirs.length} agent director${
+      agentDirs.length === 1 ? "y" : "ies"
+    }.`
+  );
 }
 
 main();
