@@ -62,6 +62,15 @@ Each step needs clear "done" conditions:
 
 Write the plan in YAML format following `agent/schemas/plan-schema.yaml`.
 
+**Output Location:**
+- Directory: `work/plans/`
+- Filename: `<date>-<plan-name>.yaml`
+- Date format: YYYY-MM-DD (e.g., `2026-01-11`)
+- Plan name: kebab-case description of the task (e.g., `fix-clone-agent-skills`)
+- Full example: `work/plans/2026-01-11-add-csv-upload-feature.yaml`
+
+The directory will be created automatically if it doesn't exist.
+
 ---
 
 ## Plan Schema Reference
@@ -91,7 +100,7 @@ Full schema: `agent/schemas/plan-schema.yaml`
 **Plan Output:**
 
 ```yaml
-# plan.yaml
+# work/plans/2026-01-10-add-csv-upload-feature.yaml
 metadata:
   created_at: "2026-01-10T14:00:00Z"
   created_by: "Claude"
