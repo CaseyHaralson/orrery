@@ -4,7 +4,7 @@
   "description": "Agent skill management and workflow orchestration",
   "scripts": {
     "clone-agent-skills": "node agent/scripts/clone-agent-skills.js",
-    "orchestrate": "node agent/scripts/orchestrate.js"
+    "do-work": "node agent/scripts/orchestrate.js"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
