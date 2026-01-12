@@ -42,9 +42,10 @@ All agents, regardless of which AI tool powers them, follow this unified workflo
 3. Assign owners to each step (agent roles or "self")
 4. Define acceptance criteria for each step
 5. Output the plan in the standard YAML format (see `agent/schemas/plan-schema.yaml`)
+6. Save the plan to the `work/plans/` directory with the following filename: `<date>-<plan-name>.yaml`
 
 **Expected Outputs:**
-- A `plan.yaml` file following the plan schema
+- A `<date><plan-name>.yaml` file following the plan schema in the plans directory
 - Steps with: id, description, owner, deps, status, criteria
 
 **Completion Criteria:**
