@@ -91,36 +91,123 @@ function invokeAgent(agentConfig, planFile, stepIds, repoRoot, options = {}) {
  * }
  *
  * Agents may output multiple JSON objects (one per step) or a single array.
+ * JSON may be wrapped in markdown code blocks (```json ... ```).
  * @param {string} stdout - Raw stdout from agent
  * @returns {Array<Object>} - Array of parsed results
  */
 function parseAgentResults(stdout) {
   const results = [];
 
-  // Try to find JSON in the output (might have other text around it)
-  // Look for JSON objects or arrays
-  const jsonPattern = /\{[\s\S]*?"stepId"[\s\S]*?\}|\[[\s\S]*?"stepId"[\s\S]*?\]/g;
-  const matches = stdout.match(jsonPattern);
-
-  if (!matches) {
-    return results;
-  }
-
-  for (const match of matches) {
+  // First, try to extract JSON from markdown code blocks
+  const codeBlockPattern = /```(?:json)?\s*([\s\S]*?)```/g;
+  let codeBlockMatch;
+  while ((codeBlockMatch = codeBlockPattern.exec(stdout)) !== null) {
+    const content = codeBlockMatch[1].trim();
     try {
-      const parsed = JSON.parse(match);
+      const parsed = JSON.parse(content);
       if (Array.isArray(parsed)) {
-        results.push(...parsed);
-      } else {
+        results.push(...parsed.filter((r) => r.stepId));
+      } else if (parsed.stepId) {
         results.push(parsed);
       }
     } catch (e) {
-      // Skip malformed JSON
-      continue;
+      // Not valid JSON in this code block, continue
+    }
+  }
+
+  // If we found results in code blocks, return them
+  if (results.length > 0) {
+    return results;
+  }
+
+  // Otherwise, try to find raw JSON objects with balanced braces
+  let i = 0;
+  while (i < stdout.length) {
+    if (stdout[i] === "{") {
+      const jsonObj = extractBalancedJson(stdout, i, "{", "}");
+      if (jsonObj) {
+        try {
+          const parsed = JSON.parse(jsonObj);
+          if (parsed.stepId) {
+            results.push(parsed);
+          }
+        } catch (e) {
+          // Not valid JSON
+        }
+        i += jsonObj.length;
+      } else {
+        i++;
+      }
+    } else if (stdout[i] === "[") {
+      const jsonArr = extractBalancedJson(stdout, i, "[", "]");
+      if (jsonArr) {
+        try {
+          const parsed = JSON.parse(jsonArr);
+          if (Array.isArray(parsed)) {
+            results.push(...parsed.filter((r) => r.stepId));
+          }
+        } catch (e) {
+          // Not valid JSON
+        }
+        i += jsonArr.length;
+      } else {
+        i++;
+      }
+    } else {
+      i++;
     }
   }
 
   return results;
+}
+
+/**
+ * Extract a balanced JSON structure from a string starting at a given position.
+ * Handles nested braces and respects string boundaries.
+ * @param {string} str - The string to extract from
+ * @param {number} start - Starting index (must be openChar)
+ * @param {string} openChar - Opening character ('{' or '[')
+ * @param {string} closeChar - Closing character ('}' or ']')
+ * @returns {string|null} - The extracted JSON string or null if unbalanced
+ */
+function extractBalancedJson(str, start, openChar = "{", closeChar = "}") {
+  if (str[start] !== openChar) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = start; i < str.length; i++) {
+    const char = str[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === "\\" && inString) {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString) {
+      if (char === openChar) {
+        depth++;
+      } else if (char === closeChar) {
+        depth--;
+        if (depth === 0) {
+          return str.slice(start, i + 1);
+        }
+      }
+    }
+  }
+
+  return null; // Unbalanced
 }
 
 /**
