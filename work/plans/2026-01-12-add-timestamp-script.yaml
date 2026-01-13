@@ -10,7 +10,7 @@ steps:
     owner: self
     status: pending
     deps: []
-    criteria: Script exists at agent/scripts/timestamp.js and outputs a formatted timestamp (e.g., "Current time: 2026-01-12 14:30:45") when run with node
+    criteria: "Script exists at agent/scripts/timestamp.js and outputs a formatted timestamp (e.g., 'Current time: 2026-01-12 14:30:45') when run with node"
     files:
       - agent/scripts/timestamp.js
     commands:

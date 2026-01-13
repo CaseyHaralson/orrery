@@ -7,6 +7,12 @@ description: >
 metadata:
   version: "1.0"
   phase: 2
+hooks:
+  PostToolUse:
+    - matcher: "Write"
+      hooks:
+        - type: command
+          command: "node agent/scripts/validate-plan.js"
 ---
 
 # Plan Skill
@@ -70,6 +76,17 @@ Write the plan in YAML format following `agent/schemas/plan-schema.yaml`.
 - Full example: `work/plans/2026-01-11-add-csv-upload-feature.yaml`
 
 The directory will be created automatically if it doesn't exist.
+
+### Step 6: Validate the Plan
+
+Plan files are **automatically validated** via a PostToolUse hook when written to `work/plans/`. If the YAML is invalid, you'll see an error message with details on how to fix it.
+
+For manual validation:
+```bash
+node agent/scripts/validate-plan.js work/plans/<your-plan>.yaml
+```
+
+This catches common issues like unquoted colons before they cause orchestrator failures.
 
 ---
 
@@ -198,8 +215,36 @@ The Coordinator will dispatch steps to appropriate agents based on `owner`.
 
 ---
 
+## YAML Formatting Rules
+
+**Always quote strings that contain special characters:**
+
+```yaml
+# BAD - colons in unquoted strings break YAML parsing
+criteria: Output shows: timestamp value
+
+# GOOD - quote strings containing colons
+criteria: "Output shows: timestamp value"
+
+# BAD - nested quotes without escaping
+criteria: "Shows 'Current time: 12:30'"
+
+# GOOD - use single quotes inside double quotes (or escape)
+criteria: "Shows 'Current time: 12:30'"
+```
+
+**Common YAML gotchas:**
+- Colons followed by space (`: `) are interpreted as key-value separators
+- Strings starting with `[`, `{`, `*`, `&`, `!`, `|`, `>`, `'`, `"`, `%`, `@`, `` ` `` need quoting
+- Multi-line strings should use `|` (literal) or `>` (folded) block syntax
+
+**When in doubt, use double quotes** around the entire value.
+
+---
+
 ## Common Pitfalls
 
+- **YAML formatting errors:** Unquoted colons cause parse failures - always validate your plan
 - **Forgetting dependencies:** Steps fail because prerequisites aren't done
 - **Vague criteria:** "It should work" doesn't tell you when you're done
 - **No test steps:** Plan execution without planned verification
