@@ -1,0 +1,29 @@
+metadata:
+  created_at: "2026-01-12T18:30:00Z"
+  created_by: Claude
+  version: "1.0"
+  source_branch: main
+
+steps:
+  - id: step-1
+    description: Create timestamp.js script that outputs the current date and time
+    owner: self
+    status: pending
+    deps: []
+    criteria: Script exists at agent/scripts/timestamp.js and outputs a formatted timestamp (e.g., "Current time: 2026-01-12 14:30:45") when run with node
+    files:
+      - agent/scripts/timestamp.js
+    commands:
+      - node agent/scripts/timestamp.js
+
+  - id: step-2
+    description: Register the script in package.json as an npm script
+    owner: self
+    status: pending
+    deps:
+      - step-1
+    criteria: Running 'npm run timestamp' executes the script and outputs the current timestamp
+    files:
+      - package.json
+    commands:
+      - npm run timestamp
