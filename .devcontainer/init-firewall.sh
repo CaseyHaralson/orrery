@@ -47,12 +47,10 @@ if [ -z "$gh_ranges" ]; then
     echo "ERROR: Failed to fetch GitHub IP ranges"
     exit 1
 fi
-
 if ! echo "$gh_ranges" | jq -e '.web and .api and .git' >/dev/null; then
     echo "ERROR: GitHub API response missing required fields"
     exit 1
 fi
-
 echo "Processing GitHub IPs..."
 while read -r cidr; do
     if [[ ! "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
@@ -63,13 +61,42 @@ while read -r cidr; do
     ipset add allowed-domains "$cidr"
 done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 
+# --- Cloudflare IPv4 ranges ---
+echo "Fetching Cloudflare IP ranges..."
+cf_json=$(curl -s https://api.cloudflare.com/client/v4/ips)
+if [ -z "$cf_json" ]; then
+    echo "ERROR: Failed to fetch Cloudflare IP ranges"
+    exit 1
+fi
+if ! echo "$cf_json" | jq -e '.result.ipv4_cidrs' >/dev/null; then
+    echo "ERROR: Cloudflare API response missing ipv4_cidrs"
+    exit 1
+fi
+echo "Processing Cloudflare IPv4 CIDRs..."
+echo "$cf_json" \
+  | jq -r '.result.ipv4_cidrs[]' \
+  | aggregate -q \
+  | while read -r cidr; do
+      if [[ ! "$cidr" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$ ]]; then
+        echo "ERROR: Invalid CIDR range from Cloudflare: $cidr"
+        exit 1
+      fi
+      echo "Adding Cloudflare range $cidr"
+      ipset add -! allowed-domains "$cidr"   # -! ignores duplicates
+    done
+# Note: IPv6 ranges are available from Cloudflare but not added here since this script configures iptables (IPv4).
+# Add a separate inet6 ipset + ip6tables if you need IPv6.
+
 # Resolve and add other allowed domains
 for domain in \
     "registry.npmjs.org" \
-    "api.anthropic.com" \
     "sentry.io" \
-    "statsig.anthropic.com" \
     "statsig.com" \
+    "api.anthropic.com" \
+    "statsig.anthropic.com" \
+    "api.openai.com" \
+    "auth.openai.com" \
+    "platform.openai.com" \
     "marketplace.visualstudio.com" \
     "vscode.blob.core.windows.net" \
     "update.code.visualstudio.com"; do
@@ -134,4 +161,27 @@ if ! curl --connect-timeout 5 https://api.github.com/zen >/dev/null 2>&1; then
     exit 1
 else
     echo "Firewall verification passed - able to reach https://api.github.com as expected"
+fi
+
+# Verify Anthropic API access
+if ! curl --connect-timeout 5 https://api.anthropic.com >/dev/null 2>&1; then
+    echo "ERROR: Firewall verification failed - unable to reach https://api.anthropic.com"
+    exit 1
+else
+    echo "Firewall verification passed - able to reach https://api.anthropic.com as expected"
+fi
+
+# Verify OpenAI API access
+if ! curl --connect-timeout 5 https://api.openai.com >/dev/null 2>&1; then
+    echo "ERROR: Firewall verification failed - unable to reach https://api.openai.com/"
+    exit 1
+else
+    echo "Firewall verification passed - able to reach https://api.openai.com/ as expected"
+fi
+
+# Cloudflare reachability probe
+if ! curl --connect-timeout 5 https://www.cloudflare.com/cdn-cgi/trace >/dev/null 2>&1; then
+    echo "WARN: Could not reach Cloudflare trace endpoint; check ranges and DNS."
+else
+    echo "Cloudflare verification passed."
 fi
