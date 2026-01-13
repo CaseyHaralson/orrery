@@ -3,7 +3,7 @@ metadata:
   created_by: Claude
   version: "1.0"
   source_branch: main
-
+  work_branch: plan/add-timestamp-script
 steps:
   - id: step-1
     description: Create timestamp.js script that outputs the current date and time
@@ -15,7 +15,6 @@ steps:
       - agent/scripts/timestamp.js
     commands:
       - node agent/scripts/timestamp.js
-
   - id: step-2
     description: Register the script in package.json as an npm script
     owner: self
