@@ -14,11 +14,7 @@
   "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
   "customizations": {
     "vscode": {
-      "extensions": [
-        "anthropic.claude-code",
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
-      ],
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
       "settings": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -38,17 +34,17 @@
       }
     }
   },
-  "remoteUser": "node",
+  "remoteUser": "vscode",
   "mounts": [
     "source=orrery-sandbox-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
-    "source=orrery-sandbox-claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume",
-    "source=orrery-sandbox-codex-config-${devcontainerId},target=/home/node/.codex,type=volume",
-    "source=orrery-sandbox-gemini-config-${devcontainerId},target=/home/node/.gemini,type=volume"
+    "source=orrery-sandbox-claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
+    "source=orrery-sandbox-codex-config-${devcontainerId},target=/home/vscode/.codex,type=volume",
+    "source=orrery-sandbox-gemini-config-${devcontainerId},target=/home/vscode/.gemini,type=volume"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
-    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
-    "CODEX_HOME": "/home/node/.codex",
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+    "CODEX_HOME": "/home/vscode/.codex",
     "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
