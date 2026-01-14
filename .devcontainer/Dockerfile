@@ -3,9 +3,6 @@ FROM node:24
 ARG TZ
 ENV TZ="$TZ"
 
-ARG CLAUDE_CODE_VERSION=latest
-ARG CODEX_VERSION=latest
-
 # Install basic development tools and iptables/ipset
 RUN apt-get update && apt-get install -y --no-install-recommends \
   less \
@@ -44,8 +41,8 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
 ENV DEVCONTAINER=true
 
 # Create workspace and config directories and set permissions
-RUN mkdir -p /workspace /home/node/.claude  /home/node/.codex && \
-  chown -R node:node /workspace /home/node/.claude /home/node/.codex
+RUN mkdir -p /workspace /home/node/.claude  /home/node/.codex /home/node/.gemini && \
+  chown -R node:node /workspace /home/node/.claude /home/node/.codex /home/node/.gemini
 
 WORKDIR /workspace
 
@@ -79,11 +76,18 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
   -x
 
+ARG CLAUDE_CODE_VERSION=latest
+ARG CODEX_VERSION=latest
+ARG GEMINI_VERSION=latest
+
 # Install Claude
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
 # Install Codex
 RUN npm install -g @openai/codex@${CLAUDE_CODE_VERSION}
+
+# Install Gemini
+RUN npm install -g @google/gemini-cli@${CLAUDE_CODE_VERSION}
 
 
 # Copy and set up firewall script

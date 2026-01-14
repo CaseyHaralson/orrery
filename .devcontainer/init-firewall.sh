@@ -98,6 +98,8 @@ for domain in \
     "auth.openai.com" \
     "platform.openai.com" \
     "chatgpt.com" \
+    "www.googleapis.com" \
+    "oauth2.googleapis.com" \
     "marketplace.visualstudio.com" \
     "vscode.blob.core.windows.net" \
     "update.code.visualstudio.com"; do
@@ -114,7 +116,7 @@ for domain in \
             exit 1
         fi
         echo "Adding $ip for $domain"
-        ipset add allowed-domains "$ip"
+        ipset add allowed-domains "$ip" -exist
     done < <(echo "$ips")
 done
 
@@ -178,6 +180,14 @@ if ! curl --connect-timeout 5 https://api.openai.com >/dev/null 2>&1; then
     exit 1
 else
     echo "Firewall verification passed - able to reach https://api.openai.com/ as expected"
+fi
+
+# Verify Gemini API access
+if ! curl --connect-timeout 5 https://www.googleapis.com >/dev/null 2>&1; then
+    echo "ERROR: Firewall verification failed - unable to reach https://www.googleapis.com/"
+    exit 1
+else
+    echo "Firewall verification passed - able to reach https://www.googleapis.com/ as expected"
 fi
 
 # Cloudflare reachability probe
