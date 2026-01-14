@@ -68,8 +68,43 @@ module.exports = {
     // },
   },
 
-  // Default agent to use when step.owner is "self" or unspecified
+  // Default agent to use when failover is disabled
   defaultAgent: "codex",
+
+  // Agent priority list for failover (tried in order)
+  agentPriority: ["codex", "claude"],
+
+  // Failover configuration
+  failover: {
+    // Enable/disable failover behavior
+    enabled: true,
+
+    // Timeout in milliseconds before trying next agent (10 minutes)
+    timeoutMs: 600000,
+
+    // Patterns to detect failover-triggering errors from stderr
+    errorPatterns: {
+      // API/connection errors
+      apiError: [
+        /API error/i,
+        /connection refused/i,
+        /ECONNRESET/i,
+        /ETIMEDOUT/i,
+        /network error/i,
+        /rate limit/i,
+        /429/,
+        /502/,
+        /503/,
+      ],
+      // Token/context limit errors
+      tokenLimit: [
+        /token limit/i,
+        /context.*(limit|length|exceeded)/i,
+        /maximum.*tokens/i,
+        /too long/i,
+      ],
+    },
+  },
 
   // Concurrency control
   concurrency: {
@@ -93,5 +128,7 @@ module.exports = {
     streamOutput: true,
     // Prefix format for agent output ("[step-1]" or "[step-1,step-2]")
     prefixFormat: "step",
+    // Log file for timeout events
+    timeoutLogFile: "work/reports/timeouts.log",
   },
 };

@@ -48,7 +48,6 @@ definitions:
     required:
       - id
       - description
-      - owner
     properties:
       id:
         type: string
@@ -56,9 +55,6 @@ definitions:
       description:
         type: string
         description: Natural language summary of the task
-      owner:
-        type: string
-        description: Agent or role responsible for this step
       status:
         type: string
         enum:

@@ -34,19 +34,18 @@ All agents, regardless of which AI tool powers them, follow this unified workflo
 
 ### Phase 2: Plan
 
-**Goal:** Break the task into manageable steps with clear ownership and dependencies.
+**Goal:** Break the task into manageable steps with clear dependencies.
 
 **Agent Actions:**
 1. Decompose the task into discrete, actionable steps
 2. Identify dependencies between steps
-3. Assign owners to each step (agent roles or "self")
-4. Define acceptance criteria for each step
-5. Output the plan in the standard YAML format (see `agent/schemas/plan-schema.yaml`)
-6. Save the plan to the `work/plans/` directory with the following filename: `<date>-<plan-name>.yaml`
+3. Define acceptance criteria for each step
+4. Output the plan in the standard YAML format (see `agent/schemas/plan-schema.yaml`)
+5. Save the plan to the `work/plans/` directory with the following filename: `<date>-<plan-name>.yaml`
 
 **Expected Outputs:**
 - A `<date><plan-name>.yaml` file following the plan schema in the plans directory
-- Steps with: id, description, owner, deps, status, criteria
+- Steps with: id, description, deps, status, criteria
 
 **Completion Criteria:**
 - Plan covers all aspects of the task
@@ -298,7 +297,8 @@ Orchestrator settings are in `agent/scripts/config/orchestrator.config.js`:
 
 - **paths**: Directories for plans, completed, reports
 - **agents**: Per-agent command configurations (claude, codex, gemini)
-- **defaultAgent**: Which agent to use when step.owner is "self"
+- **defaultAgent**: Which agent to use when failover is disabled
+- **agentPriority**: Priority list of agents to try (with failover)
 - **concurrency**: Max parallel agents, poll interval
 - **retry**: Retry policy for failed steps
 

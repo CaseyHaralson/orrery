@@ -2,7 +2,7 @@
 name: plan
 description: >
   Decompose a project request into a step-by-step implementation plan
-  with dependencies, owners, and acceptance criteria. This is Phase 2
+  with dependencies and acceptance criteria. This is Phase 2
   of the workflow protocol.
 metadata:
   version: "1.0"
@@ -50,21 +50,14 @@ Determine which items depend on others:
 - What can be done in parallel?
 - What blocks other work?
 
-### Step 3: Assign Owners
-
-For each step, decide who handles it:
-- `self` - you'll do it
-- Role names like `Backend-Agent`, `Frontend-Agent` for delegation
-- `Coordinator` for orchestration steps
-
-### Step 4: Define Acceptance Criteria
+### Step 3: Define Acceptance Criteria
 
 Each step needs clear "done" conditions:
 - Be specific and verifiable
 - Include test requirements where applicable
 - Avoid vague criteria like "works correctly"
 
-### Step 5: Output the Plan
+### Step 4: Output the Plan
 
 Write the plan in YAML format following `agent/schemas/plan-schema.yaml`.
 
@@ -77,7 +70,7 @@ Write the plan in YAML format following `agent/schemas/plan-schema.yaml`.
 
 The directory will be created automatically if it doesn't exist.
 
-### Step 6: Validate the Plan
+### Step 5: Validate the Plan
 
 Plan files are **automatically validated** via a PostToolUse hook when written to `work/plans/`. If the YAML is invalid, you'll see an error message with details on how to fix it.
 
@@ -95,7 +88,6 @@ This catches common issues like unquoted colons before they cause orchestrator f
 Each step requires:
 - `id` - unique identifier (string)
 - `description` - what to do (natural language)
-- `owner` - who does it
 
 Optional but recommended:
 - `status` - `pending`, `in_progress`, `complete`, `blocked` (default: `pending`)
@@ -126,7 +118,6 @@ metadata:
 steps:
   - id: "1"
     description: "Create database migration for CSV metadata storage"
-    owner: "self"
     status: "pending"
     deps: []
     criteria: "Migration runs successfully, creates csv_uploads table"
@@ -136,7 +127,6 @@ steps:
 
   - id: "2"
     description: "Implement backend API endpoint for CSV upload"
-    owner: "self"
     status: "pending"
     deps: ["1"]
     criteria: "POST /api/upload accepts CSV, returns stats (count, mean, median)"
@@ -148,7 +138,6 @@ steps:
 
   - id: "3"
     description: "Build frontend upload component"
-    owner: "self"
     status: "pending"
     deps: ["2"]
     criteria: "User can select file, see upload progress, view returned stats"
@@ -158,7 +147,6 @@ steps:
 
   - id: "4"
     description: "Add integration tests for upload flow"
-    owner: "self"
     status: "pending"
     deps: ["2", "3"]
     criteria: "E2E test passes: upload sample CSV, verify stats displayed"
@@ -190,28 +178,6 @@ Good: "POST /api/upload returns 200 with {count, mean, median} for valid CSV"
 ### Plan for Verification
 
 Include test steps in your plan. Don't assume verification will "just happen."
-
----
-
-## Multi-Agent Plans
-
-When delegating to different agents:
-
-```yaml
-steps:
-  - id: "1"
-    description: "Design API schema"
-    owner: "API-Agent"
-    # ...
-
-  - id: "2"
-    description: "Implement frontend components"
-    owner: "UI-Agent"
-    deps: ["1"]  # UI waits for API design
-    # ...
-```
-
-The Coordinator will dispatch steps to appropriate agents based on `owner`.
 
 ---
 

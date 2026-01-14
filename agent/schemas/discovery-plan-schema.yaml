@@ -48,7 +48,6 @@ definitions:
     required:
       - id
       - description
-      - owner
       - context
       - requirements
       - criteria
@@ -60,10 +59,6 @@ definitions:
       description:
         type: string
         description: Concise summary of what this step accomplishes
-
-      owner:
-        type: string
-        description: Agent or role responsible for this step
 
       status:
         type: string

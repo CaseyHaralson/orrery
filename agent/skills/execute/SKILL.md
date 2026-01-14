@@ -102,7 +102,6 @@ Mark the step complete (or blocked if issues arose):
 ```yaml
 - id: "2"
   description: "Implement backend API endpoint for CSV upload"
-  owner: "self"
   criteria: "POST /api/upload accepts CSV, returns stats"
   files:
     - "src/api/routes/upload.ts"

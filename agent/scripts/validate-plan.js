@@ -18,7 +18,7 @@ const fs = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
 
-const REQUIRED_STEP_FIELDS = ["id", "description", "owner"];
+const REQUIRED_STEP_FIELDS = ["id", "description"];
 const VALID_STATUSES = ["pending", "in_progress", "complete", "blocked"];
 
 function validatePlan(filePath) {

@@ -33,7 +33,7 @@ const {
 } = require("./lib/dependency-resolver");
 
 const {
-  invokeAgent,
+  invokeAgentWithFailover,
   parseAgentResults,
   createDefaultResult,
   waitForAny,
@@ -322,7 +322,6 @@ async function processPlan(planFile, completedDir, reportsDir) {
  * Start steps by marking them in_progress and invoking an agent
  */
 async function startSteps(planFile, stepIds, activeAgents) {
-  const plan = loadPlan(planFile);
   const stepIdsStr = stepIds.join(", ");
   console.log(`Starting step(s): ${stepIdsStr}`);
 
@@ -333,15 +332,8 @@ async function startSteps(planFile, stepIds, activeAgents) {
   }));
   updateStepsStatus(planFile, updates);
 
-  // Determine which agent to use
-  const step = plan.steps.find((s) => s.id === stepIds[0]);
-  const owner = step?.owner || "self";
-  const agentName =
-    owner === "self" ? config.defaultAgent : owner.toLowerCase();
-  const agentConfig = config.agents[agentName] || config.agents[config.defaultAgent];
-
-  // Invoke the agent
-  const handle = invokeAgent(agentConfig, planFile, stepIds, REPO_ROOT, {
+  // Invoke the agent with failover support
+  const handle = invokeAgentWithFailover(config, planFile, stepIds, REPO_ROOT, {
     onStdout: (text, ids) => {
       if (config.logging.streamOutput) {
         const prefix = `[${ids.join(",")}]`;
@@ -359,11 +351,8 @@ async function startSteps(planFile, stepIds, activeAgents) {
         const lines = text.trim().split("\n");
         for (const line of lines) {
           if (line.trim()) {
-            if (agentConfig.stderrIsProgress) {
-              console.log(`${prefix} ${line}`);
-            } else {
-              console.error(`${prefix} ERROR: ${line}`);
-            }
+            // Note: stderrIsProgress is handled per-agent inside failover
+            console.log(`${prefix} ${line}`);
           }
         }
       }

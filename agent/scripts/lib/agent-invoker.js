@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { spawn } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 
 /**
@@ -237,6 +238,249 @@ function createDefaultResult(stepId, exitCode, stderr) {
 }
 
 /**
+ * Check if an error condition should trigger failover to another agent
+ * @param {Object} result - Process result with exitCode, stdout, stderr
+ * @param {Error} spawnError - Error from spawn (if any)
+ * @param {boolean} timedOut - Whether the process timed out
+ * @param {Object} errorPatterns - Regex patterns for error detection
+ * @returns {{shouldFailover: boolean, reason: string}}
+ */
+function shouldTriggerFailover(result, spawnError, timedOut, errorPatterns) {
+  // 1. Spawn failures (command not found, ENOENT)
+  if (spawnError) {
+    if (spawnError.code === "ENOENT") {
+      return { shouldFailover: true, reason: "command_not_found" };
+    }
+    return { shouldFailover: true, reason: "spawn_error" };
+  }
+
+  // 2. Timeout
+  if (timedOut) {
+    return { shouldFailover: true, reason: "timeout" };
+  }
+
+  // 3. Non-zero exit with error patterns in stderr (but NOT legitimate blocked)
+  if (result && result.exitCode !== 0) {
+    const stderr = result.stderr || "";
+
+    // Check API error patterns
+    for (const pattern of errorPatterns.apiError || []) {
+      if (pattern.test(stderr)) {
+        return { shouldFailover: true, reason: "api_error" };
+      }
+    }
+
+    // Check token limit patterns
+    for (const pattern of errorPatterns.tokenLimit || []) {
+      if (pattern.test(stderr)) {
+        return { shouldFailover: true, reason: "token_limit" };
+      }
+    }
+  }
+
+  return { shouldFailover: false, reason: null };
+}
+
+/**
+ * Log a timeout event to the configured log file
+ * @param {Object} config - Orchestrator config
+ * @param {string} planFile - Path to plan file
+ * @param {string[]} stepIds - Step IDs that timed out
+ * @param {string} agentName - Name of the agent that timed out
+ * @param {string} repoRoot - Repository root path
+ */
+function logTimeout(config, planFile, stepIds, agentName, repoRoot) {
+  const logFile = config.logging?.timeoutLogFile;
+  if (!logFile) return;
+
+  const logPath = path.join(repoRoot, logFile);
+
+  // Ensure directory exists
+  const logDir = path.dirname(logPath);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  const entry = {
+    timestamp: new Date().toISOString(),
+    planFile: path.basename(planFile),
+    stepIds,
+    agent: agentName,
+    timeoutMs: config.failover?.timeoutMs,
+  };
+
+  const line = JSON.stringify(entry) + "\n";
+  fs.appendFileSync(logPath, line, "utf8");
+}
+
+/**
+ * Invoke an agent with a timeout
+ * @param {Object} agentConfig - Agent configuration
+ * @param {string} planFile - Path to plan file
+ * @param {string[]} stepIds - Step IDs to execute
+ * @param {string} repoRoot - Repository root path
+ * @param {number} timeoutMs - Timeout in milliseconds
+ * @param {Object} options - Options including callbacks
+ * @returns {Promise<Object>} - Result with timedOut flag
+ */
+async function invokeAgentWithTimeout(
+  agentConfig,
+  planFile,
+  stepIds,
+  repoRoot,
+  timeoutMs,
+  options
+) {
+  const handle = invokeAgent(agentConfig, planFile, stepIds, repoRoot, options);
+
+  if (!timeoutMs || timeoutMs <= 0) {
+    const result = await handle.completion;
+    return { ...result, timedOut: false };
+  }
+
+  // Race between completion and timeout
+  let timer;
+  const timeoutPromise = new Promise((resolve) => {
+    timer = setTimeout(() => {
+      handle.kill();
+      resolve({
+        timedOut: true,
+        stepIds,
+        exitCode: null,
+        stdout: "",
+        stderr: "Process timed out",
+      });
+    }, timeoutMs);
+  });
+
+  try {
+    const result = await Promise.race([
+      handle.completion.then((r) => ({ ...r, timedOut: false })),
+      timeoutPromise,
+    ]);
+    return result;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Invoke an agent with automatic failover to next agent on infrastructure failures
+ * @param {Object} config - Full orchestrator config
+ * @param {string} planFile - Path to plan file
+ * @param {string[]} stepIds - Step IDs to execute
+ * @param {string} repoRoot - Repository root path
+ * @param {Object} options - Options including callbacks
+ * @returns {Object} - Handle with completion promise
+ */
+function invokeAgentWithFailover(config, planFile, stepIds, repoRoot, options = {}) {
+  const failoverConfig = config.failover || { enabled: false };
+
+  // If failover is disabled, use default agent directly
+  if (!failoverConfig.enabled) {
+    const agentConfig =
+      config.agents[config.defaultAgent] ||
+      Object.values(config.agents)[0];
+    return invokeAgent(agentConfig, planFile, stepIds, repoRoot, options);
+  }
+
+  const agentPriority = config.agentPriority || [config.defaultAgent];
+
+  // Filter to only configured agents
+  const availableAgents = agentPriority.filter((name) => config.agents[name]);
+
+  if (availableAgents.length === 0) {
+    throw new Error("No agents configured");
+  }
+
+  let cancelled = false;
+  let currentHandle = null;
+
+  const completion = (async () => {
+    let lastResult = null;
+    let lastError = null;
+
+    for (let i = 0; i < availableAgents.length; i++) {
+      if (cancelled) break;
+
+      const agentName = availableAgents[i];
+      const agentConfig = config.agents[agentName];
+
+      console.log(
+        `[failover] Trying agent: ${agentName} (${i + 1}/${availableAgents.length})`
+      );
+
+      try {
+        // Invoke with timeout wrapper
+        const result = await invokeAgentWithTimeout(
+          agentConfig,
+          planFile,
+          stepIds,
+          repoRoot,
+          failoverConfig.timeoutMs,
+          options
+        );
+
+        // Check if we should failover
+        const { shouldFailover, reason } = shouldTriggerFailover(
+          result,
+          null,
+          result.timedOut,
+          failoverConfig.errorPatterns || {}
+        );
+
+        if (shouldFailover && i < availableAgents.length - 1) {
+          console.log(
+            `[failover] Agent ${agentName} failed (${reason}), trying next agent`
+          );
+          lastResult = result;
+
+          if (reason === "timeout") {
+            logTimeout(config, planFile, stepIds, agentName, repoRoot);
+          }
+          continue;
+        }
+
+        // Either succeeded or no more agents to try
+        return result;
+      } catch (spawnError) {
+        const { shouldFailover, reason } = shouldTriggerFailover(
+          null,
+          spawnError,
+          false,
+          failoverConfig.errorPatterns || {}
+        );
+
+        if (shouldFailover && i < availableAgents.length - 1) {
+          console.log(
+            `[failover] Agent ${agentName} spawn failed (${reason}), trying next agent`
+          );
+          lastError = spawnError;
+          continue;
+        }
+
+        // No more agents, rethrow
+        throw spawnError;
+      }
+    }
+
+    // All agents exhausted
+    if (lastResult) return lastResult;
+    if (lastError) throw lastError;
+  })();
+
+  return {
+    process: null, // Not directly accessible with failover
+    completion,
+    stepIds,
+    kill: () => {
+      cancelled = true;
+      if (currentHandle) currentHandle.kill();
+    },
+  };
+}
+
+/**
  * Wait for multiple agent processes to complete
  * @param {Array<Object>} agentHandles - Array of handles from invokeAgent
  * @returns {Promise<Array>} - Array of completion results
@@ -260,6 +504,7 @@ async function waitForAny(agentHandles) {
 
 module.exports = {
   invokeAgent,
+  invokeAgentWithFailover,
   parseAgentResults,
   createDefaultResult,
   waitForAll,

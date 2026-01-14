@@ -142,7 +142,6 @@ metadata:
 steps:
   - id: "feature-1"
     description: "Implement trend visualization component"
-    owner: "Frontend-Agent"
     status: "pending"
     deps: ["feature-2"]
     context: |
@@ -169,7 +168,6 @@ steps:
 
   - id: "feature-2"
     description: "Create trends API endpoint"
-    owner: "Backend-Agent"
     status: "pending"
     deps: []
     context: |
