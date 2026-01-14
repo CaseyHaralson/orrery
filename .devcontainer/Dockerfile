@@ -25,9 +25,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   vim \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Ensure default node user has access to /usr/local/share
+# Create vscode user (handle case where GID/UID 1000 already exists from base image)
+RUN if getent group 1000 > /dev/null; then \
+      groupmod -n vscode $(getent group 1000 | cut -d: -f1); \
+    else \
+      groupadd --gid 1000 vscode; \
+    fi && \
+    if getent passwd 1000 > /dev/null; then \
+      usermod -l vscode -d /home/vscode -m -s /bin/zsh $(getent passwd 1000 | cut -d: -f1); \
+    else \
+      useradd --uid 1000 --gid vscode --shell /bin/zsh --create-home vscode; \
+    fi && \
+    echo "vscode ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/vscode && \
+    chmod 0440 /etc/sudoers.d/vscode
+
+# Ensure vscode user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
-  chown -R node:node /usr/local/share
+  chown -R vscode:vscode /usr/local/share
 
 ARG USERNAME=vscode
 
@@ -84,10 +98,10 @@ ARG GEMINI_VERSION=latest
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
 # Install Codex
-RUN npm install -g @openai/codex@${CLAUDE_CODE_VERSION}
+RUN npm install -g @openai/codex@${CODEX_VERSION}
 
 # Install Gemini
-RUN npm install -g @google/gemini-cli@${CLAUDE_CODE_VERSION}
+RUN npm install -g @google/gemini-cli@${GEMINI_VERSION}
 
 
 # Copy and set up firewall script
