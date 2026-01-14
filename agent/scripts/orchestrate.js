@@ -359,7 +359,11 @@ async function startSteps(planFile, stepIds, activeAgents) {
         const lines = text.trim().split("\n");
         for (const line of lines) {
           if (line.trim()) {
-            console.error(`${prefix} ERROR: ${line}`);
+            if (agentConfig.stderrIsProgress) {
+              console.log(`${prefix} ${line}`);
+            } else {
+              console.error(`${prefix} ERROR: ${line}`);
+            }
           }
         }
       }

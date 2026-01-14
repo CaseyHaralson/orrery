@@ -38,11 +38,30 @@ module.exports = {
           "Do not modify the plan file. Report results via stdout JSON only.",
       ],
     },
+    codex: {
+      command: "codex",
+      args: [
+        "exec",
+        "--yolo",
+        "You are a Worker Agent. Execute the following steps from the plan.\n\n" +
+          "Plan file: {planFile}\n" +
+          "Steps to execute: {stepIds}\n\n" +
+          "Instructions:\n" +
+          "1. Read the plan file to understand the step requirements\n" +
+          "2. Load the execute, verify, and report skills from agent/skills/\n" +
+          "3. For each step:\n" +
+          "   - Implement the changes following the step requirements\n" +
+          "   - Verify the work meets the acceptance criteria\n" +
+          "4. Output your results as JSON to stdout in this format:\n" +
+          '   {"stepId": "<id>", "status": "complete", "summary": "...", "artifacts": [...]}\n' +
+          "   or if blocked:\n" +
+          '   {"stepId": "<id>", "status": "blocked", "blockedReason": "..."}\n\n' +
+          "Do not modify the plan file. Report results via stdout JSON only.",
+      ],
+      // Codex writes progress to stderr and final result to stdout
+      stderrIsProgress: true,
+    },
     // Future agent configurations:
-    // codex: {
-    //   command: "codex",
-    //   args: [...]
-    // },
     // gemini: {
     //   command: "gemini",
     //   args: [...]
@@ -50,7 +69,7 @@ module.exports = {
   },
 
   // Default agent to use when step.owner is "self" or unspecified
-  defaultAgent: "claude",
+  defaultAgent: "codex",
 
   // Concurrency control
   concurrency: {
