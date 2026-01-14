@@ -378,10 +378,14 @@ function invokeAgentWithFailover(config, planFile, stepIds, repoRoot, options = 
 
   // If failover is disabled, use default agent directly
   if (!failoverConfig.enabled) {
-    const agentConfig =
-      config.agents[config.defaultAgent] ||
-      Object.values(config.agents)[0];
-    return invokeAgent(agentConfig, planFile, stepIds, repoRoot, options);
+    const agentName = config.defaultAgent || Object.keys(config.agents)[0];
+    const agentConfig = config.agents[agentName];
+    const handle = invokeAgent(agentConfig, planFile, stepIds, repoRoot, options);
+    // Wrap completion to include agentName
+    return {
+      ...handle,
+      completion: handle.completion.then((result) => ({ ...result, agentName })),
+    };
   }
 
   const agentPriority = config.agentPriority || [config.defaultAgent];
@@ -442,7 +446,7 @@ function invokeAgentWithFailover(config, planFile, stepIds, repoRoot, options = 
         }
 
         // Either succeeded or no more agents to try
-        return result;
+        return { ...result, agentName };
       } catch (spawnError) {
         const { shouldFailover, reason } = shouldTriggerFailover(
           null,

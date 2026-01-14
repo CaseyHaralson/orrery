@@ -375,8 +375,9 @@ async function waitForAgentCompletion(planFile, activeAgents, reportsDir) {
   // Remove completed agent from active list
   activeAgents.splice(index, 1);
 
+  const agentName = result.agentName || "unknown";
   console.log(
-    `Agent for step(s) ${stepIds.join(", ")} exited with code ${result.exitCode}`
+    `Agent ${agentName} for step(s) ${stepIds.join(", ")} exited with code ${result.exitCode}`
   );
 
   // Parse results from stdout
@@ -393,19 +394,21 @@ async function waitForAgentCompletion(planFile, activeAgents, reportsDir) {
       stepResult = createDefaultResult(stepId, result.exitCode, result.stderr);
     }
 
-    // Prepare plan update
+    // Prepare plan update (include agent name)
     const update = {
       stepId,
       status: stepResult.status,
+      extras: { agent: agentName },
     };
     if (stepResult.status === "blocked" && stepResult.blockedReason) {
-      update.extras = { blocked_reason: stepResult.blockedReason };
+      update.extras.blocked_reason = stepResult.blockedReason;
     }
     updates.push(update);
 
     // Prepare report
     reports.push({
       step_id: stepId,
+      agent: agentName,
       outcome: stepResult.status === "complete" ? "success" : "failure",
       details: stepResult.summary || "",
       timestamp: new Date().toISOString(),
