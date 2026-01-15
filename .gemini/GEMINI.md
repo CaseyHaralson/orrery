@@ -6,7 +6,7 @@ This configuration enables Gemini to operate in two modes based on the Agent Wor
 
 Gemini automatically detects which mode to operate in based on the input context:
 
-- **Planning Mode** (Intake → Plan): Activated when receiving a new task or user request without an existing plan reference
+- **Planning Mode** (Discovery): Activated when receiving a new task or user request without an existing plan reference
 - **Worker Mode** (Execute → Verify → Report): Activated when invoked with a plan file path and step ID(s) to execute
 
 ## Planning Mode
@@ -14,9 +14,8 @@ Gemini automatically detects which mode to operate in based on the input context
 **When to Use**: New task requests, feature implementations, bug fixes without an existing plan.
 
 **Process:**
-1. Use the `/intake` skill to understand the request and gather context
-2. Use the `/plan` skill to decompose the task into steps
-3. **STOP** after saving the plan to `work/plans/` - do not proceed to execution
+1. Use the `/discovery` skill to turn the request into an orchestrator-ready plan
+2. **STOP** after saving the plan to `work/plans/` - do not proceed to execution
 
 ## Worker Mode
 

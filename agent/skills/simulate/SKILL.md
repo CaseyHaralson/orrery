@@ -23,9 +23,9 @@ Use this skill when you have a plan and want to **think through it** before exec
 - "Walk me through this plan"
 
 **Skip if:**
-- No plan exists yet (use Discovery or Plan first)
+- No plan exists yet (use Discovery first)
 - Ready to execute and confident in the approach
-- Need to actually modify the plan (use Plan skill instead)
+- Need to actually modify the plan (use Discovery skill instead)
 
 ---
 
@@ -59,7 +59,7 @@ For each question:
 
 Never modify the plan file. If the user wants to make changes based on the simulation:
 - Summarize the proposed changes
-- Suggest exiting simulate and using the Plan skill to revise
+- Suggest exiting simulate and using the Discovery skill to revise
 - Offer to continue exploring other aspects first
 
 ---
@@ -215,7 +215,7 @@ Want me to trace what happens if step 2 takes longer than expected?
 
 ### Read-Only
 
-Simulate never modifies the plan. The plan file is treated as immutable during simulation. If changes are needed, the user should exit and use the Plan skill.
+Simulate never modifies the plan. The plan file is treated as immutable during simulation. If changes are needed, the user should exit and use the Discovery skill.
 
 ### Plan-Scoped
 

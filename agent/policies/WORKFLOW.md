@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the canonical 5-phase workflow protocol that all coding AI agents must follow when working on tasks: **Intake → Plan → Execute → Verify → Report**.
+This document defines the canonical 4-phase workflow protocol that all coding AI agents must follow when working on tasks: **Discovery → Execute → Verify → Report**.
 
 All agents, regardless of which AI tool powers them, follow this unified workflow. This ensures consistency, enables agent-to-agent handoff, and provides clear checkpoints for quality control.
 
@@ -10,40 +10,21 @@ All agents, regardless of which AI tool powers them, follow this unified workflo
 
 ## Workflow Phases
 
-### Phase 1: Intake
+### Phase 1: Discovery
 
-**Goal:** Fully understand the request before proceeding. Gather context and clarify ambiguities.
+**Goal:** Turn the request into an orchestrator-ready plan with clear scope and acceptance criteria.
 
 **Agent Actions:**
 1. Summarize the user's request in your own words
-2. Identify any missing details or ambiguous requirements
-3. Ask clarifying questions if needed (don't assume)
-4. Search the codebase for related files, existing patterns, or similar features
-5. Confirm the final understood requirements
+2. Identify ambiguities or missing details and clarify them
+3. Search the codebase for related files, existing patterns, or similar features
+4. Decompose the work into outcomes → capabilities → features → implementation steps
+5. Define acceptance criteria for each step
+6. Output the plan in the standard YAML format (see `agent/schemas/plan-schema.yaml`)
+7. Save the plan to the `.agent-work/plans/` directory with the following filename: `<date>-<plan-name>.yaml`
 
 **Expected Outputs:**
 - A refined task description or problem statement
-- Any assumptions made (documented)
-- Relevant context gathered from the codebase
-
-**Completion Criteria:**
-- Requirements are clear enough to create a concrete plan
-- User has confirmed understanding (if interactive)
-
----
-
-### Phase 2: Plan
-
-**Goal:** Break the task into manageable steps with clear dependencies.
-
-**Agent Actions:**
-1. Decompose the task into discrete, actionable steps
-2. Identify dependencies between steps
-3. Define acceptance criteria for each step
-4. Output the plan in the standard YAML format (see `agent/schemas/plan-schema.yaml`)
-5. Save the plan to the `.agent-work/plans/` directory with the following filename: `<date>-<plan-name>.yaml`
-
-**Expected Outputs:**
 - A `<date><plan-name>.yaml` file following the plan schema in the plans directory
 - Steps with: id, description, deps, status, criteria
 
@@ -56,7 +37,7 @@ All agents, regardless of which AI tool powers them, follow this unified workflo
 
 ---
 
-### Phase 3: Execute
+### Phase 2: Execute
 
 **Goal:** Implement the plan steps—write code, make changes, create files.
 
@@ -94,7 +75,7 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
 
 ---
 
-### Phase 4: Verify
+### Phase 3: Verify
 
 **Goal:** Validate that changes meet acceptance criteria and nothing is broken.
 
@@ -120,7 +101,7 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
 
 ---
 
-### Phase 5: Report
+### Phase 4: Report
 
 **Goal:** Summarize results clearly for the user or for handoff.
 
@@ -234,10 +215,10 @@ For automated execution of plans, an orchestration system coordinates worker age
 
 ### Workflow Split
 
-The 5-phase workflow can be split into two modes:
+The 4-phase workflow can be split into two modes:
 
-1. **Planning Mode** (Intake → Plan)
-   - Human or agent creates a plan through intake and planning phases
+1. **Planning Mode** (Discovery)
+   - Human or agent creates a plan through the discovery phase
    - Plan is saved to `.agent-work/plans/` directory
    - Execution stops after plan creation
 
@@ -248,18 +229,18 @@ The 5-phase workflow can be split into two modes:
 
 ### Discovery: Big Ideas → Orchestrator-Ready Plans
 
-For larger projects that span multiple features, use the **Discovery skill** (Phase 0) instead of Intake → Plan:
+Discovery is the planning entry point for all work, from small tasks to multi-feature initiatives:
 
 ```
 Discovery Workflow:
 IDEA → OUTCOMES → CAPABILITIES → FEATURES → IMPLEMENTATION STEPS
 ```
 
-Discovery produces **orchestrator-ready plans** directly—no separate Plan phase needed. Each feature is decomposed into 2-5 concrete implementation steps that agents can execute autonomously.
+Discovery produces **orchestrator-ready plans** directly—no separate planning phase needed. Each feature is decomposed into 2-5 concrete implementation steps that agents can execute autonomously.
 
-**When to use Discovery vs Intake:**
-- **Discovery**: Big ideas, multi-feature projects, unclear scope
-- **Intake → Plan**: Single features, well-scoped tasks
+**When to use Discovery:**
+- **Large initiatives**: Full decomposition ladder and explicit dependencies
+- **Small tasks**: Same workflow, but keep steps concise and focused
 
 See `agent/skills/discovery/SKILL.md` for full instructions.
 
