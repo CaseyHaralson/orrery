@@ -1,6 +1,6 @@
 {
   "name": "orrery",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Agent skill management and workflow orchestration",
   "bin": {
     "orrery": "./bin/orrery.js"
