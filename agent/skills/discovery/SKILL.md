@@ -157,7 +157,7 @@ Generate an orchestrator-ready plan file with implementation steps.
 Each step must be **self-contained** - an agent should be able to execute
 it without asking questions.
 
-Use the schema defined in `./schemas/discovery-plan-schema.yaml`.
+Use the schema defined in `./schemas/plan-schema.yaml`.
 
 ### Validate the Plan
 
@@ -165,7 +165,7 @@ Plans are automatically validated via the PostToolUse hook when written.
 For manual validation, run:
 
 ```bash
-node agent/scripts/validate-plan.js work/plans/<plan>.yaml
+node agent/scripts/validate-plan.js .agent-work/plans/<plan>.yaml
 ```
 
 This catches common YAML issues like unquoted colons.

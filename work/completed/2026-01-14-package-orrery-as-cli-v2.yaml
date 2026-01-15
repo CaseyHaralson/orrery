@@ -19,6 +19,8 @@ metadata:
     - Orchestration runs from any project via npx orrery orchestrate
   source_branch: main
   work_branch: plan/package-orrery-as-cli-v2
+  completed_at: 2026-01-15T13:36:15.775Z
+  outcome: success
 
 steps:
   # ============================================================================
@@ -27,7 +29,7 @@ steps:
 
   - id: "1.1"
     description: "Create bin/orrery.js CLI entry point with commander.js"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -61,10 +63,11 @@ steps:
     risk_notes: |
       Ensure the shebang uses /usr/bin/env node for cross-platform compatibility.
       Test with both global install (npm link) and npx usage.
+    agent: codex
 
   - id: "1.2"
     description: "Create placeholder command modules for subcommands"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
     parallel: false
@@ -88,6 +91,7 @@ steps:
       - lib/cli/commands/status.js
     context_files:
       - bin/orrery.js
+    agent: codex
 
   # ============================================================================
   # Feature 2: Self-Contained Skills with Embedded Schemas
@@ -95,7 +99,7 @@ steps:
 
   - id: "2.1"
     description: "Create unified plan schema and embed in discovery skill"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -127,10 +131,11 @@ steps:
     risk_notes: |
       The validate-plan.js script may need updating to find the schema at the
       new location. Check how it currently locates the schema.
+    agent: codex
 
   - id: "2.2"
     description: "Embed plan schema in execute skill"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.1"
     parallel: true
@@ -149,10 +154,11 @@ steps:
     context_files:
       - agent/skills/execute/SKILL.md
       - agent/schemas/plan-schema.yaml
+    agent: codex
 
   - id: "2.3"
     description: "Embed report schema in report skill"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -171,6 +177,7 @@ steps:
     context_files:
       - agent/schemas/report-schema.yaml
       - agent/skills/report/SKILL.md
+    agent: codex
 
   # ============================================================================
   # Feature 3: Work Directory Configuration (.agent-work/)
@@ -178,7 +185,7 @@ steps:
 
   - id: "3.1"
     description: "Create paths utility module with .agent-work/ as default"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -207,10 +214,11 @@ steps:
     context_files:
       - agent/scripts/orchestrate.js
       - agent/scripts/config/orchestrator.config.js
+    agent: codex
 
   - id: "3.2"
     description: "Update orchestrator to use paths utility"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
     parallel: false
@@ -233,10 +241,11 @@ steps:
     context_files:
       - lib/utils/paths.js
       - agent/scripts/lib/plan-loader.js
+    agent: codex
 
   - id: "3.3"
     description: "Update skill instructions to reference .agent-work/"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
     parallel: true
@@ -279,6 +288,7 @@ steps:
     risk_notes: |
       This is a significant change. Be thorough - any mismatch between skill
       instructions and actual CLI behavior will confuse agents.
+    agent: codex
 
   # ============================================================================
   # Feature 4: Install Skills Command
@@ -286,7 +296,7 @@ steps:
 
   - id: "4.1"
     description: "Create agent detector utility"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -311,10 +321,11 @@ steps:
     risk_notes: |
       Use os.homedir() for cross-platform home directory detection.
       Handle case where home directory doesn't exist (unlikely but possible).
+    agent: codex
 
   - id: "4.2"
     description: "Create skill copier utility"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.1"
     parallel: false
@@ -337,10 +348,11 @@ steps:
       - lib/utils/skill-copier.js
     context_files:
       - agent/scripts/clone-agent-skills.js
+    agent: codex
 
   - id: "4.3"
     description: "Implement install-skills command"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.1"
       - "4.2"
@@ -366,6 +378,7 @@ steps:
     context_files:
       - lib/utils/agent-detector.js
       - lib/utils/skill-copier.js
+    agent: codex
 
   # ============================================================================
   # Feature 5: Orchestrate Command
@@ -373,7 +386,7 @@ steps:
 
   - id: "5.1"
     description: "Implement orchestrate command as CLI wrapper"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.2"
       - "3.2"
@@ -406,6 +419,7 @@ steps:
     risk_notes: |
       The orchestrator spawns agent subprocesses (claude, codex, gemini).
       Ensure errors are handled gracefully when agents are not installed.
+    agent: codex
 
   # ============================================================================
   # Feature 6: Status Command
@@ -413,7 +427,7 @@ steps:
 
   - id: "6.1"
     description: "Implement status command"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.2"
       - "3.1"
@@ -438,6 +452,7 @@ steps:
     risk_notes: |
       Keep this simple. Use chalk or similar for colors, but make sure
       output degrades gracefully in non-TTY environments.
+    agent: codex
 
   # ============================================================================
   # Feature 7: Documentation Update
@@ -445,7 +460,7 @@ steps:
 
   - id: "7.1"
     description: "Update README with CLI installation and usage instructions"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.3"
       - "5.1"
@@ -473,6 +488,7 @@ steps:
     risk_notes: |
       Keep documentation concise. Don't over-document before API is stable.
       Focus on getting started quickly.
+    agent: codex
 
   # ============================================================================
   # Feature 8: Testing and Validation
@@ -480,7 +496,7 @@ steps:
 
   - id: "8.1"
     description: "Add integration tests for CLI commands"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.3"
       - "5.1"
@@ -506,10 +522,11 @@ steps:
     risk_notes: |
       Don't over-test at this stage. Focus on smoke tests that catch
       obvious breakage. Add more tests as the API stabilizes.
+    agent: codex
 
   - id: "8.2"
     description: "Validate npm pack produces valid package"
-    status: "pending"
+    status: "complete"
     deps:
       - "8.1"
     parallel: false
@@ -532,3 +549,4 @@ steps:
       - npm pack
       - npm install -g ./orrery-*.tgz
       - orrery --help
+    agent: codex

@@ -1,0 +1,19 @@
+step_id: "1.1"
+agent: codex
+outcome: success
+details: Added commander-based CLI entry point with bin wiring, subcommand
+  module registration (install-skills, orchestrate, status, help), and
+  version/unknown-command handling; verified `--help`, `--version`, and
+  unknown-command behavior via `node /workspace/bin/orrery.js`.
+timestamp: 2026-01-15T13:28:11.581Z
+artifacts:
+  - bin/orrery.js
+  - lib/cli/index.js
+  - lib/cli/commands/install-skills.js
+  - lib/cli/commands/orchestrate.js
+  - lib/cli/commands/status.js
+  - lib/cli/commands/help.js
+  - package.json
+  - package-lock.json
+blocked_reason: null
+test_results: null
