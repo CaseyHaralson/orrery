@@ -54,6 +54,10 @@ const config = require("./config/orchestrator.config");
 
 const REPO_ROOT = path.join(__dirname, "..", "..");
 
+// CLI argument parsing
+const args = process.argv.slice(2);
+const resumeMode = args.includes("--resume");
+
 /**
  * Main orchestration function
  */
@@ -77,6 +81,12 @@ async function orchestrate() {
   if (hasUncommittedChanges(REPO_ROOT)) {
     console.error("Error: Uncommitted changes detected. Please commit or stash before running orchestrator.");
     process.exit(1);
+  }
+
+  // Resume mode: find and continue the plan for the current branch
+  if (resumeMode) {
+    await handleResumeMode(plansDir, completedDir, reportsDir, sourceBranch);
+    return;
   }
 
   // Get list of completed plan filenames (to exclude)
@@ -136,6 +146,109 @@ async function orchestrate() {
   }
 
   console.log("\n=== Orchestrator Complete ===");
+}
+
+/**
+ * Handle resume mode: find and continue plan for current branch
+ */
+async function handleResumeMode(plansDir, completedDir, reportsDir, currentBranch) {
+  console.log("=== Resume Mode ===\n");
+  console.log(`Looking for plan with work_branch: ${currentBranch}\n`);
+
+  // Get all plan files (including dispatched ones)
+  const completedNames = getCompletedPlanNames(completedDir);
+  const allPlanFiles = getPlanFiles(plansDir).filter(
+    (f) => !completedNames.has(path.basename(f))
+  );
+
+  // Find plan matching current branch
+  let matchingPlanFile = null;
+  let matchingPlan = null;
+
+  for (const planFile of allPlanFiles) {
+    const plan = loadPlan(planFile);
+    if (plan.metadata.work_branch === currentBranch) {
+      matchingPlanFile = planFile;
+      matchingPlan = plan;
+      break;
+    }
+  }
+
+  if (!matchingPlanFile) {
+    console.error(`No plan found with work_branch matching "${currentBranch}"`);
+    console.log("\nTo resume a plan:");
+    console.log("  1. git checkout <work-branch>");
+    console.log("  2. node agent/scripts/orchestrate.js --resume");
+    process.exit(1);
+  }
+
+  const planFileName = path.basename(matchingPlanFile);
+  console.log(`Found plan: ${planFileName}`);
+
+  // Check if plan has pending steps
+  if (matchingPlan.isComplete()) {
+    console.log("\nPlan is already complete (no pending steps).");
+    console.log("Use normal mode to create a PR or archive the plan.");
+    return;
+  }
+
+  const pendingSteps = matchingPlan.steps.filter((s) => s.status === "pending");
+  const inProgressSteps = matchingPlan.steps.filter((s) => s.status === "in_progress");
+  console.log(`Pending steps: ${pendingSteps.length}`);
+  if (inProgressSteps.length > 0) {
+    console.log(`In-progress steps (will be retried): ${inProgressSteps.length}`);
+    // Reset in_progress steps to pending so they get retried
+    for (const step of inProgressSteps) {
+      step.status = "pending";
+    }
+    savePlan(matchingPlan);
+  }
+
+  console.log("\nResuming plan execution...\n");
+
+  // Process the plan (reuse existing processPlan logic)
+  await processPlan(matchingPlanFile, completedDir, reportsDir);
+
+  // Reload and check final state
+  matchingPlan = loadPlan(matchingPlanFile);
+  const isComplete = matchingPlan.isComplete();
+
+  if (isComplete) {
+    // Archive and create PR
+    archivePlan(matchingPlanFile, matchingPlan, completedDir, reportsDir);
+
+    const workCommit = commit(
+      `chore: complete plan ${planFileName}`,
+      [],
+      REPO_ROOT
+    );
+    if (workCommit) {
+      console.log(`Committed plan completion (${workCommit.slice(0, 7)})`);
+    }
+
+    try {
+      const sourceBranch = matchingPlan.metadata.source_branch || "main";
+      const prTitle = `Plan: ${planFileName.replace(/\.ya?ml$/, "").replace(/^\d{4}-\d{2}-\d{2}-/, "")}`;
+      const prBody = generatePRBody(matchingPlan);
+      const prUrl = createPullRequest(prTitle, prBody, sourceBranch, REPO_ROOT);
+      console.log(`\nPull request created: ${prUrl}`);
+    } catch (error) {
+      console.error(`\nFailed to create PR: ${error.message}`);
+      console.log("You can create the PR manually from the work branch.");
+    }
+  } else {
+    const progressCommit = commit(
+      `wip: progress on plan ${planFileName}`,
+      [],
+      REPO_ROOT
+    );
+    if (progressCommit) {
+      console.log(`Committed work-in-progress (${progressCommit.slice(0, 7)})`);
+    }
+    console.log("\nPlan still has pending steps. Run --resume again to continue.");
+  }
+
+  console.log("\n=== Resume Complete ===");
 }
 
 /**
@@ -379,6 +492,17 @@ async function waitForAgentCompletion(planFile, activeAgents, reportsDir) {
   console.log(
     `Agent ${agentName} for step(s) ${stepIds.join(", ")} exited with code ${result.exitCode}`
   );
+
+  // Log failure details for debugging
+  if (result.exitCode !== 0 && result.exitCode !== null) {
+    console.log(`[${agentName}] FAILED (exit ${result.exitCode})`);
+    if (result.stderr) {
+      console.log(`[${agentName}] stderr:\n${result.stderr}`);
+    }
+    if (result.stdout) {
+      console.log(`[${agentName}] stdout:\n${result.stdout}`);
+    }
+  }
 
   // Parse results from stdout
   const parsedResults = parseAgentResults(result.stdout);

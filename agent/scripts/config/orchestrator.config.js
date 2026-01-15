@@ -148,5 +148,7 @@ module.exports = {
     prefixFormat: "step",
     // Log file for timeout events
     timeoutLogFile: "work/reports/timeouts.log",
+    // Log file for failure events (captures stdout/stderr for debugging)
+    failureLogFile: "work/reports/failures.log",
   },
 };

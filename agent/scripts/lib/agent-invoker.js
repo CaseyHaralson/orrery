@@ -314,6 +314,44 @@ function logTimeout(config, planFile, stepIds, agentName, repoRoot) {
 }
 
 /**
+ * Log a failure event to the configured log file
+ * Captures both stdout and stderr since agents may write errors to either stream
+ * @param {Object} config - Orchestrator config
+ * @param {string} planFile - Path to plan file
+ * @param {string[]} stepIds - Step IDs that failed
+ * @param {string} agentName - Name of the agent that failed
+ * @param {number} exitCode - Process exit code
+ * @param {string} stdout - Agent stdout output
+ * @param {string} stderr - Agent stderr output
+ * @param {string} repoRoot - Repository root path
+ */
+function logFailure(config, planFile, stepIds, agentName, exitCode, stdout, stderr, repoRoot) {
+  const logFile = config.logging?.failureLogFile;
+  if (!logFile) return;
+
+  const logPath = path.join(repoRoot, logFile);
+
+  // Ensure directory exists
+  const logDir = path.dirname(logPath);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  const entry = {
+    timestamp: new Date().toISOString(),
+    planFile: path.basename(planFile),
+    stepIds,
+    agent: agentName,
+    exitCode,
+    stdout: stdout || "",
+    stderr: stderr || "",
+  };
+
+  const line = JSON.stringify(entry) + "\n";
+  fs.appendFileSync(logPath, line, "utf8");
+}
+
+/**
  * Invoke an agent with a timeout
  * @param {Object} agentConfig - Agent configuration
  * @param {string} planFile - Path to plan file
@@ -381,10 +419,15 @@ function invokeAgentWithFailover(config, planFile, stepIds, repoRoot, options = 
     const agentName = config.defaultAgent || Object.keys(config.agents)[0];
     const agentConfig = config.agents[agentName];
     const handle = invokeAgent(agentConfig, planFile, stepIds, repoRoot, options);
-    // Wrap completion to include agentName
+    // Wrap completion to include agentName and log failures
     return {
       ...handle,
-      completion: handle.completion.then((result) => ({ ...result, agentName })),
+      completion: handle.completion.then((result) => {
+        if (result.exitCode !== 0 && result.exitCode !== null) {
+          logFailure(config, planFile, stepIds, agentName, result.exitCode, result.stdout, result.stderr, repoRoot);
+        }
+        return { ...result, agentName };
+      }),
     };
   }
 
@@ -424,6 +467,11 @@ function invokeAgentWithFailover(config, planFile, stepIds, repoRoot, options = 
           failoverConfig.timeoutMs,
           options
         );
+
+        // Log failures (non-zero exit) for debugging
+        if (result.exitCode !== 0 && result.exitCode !== null) {
+          logFailure(config, planFile, stepIds, agentName, result.exitCode, result.stdout, result.stderr, repoRoot);
+        }
 
         // Check if we should failover
         const { shouldFailover, reason } = shouldTriggerFailover(
