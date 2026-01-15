@@ -108,7 +108,7 @@ Added CSV upload feature with statistics computation.
 
 ### Structured Report (File Output)
 
-For machine-readable handoff, use `agent/schemas/report-schema.yaml`:
+For machine-readable handoff, use `./schemas/report-schema.yaml`:
 
 ```yaml
 step_id: "all"

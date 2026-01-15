@@ -157,7 +157,7 @@ Only discuss what's in the plan. If asked about implementation details not cover
 ## Example Dialogue
 
 ```
-User: /simulate work/plans/analytics-dashboard.yaml
+User: /simulate .agent-work/plans/analytics-dashboard.yaml
 
 Agent: I've loaded the analytics dashboard plan. It has 6 steps delivering
 two outcomes: "Users can see usage trends" and "Admins can export reports."

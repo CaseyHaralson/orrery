@@ -3,8 +3,8 @@
 /**
  * Plan Orchestrator
  *
- * Scans work/plans/ for YAML plan files, dispatches agents to execute steps,
- * tracks completion, and archives finished plans to work/completed/.
+ * Scans .agent-work/plans/ for YAML plan files, dispatches agents to execute steps,
+ * tracks completion, and archives finished plans to .agent-work/completed/.
  *
  * Branch Management:
  * - Plans are discovered on the source branch (e.g., main)
@@ -51,27 +51,109 @@ const {
 } = require("./lib/git-helpers");
 
 const config = require("./config/orchestrator.config");
+const {
+  getPlansDir,
+  getCompletedDir,
+  getReportsDir,
+} = require("../../lib/utils/paths");
 
 const REPO_ROOT = path.join(__dirname, "..", "..");
 
-// CLI argument parsing
-const args = process.argv.slice(2);
-const resumeMode = args.includes("--resume");
+function parseArgs(argv) {
+  const options = {
+    plan: null,
+    dryRun: false,
+    verbose: false,
+    resume: false,
+  };
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--plan") {
+      options.plan = argv[i + 1];
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("--plan=")) {
+      options.plan = arg.split("=").slice(1).join("=");
+      continue;
+    }
+    if (arg === "--dry-run") {
+      options.dryRun = true;
+      continue;
+    }
+    if (arg === "--verbose") {
+      options.verbose = true;
+      continue;
+    }
+    if (arg === "--resume") {
+      options.resume = true;
+      continue;
+    }
+  }
+
+  return options;
+}
+
+function resolvePlanFile(planArg, plansDir) {
+  if (!planArg) return null;
+
+  const candidates = [];
+  if (path.isAbsolute(planArg)) {
+    candidates.push(planArg);
+  } else {
+    candidates.push(path.resolve(process.cwd(), planArg));
+    candidates.push(path.join(plansDir, planArg));
+  }
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function logDryRunSummary(planFiles) {
+  console.log("Dry run: no changes will be made.");
+  if (planFiles.length === 0) {
+    console.log("No plans to process.");
+    return;
+  }
+
+  console.log(`Plans to process (${planFiles.length}):`);
+  for (const planFile of planFiles) {
+    const plan = loadPlan(planFile);
+    const totalSteps = plan.steps.length;
+    const completed = plan.steps.filter((s) => s.status === "complete").length;
+    const blocked = plan.steps.filter((s) => s.status === "blocked").length;
+    const pending = totalSteps - completed - blocked;
+    console.log(
+      `  - ${path.basename(planFile)} (${pending} pending, ${completed} complete, ${blocked} blocked)`
+    );
+  }
+  console.log();
+}
 
 /**
  * Main orchestration function
  */
-async function orchestrate() {
+async function orchestrate(options = {}) {
+  const normalizedOptions = {
+    plan: options.plan || null,
+    dryRun: Boolean(options.dryRun),
+    verbose: Boolean(options.verbose),
+    resume: Boolean(options.resume),
+  };
+
+  config.logging.streamOutput = normalizedOptions.verbose;
+
   console.log("=== Plan Orchestrator Starting ===\n");
 
-  const plansDir = path.join(REPO_ROOT, config.paths.plans);
-  const completedDir = path.join(REPO_ROOT, config.paths.completed);
-  const reportsDir = path.join(REPO_ROOT, config.paths.reports);
-
-  // Ensure directories exist
-  ensureDir(plansDir);
-  ensureDir(completedDir);
-  ensureDir(reportsDir);
+  const plansDir = getPlansDir();
+  const completedDir = getCompletedDir();
+  const reportsDir = getReportsDir();
 
   // Record the source branch we're starting from
   const sourceBranch = getCurrentBranch(REPO_ROOT);
@@ -84,7 +166,7 @@ async function orchestrate() {
   }
 
   // Resume mode: find and continue the plan for the current branch
-  if (resumeMode) {
+  if (normalizedOptions.resume) {
     await handleResumeMode(plansDir, completedDir, reportsDir, sourceBranch);
     return;
   }
@@ -92,13 +174,28 @@ async function orchestrate() {
   // Get list of completed plan filenames (to exclude)
   const completedNames = getCompletedPlanNames(completedDir);
 
-  // Scan for active plans
-  const allPlanFiles = getPlanFiles(plansDir).filter(
-    (f) => !completedNames.has(path.basename(f))
-  );
+  let planFiles = [];
+  let allPlanFiles = [];
+
+  if (normalizedOptions.plan) {
+    const resolvedPlanFile = resolvePlanFile(normalizedOptions.plan, plansDir);
+    if (!resolvedPlanFile) {
+      console.error(`Plan file not found: ${normalizedOptions.plan}`);
+      process.exit(1);
+    }
+    if (completedNames.has(path.basename(resolvedPlanFile))) {
+      console.log(`Plan already completed: ${path.basename(resolvedPlanFile)}`);
+      return;
+    }
+    allPlanFiles = [resolvedPlanFile];
+  } else {
+    // Scan for active plans
+    allPlanFiles = getPlanFiles(plansDir).filter(
+      (f) => !completedNames.has(path.basename(f))
+    );
+  }
 
   // Filter out plans that are already dispatched (have work_branch set)
-  const planFiles = [];
   const dispatchedPlans = [];
 
   for (const planFile of allPlanFiles) {
@@ -122,8 +219,13 @@ async function orchestrate() {
   }
 
   if (planFiles.length === 0) {
-    console.log(`No new plans to process in ${config.paths.plans}/`);
+    console.log(`No new plans to process in ${path.relative(process.cwd(), plansDir)}/`);
     console.log("Create a plan file without work_branch metadata to get started.");
+    return;
+  }
+
+  if (normalizedOptions.dryRun) {
+    logDryRunSummary(planFiles);
     return;
   }
 
@@ -596,18 +698,10 @@ function archivePlan(planFile, plan, completedDir, reportsDir) {
   console.log(`  -> ${path.relative(REPO_ROOT, destPath)}`);
 }
 
-/**
- * Ensure a directory exists
- */
-function ensureDir(dir) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
 // Run if called directly
 if (require.main === module) {
-  orchestrate().catch((err) => {
+  const cliOptions = parseArgs(process.argv.slice(2));
+  orchestrate(cliOptions).catch((err) => {
     console.error("Orchestrator error:", err);
     process.exit(1);
   });

@@ -15,7 +15,7 @@ Claude automatically detects which mode to operate in based on the input context
 
 **Process:**
 1. Use the `/discovery` skill to turn the request into an orchestrator-ready plan
-2. **STOP** after saving the plan to `work/plans/` - do not proceed to execution
+2. **STOP** after saving the plan to `.agent-work/plans/` - do not proceed to execution
 
 ## Worker Mode
 
@@ -24,7 +24,7 @@ Claude automatically detects which mode to operate in based on the input context
 ### Input Contract
 
 Worker mode expects two inputs:
-- `--plan`: Path to the plan YAML file (e.g., `work/plans/2026-01-11-add-auth.yaml`)
+- `--plan`: Path to the plan YAML file (e.g., `.agent-work/plans/2026-01-11-add-auth.yaml`)
 - `--step`: Step ID to execute (e.g., `step-1`)
 
 ### Plan File Handling

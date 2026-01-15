@@ -2,11 +2,16 @@
   "name": "orrery",
   "version": "1.0.0",
   "description": "Agent skill management and workflow orchestration",
+  "bin": {
+    "orrery": "./bin/orrery.js"
+  },
   "scripts": {
     "clone-agent-skills": "node agent/scripts/clone-agent-skills.js",
-    "do-work": "node agent/scripts/orchestrate.js"
+    "do-work": "node agent/scripts/orchestrate.js",
+    "test": "node --test"
   },
   "dependencies": {
+    "commander": "^11.1.0",
     "yaml": "^2.8.2"
   }
 }

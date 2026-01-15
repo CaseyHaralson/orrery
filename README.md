@@ -81,25 +81,25 @@ Create a plan file through Discovery, then stop:
 
 ```bash
 # Use an agent to create a plan
-claude -p "Run discovery. Create a plan file in work/plans/ for: <your task>"
+claude -p "Run discovery. Create a plan file in .agent-work/plans/ for: <your task>"
 ```
 
-Plans are saved to `work/plans/` with the format `YYYY-MM-DD-plan-name.yaml`.
+Plans are saved to `.agent-work/plans/` with the format `YYYY-MM-DD-plan-name.yaml`.
 
 ### Orchestration Mode (Execute → Verify → Report)
 
 Run the orchestrator to execute pending plans:
 
 ```bash
-npm run orchestrate
+orrery orchestrate
 ```
 
 The orchestrator will:
-1. Scan `work/plans/` for YAML plan files
+1. Scan `.agent-work/plans/` for YAML plan files
 2. Identify steps ready to execute (pending with dependencies satisfied)
 3. Spawn agent subprocesses to execute steps (supports parallel execution)
 4. Update plan statuses and write reports
-5. Move completed plans to `work/completed/`
+5. Move completed plans to `.agent-work/completed/`
 
 ### Configuration
 
@@ -130,22 +130,98 @@ orrery/
 │       ├── clone-agent-skills.js
 │       ├── lib/                 # Orchestrator modules
 │       └── config/              # Orchestrator configuration
-├── work/
-│   ├── plans/                   # Active plan files
-│   ├── completed/               # Archived completed plans
-│   └── reports/                 # Step execution reports
 └── package.json
+```
+
+Projects that use orrery will have a `.agent-work/` folder created in the
+project root:
+
+```
+.agent-work/
+├── plans/                       # Active plan files
+├── completed/                   # Archived completed plans
+└── reports/                     # Step execution reports
+```
+
+## Installation
+
+Global install:
+
+```bash
+npm install -g orrery
+```
+
+No global install (one-off usage):
+
+```bash
+npx orrery --help
 ```
 
 ## Quick Start
 
 ```bash
-# Install dependencies
-npm install
+# 1) Install skills into your agent directories
+orrery install-skills
 
-# Clone skills to agent-specific directories
-npm run clone-agent-skills
+# 2) Ask an agent to create a plan in .agent-work/plans/
+claude -p "Run discovery. Create a plan file in .agent-work/plans/ for: <your task>"
 
-# Run the orchestrator (processes plans in work/plans/)
-npm run orchestrate
+# 3) Run the orchestrator in your project
+orrery orchestrate
+```
+
+## Skill Installation Model
+
+`orrery install-skills` copies the built-in skill instructions from this package
+into each installed agent's skills directory:
+
+- Claude: `~/.claude/skills/`
+- Codex: `~/.codex/skills/`
+- Gemini: `~/.gemini/skills/`
+
+This keeps skills self-contained and lets agents use them without the project
+needing to know about orrery.
+
+## CLI Usage
+
+Install skills (auto-detect agents):
+
+```bash
+orrery install-skills
+```
+
+Install skills for a specific agent:
+
+```bash
+orrery install-skills --agent claude
+```
+
+Preview what would be copied:
+
+```bash
+orrery install-skills --dry-run
+```
+
+Run orchestration for all plans:
+
+```bash
+orrery orchestrate
+```
+
+Run a specific plan:
+
+```bash
+orrery orchestrate --plan .agent-work/plans/2026-01-14-some-plan.yaml
+```
+
+Check plan status:
+
+```bash
+orrery status
+```
+
+Show details for a single plan:
+
+```bash
+orrery status --plan .agent-work/plans/2026-01-14-some-plan.yaml
 ```
