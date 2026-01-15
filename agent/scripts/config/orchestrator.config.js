@@ -90,7 +90,7 @@ module.exports = {
   defaultAgent: "codex",
 
   // Agent priority list for failover (tried in order)
-  agentPriority: ["claude", "codex", "gemini"],
+  agentPriority: ["codex", "gemini", "claude"],
 
   // Failover configuration
   failover: {
