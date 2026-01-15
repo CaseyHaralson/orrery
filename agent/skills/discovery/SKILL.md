@@ -29,7 +29,7 @@ Use this skill when the request is **larger than a single feature**. Discovery t
 
 ## The Decomposition Ladder
 
-Discovery works top-down through four levels:
+Discovery works top-down through five levels:
 
 ```
 IDEA        "We need better analytics"
@@ -40,10 +40,11 @@ CAPABILITIES "Trend visualization; Data aggregation; Export service"
    ↓
 FEATURES    "Line chart component; Daily rollup job; CSV export endpoint"
    ↓
-(hand off to Plan phase for implementation steps)
+STEPS       "1.1 Create chart component; 1.2 Add API route; 1.3 Wire up data"
 ```
 
 Each level must be concrete enough that the next level can be derived.
+The final output is an **orchestrator-ready plan** with implementation steps.
 
 ---
 
@@ -108,21 +109,49 @@ This is critical for "fire and forget" plans. For each feature:
 4. **Note risks** - what could go wrong?
 5. **List input files** - what must an agent read to understand context?
 
-### Step 6: Validate with User
+### Step 6: Decompose Features into Implementation Steps
+
+Each feature becomes 2-5 concrete implementation steps. This is what makes the plan orchestrator-ready.
+
+For each feature, ask:
+- "What are the individual pieces of work?"
+- "What order must they happen in?"
+- "Can any run in parallel?"
+
+**Step characteristics:**
+- **Scoped** - completable in a single focused session
+- **Specific files** - lists exactly which files to create/modify
+- **Testable** - has clear acceptance criteria
+- **Self-contained** - an agent can execute without asking questions
+
+**Naming convention:**
+- Use `{feature-number}.{step-number}` format: `1.1`, `1.2`, `2.1`, etc.
+- Group related steps by feature for readability
+
+**Example decomposition:**
+```
+Feature: "Line chart component"
+  → Step 1.1: Create TrendChart.tsx with basic Chart.js setup
+  → Step 1.2: Add time range toggle (7d/30d/90d)
+  → Step 1.3: Connect to trends API endpoint
+  → Step 1.4: Add loading state and error handling
+```
+
+### Step 7: Validate with User
 
 Before producing the plan:
-- Present the feature breakdown
+- Present the step breakdown (not just features)
 - Confirm priorities and ordering
 - Resolve any remaining ambiguities
 - Get explicit sign-off that this captures the intent
 
-### Step 7: Output the Plan
+### Step 8: Output the Plan
 
-Generate a plan file where each feature becomes one or more steps.
+Generate an orchestrator-ready plan file with implementation steps.
 Each step must be **self-contained** - an agent should be able to execute
 it without asking questions.
 
-Use the schema defined in `agent/schemas/discovery-plan-schema.yaml`.
+Use the schema defined in `./schemas/discovery-plan-schema.yaml`.
 
 ---
 
@@ -140,55 +169,119 @@ metadata:
     - "Admins can export reports for stakeholders"
 
 steps:
-  - id: "feature-1"
-    description: "Implement trend visualization component"
+  # ============================================================================
+  # Feature 1: Trends API Endpoint
+  # ============================================================================
+
+  - id: "1.1"
+    description: "Create trends service with data aggregation logic"
     status: "pending"
-    deps: ["feature-2"]
+    deps: []
+    parallel: false
+    context: |
+      Stats are currently computed on-demand in statsService.ts. This step
+      creates a new service that aggregates historical data into time-series
+      format for the trends endpoint.
+    requirements:
+      - "Create src/api/services/trendsService.ts"
+      - "Function: getTrends(range: '7d' | '30d' | '90d')"
+      - "Returns { dates: string[], values: number[] }"
+      - "Query existing stats table, group by date"
+    criteria:
+      - "Service exports getTrends function"
+      - "Returns correctly shaped data for all range values"
+      - "Unit test with mocked data passes"
+    files:
+      - "src/api/services/trendsService.ts"
+      - "src/api/services/trendsService.test.ts"
+    context_files:
+      - "src/api/services/statsService.ts"
+
+  - id: "1.2"
+    description: "Add trends API route with caching"
+    status: "pending"
+    deps: ["1.1"]
+    parallel: false
+    context: |
+      Wire up the trends service to an HTTP endpoint. Use existing cache
+      middleware pattern from other routes.
+    requirements:
+      - "GET /api/stats/trends?range=7d|30d|90d"
+      - "Cache responses for 1 hour"
+      - "Validate range parameter"
+    criteria:
+      - "Endpoint returns 200 with valid JSON"
+      - "Invalid range returns 400"
+      - "Response time < 200ms (cached)"
+    files:
+      - "src/api/routes/stats.ts"
+    context_files:
+      - "src/api/middleware/cache.ts"
+
+  # ============================================================================
+  # Feature 2: Trend Visualization Component
+  # ============================================================================
+
+  - id: "2.1"
+    description: "Create base TrendChart component with Chart.js"
+    status: "pending"
+    deps: ["1.2"]
+    parallel: false
     context: |
       Users currently see only current-day stats. This adds a line chart
-      showing 7/30/90 day trends. Use the existing Chart.js setup in
-      src/components/charts/.
+      using the existing Chart.js setup in src/components/charts/.
     requirements:
-      - "Line chart with day/week/month toggles"
-      - "Fetches from GET /api/stats/trends"
-      - "Responsive, works on mobile"
-      - "Loading skeleton while fetching"
+      - "Create TrendChart.tsx extending BaseChart"
+      - "Line chart with responsive sizing"
+      - "Accept data prop: { dates: string[], values: number[] }"
     criteria:
-      - "Chart renders with mock data"
-      - "Toggle switches time range"
-      - "Mobile viewport displays correctly"
-      - "Unit tests pass"
+      - "Component renders with mock data"
+      - "Chart displays correctly at mobile and desktop widths"
     files:
       - "src/components/TrendChart.tsx"
-      - "src/components/TrendChart.test.tsx"
     context_files:
       - "src/components/charts/BaseChart.tsx"
       - "src/styles/charts.css"
     risk_notes: "Chart.js bundle size - verify no significant increase"
 
-  - id: "feature-2"
-    description: "Create trends API endpoint"
+  - id: "2.2"
+    description: "Add time range toggle to TrendChart"
     status: "pending"
-    deps: []
+    deps: ["2.1"]
+    parallel: false
     context: |
-      Stats are currently computed on-demand in statsService.ts. This adds
-      a new endpoint that returns time-series data. Consider caching since
-      historical data doesn't change.
+      Add toggle buttons for 7d/30d/90d. Selecting a range should trigger
+      a data refetch.
     requirements:
-      - "GET /api/stats/trends?range=7d|30d|90d"
-      - "Returns { dates: [...], values: [...] }"
-      - "Cache responses for 1 hour"
+      - "Toggle buttons: 7 days, 30 days, 90 days"
+      - "Active state styling for selected range"
+      - "onChange callback when range changes"
     criteria:
-      - "Endpoint returns valid JSON for all range values"
-      - "Response time < 200ms (cached)"
-      - "Integration test covers happy path"
+      - "Toggle switches time range"
+      - "Visual indication of selected range"
     files:
-      - "src/api/routes/stats.ts"
-      - "src/api/services/trendsService.ts"
-      - "tests/api/stats.test.ts"
-    context_files:
-      - "src/api/services/statsService.ts"
-      - "src/api/middleware/cache.ts"
+      - "src/components/TrendChart.tsx"
+
+  - id: "2.3"
+    description: "Connect TrendChart to API and add loading states"
+    status: "pending"
+    deps: ["2.2"]
+    parallel: false
+    context: |
+      Wire up the component to fetch from the trends API. Handle loading
+      and error states gracefully.
+    requirements:
+      - "Fetch from GET /api/stats/trends on mount and range change"
+      - "Loading skeleton while fetching"
+      - "Error state if API fails"
+    criteria:
+      - "Data loads from API on initial render"
+      - "Range change triggers new API call"
+      - "Loading skeleton appears during fetch"
+      - "Error message displays on API failure"
+    files:
+      - "src/components/TrendChart.tsx"
+      - "src/components/TrendChart.test.tsx"
 ```
 
 ---
@@ -205,17 +298,18 @@ steps:
 
 ---
 
-## When Discovery Hands Off
+## When Discovery is Complete
 
 Discovery is complete when:
 - [ ] All outcomes are defined and user-validated
 - [ ] Each outcome maps to concrete capabilities
 - [ ] Each capability has implementable features
-- [ ] Each feature has sufficient context for autonomous execution
+- [ ] Each feature is decomposed into implementation steps
+- [ ] Each step has sufficient context for autonomous execution
 - [ ] The plan file passes schema validation
 - [ ] User has approved the plan
 
-The plan then goes to a **Coordinator** who dispatches steps to agents.
+The plan is now **orchestrator-ready** and can be placed in `.agent-work/plans/` for execution.
 
 ---
 

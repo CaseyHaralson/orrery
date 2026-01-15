@@ -41,7 +41,7 @@ All agents, regardless of which AI tool powers them, follow this unified workflo
 2. Identify dependencies between steps
 3. Define acceptance criteria for each step
 4. Output the plan in the standard YAML format (see `agent/schemas/plan-schema.yaml`)
-5. Save the plan to the `work/plans/` directory with the following filename: `<date>-<plan-name>.yaml`
+5. Save the plan to the `.agent-work/plans/` directory with the following filename: `<date>-<plan-name>.yaml`
 
 **Expected Outputs:**
 - A `<date><plan-name>.yaml` file following the plan schema in the plans directory
@@ -238,13 +238,30 @@ The 5-phase workflow can be split into two modes:
 
 1. **Planning Mode** (Intake → Plan)
    - Human or agent creates a plan through intake and planning phases
-   - Plan is saved to `work/plans/` directory
+   - Plan is saved to `.agent-work/plans/` directory
    - Execution stops after plan creation
 
 2. **Orchestration Mode** (Execute → Verify → Report)
-   - Orchestrator script scans `work/plans/` for pending plans
+   - Orchestrator script scans `.agent-work/plans/` for pending plans
    - Dispatches worker agents to execute steps
    - Tracks completion and archives finished plans
+
+### Discovery: Big Ideas → Orchestrator-Ready Plans
+
+For larger projects that span multiple features, use the **Discovery skill** (Phase 0) instead of Intake → Plan:
+
+```
+Discovery Workflow:
+IDEA → OUTCOMES → CAPABILITIES → FEATURES → IMPLEMENTATION STEPS
+```
+
+Discovery produces **orchestrator-ready plans** directly—no separate Plan phase needed. Each feature is decomposed into 2-5 concrete implementation steps that agents can execute autonomously.
+
+**When to use Discovery vs Intake:**
+- **Discovery**: Big ideas, multi-feature projects, unclear scope
+- **Intake → Plan**: Single features, well-scoped tasks
+
+See `agent/skills/discovery/SKILL.md` for full instructions.
 
 ### Running the Orchestrator
 
@@ -253,13 +270,13 @@ npm run orchestrate
 ```
 
 The orchestrator will:
-1. Scan `work/plans/` for YAML plan files
-2. Exclude plans already in `work/completed/`
+1. Scan `.agent-work/plans/` for YAML plan files
+2. Exclude plans already in `.agent-work/completed/`
 3. For each plan, identify steps ready to execute (pending with deps satisfied)
 4. Spawn agent subprocesses to execute steps
 5. Update plan statuses based on agent results
-6. Write reports to `work/reports/`
-7. Move completed plans to `work/completed/`
+6. Write reports to `.agent-work/reports/`
+7. Move completed plans to `.agent-work/completed/`
 
 ### Worker Agent Contract
 
@@ -305,7 +322,7 @@ Orchestrator settings are in `agent/scripts/config/orchestrator.config.js`:
 ### Directory Structure
 
 ```
-work/
+.agent-work/
 ├── plans/           # Active plan files awaiting execution
 ├── completed/       # Archived plans that finished
 └── reports/         # Step execution reports
