@@ -16,7 +16,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const yaml = require("js-yaml");
+const YAML = require("yaml");
 
 const REQUIRED_STEP_FIELDS = ["id", "description"];
 const VALID_STATUSES = ["pending", "in_progress", "complete", "blocked"];
@@ -37,7 +37,7 @@ function validatePlan(filePath) {
   // Parse YAML
   let data;
   try {
-    data = yaml.load(content);
+    data = YAML.parse(content);
   } catch (err) {
     console.error(`\nYAML Parse Error in ${path.basename(filePath)}:\n`);
     console.error(`  ${err.reason}`);

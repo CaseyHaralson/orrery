@@ -2,7 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const yaml = require("js-yaml");
+const YAML = require("yaml");
 
 /**
  * Load a plan from a YAML file
@@ -11,11 +11,13 @@ const yaml = require("js-yaml");
  */
 function loadPlan(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
-  const data = yaml.load(content);
+  const doc = YAML.parseDocument(content);
+  const data = doc.toJS();
 
   return {
     filePath,
     fileName: path.basename(filePath),
+    doc,
     metadata: data.metadata || {},
     steps: data.steps || [],
 
@@ -60,60 +62,92 @@ function loadPlan(filePath) {
 }
 
 /**
- * Save a plan back to its YAML file
- * @param {Object} plan - The plan object (with filePath, metadata, steps)
+ * Save a plan back to its YAML file (preserves comments)
+ * @param {Object} plan - The plan object (with filePath, doc, metadata, steps)
  */
 function savePlan(plan) {
-  const data = {
-    metadata: plan.metadata,
-    steps: plan.steps,
-  };
+  const metadataNode = plan.doc.get("metadata", true);
+  const stepsNode = plan.doc.get("steps", true);
 
-  const content = yaml.dump(data, {
-    lineWidth: -1,
-    quotingType: '"',
-    forceQuotes: false,
-    noRefs: true,
-  });
+  // Update metadata fields in-place
+  if (metadataNode) {
+    for (const [key, value] of Object.entries(plan.metadata)) {
+      metadataNode.set(key, value);
+    }
+  }
 
-  fs.writeFileSync(plan.filePath, content, "utf8");
+  // Update step fields in-place
+  if (stepsNode && stepsNode.items) {
+    for (let i = 0; i < plan.steps.length; i++) {
+      const stepData = plan.steps[i];
+      const stepNode = stepsNode.items[i];
+      if (stepNode) {
+        for (const [key, value] of Object.entries(stepData)) {
+          stepNode.set(key, value);
+        }
+      }
+    }
+  }
+
+  fs.writeFileSync(plan.filePath, plan.doc.toString(), "utf8");
 }
 
 /**
- * Update a specific step's status in a plan file
+ * Update a specific step's status in a plan file (preserves comments)
  * @param {string} filePath - Path to the plan file
  * @param {string} stepId - ID of the step to update
  * @param {string} status - New status value (pending, in_progress, complete, blocked)
  * @param {Object} [extras] - Optional extra fields to update (e.g., blockedReason)
  */
 function updateStepStatus(filePath, stepId, status, extras = {}) {
-  const plan = loadPlan(filePath);
-  const step = plan.steps.find((s) => s.id === stepId);
+  const content = fs.readFileSync(filePath, "utf8");
+  const doc = YAML.parseDocument(content);
+  const stepsNode = doc.get("steps", true);
 
-  if (step) {
-    step.status = status;
-    Object.assign(step, extras);
-    savePlan(plan);
+  if (!stepsNode || !stepsNode.items) return;
+
+  for (const stepNode of stepsNode.items) {
+    const idNode = stepNode.get("id", true);
+    if (idNode && String(idNode) === stepId) {
+      stepNode.set("status", status);
+      for (const [key, value] of Object.entries(extras)) {
+        stepNode.set(key, value);
+      }
+      break;
+    }
   }
+
+  fs.writeFileSync(filePath, doc.toString(), "utf8");
 }
 
 /**
- * Update multiple steps' status at once
+ * Update multiple steps' status at once (preserves comments)
  * @param {string} filePath - Path to the plan file
  * @param {Array<{stepId: string, status: string, extras?: Object}>} updates - Array of updates
  */
 function updateStepsStatus(filePath, updates) {
-  const plan = loadPlan(filePath);
+  const content = fs.readFileSync(filePath, "utf8");
+  const doc = YAML.parseDocument(content);
+  const stepsNode = doc.get("steps", true);
 
-  for (const { stepId, status, extras = {} } of updates) {
-    const step = plan.steps.find((s) => s.id === stepId);
-    if (step) {
-      step.status = status;
-      Object.assign(step, extras);
+  if (!stepsNode || !stepsNode.items) return;
+
+  const updateMap = new Map(updates.map((u) => [u.stepId, u]));
+
+  for (const stepNode of stepsNode.items) {
+    const idNode = stepNode.get("id", true);
+    const stepId = idNode ? String(idNode) : null;
+    const update = updateMap.get(stepId);
+
+    if (update) {
+      stepNode.set("status", update.status);
+      for (const [key, value] of Object.entries(update.extras || {})) {
+        stepNode.set(key, value);
+      }
     }
   }
 
-  savePlan(plan);
+  fs.writeFileSync(filePath, doc.toString(), "utf8");
 }
 
 /**

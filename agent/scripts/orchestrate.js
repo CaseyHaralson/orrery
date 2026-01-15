@@ -15,7 +15,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const yaml = require("js-yaml");
+const YAML = require("yaml");
 
 const {
   loadPlan,
@@ -572,11 +572,7 @@ function writeReport(reportsDir, planFile, report) {
   const fileName = `${planName}-${report.step_id}-report.yaml`;
   const filePath = path.join(reportsDir, fileName);
 
-  const content = yaml.dump(report, {
-    lineWidth: -1,
-    quotingType: '"',
-    forceQuotes: false,
-  });
+  const content = YAML.stringify(report);
 
   fs.writeFileSync(filePath, content, "utf8");
   console.log(`Report written: ${fileName}`);
