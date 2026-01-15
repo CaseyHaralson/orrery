@@ -1,5 +1,6 @@
 - clean up workflow.md file, shouldn't be needed
 - make sure readme looks good
+- executing plan agents don't have access to the web, so can't do research...
 - 
 	
 done
