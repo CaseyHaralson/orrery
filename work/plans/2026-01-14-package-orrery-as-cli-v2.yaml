@@ -12,11 +12,13 @@ metadata:
     work/uncompleted/2026-01-14-package-orrery-as-cli.yaml, verified against
     the current repository state.
   outcomes:
-    - "Users can install orrery globally and immediately use skills in any project"
-    - "Agents discover and use orrery skills without knowing orrery exists"
-    - "Skills are fully self-contained with embedded schemas"
-    - "Projects use .agent-work/ for plans and reports"
-    - "Orchestration runs from any project via npx orrery orchestrate"
+    - Users can install orrery globally and immediately use skills in any project
+    - Agents discover and use orrery skills without knowing orrery exists
+    - Skills are fully self-contained with embedded schemas
+    - Projects use .agent-work/ for plans and reports
+    - Orchestration runs from any project via npx orrery orchestrate
+  source_branch: main
+  work_branch: plan/package-orrery-as-cli-v2
 
 steps:
   # ============================================================================
@@ -38,23 +40,24 @@ steps:
       Use commander.js for argument parsing as it's lightweight and well-documented.
     requirements:
       - "Create bin/orrery.js with #!/usr/bin/env node shebang"
-      - "Add commander.js as a dependency in package.json"
+      - Add commander.js as a dependency in package.json
       - 'Add bin entry to package.json: "bin": {"orrery": "./bin/orrery.js"}'
-      - "Implement subcommand routing for: install-skills, orchestrate, status, help"
-      - "Each subcommand should be a separate module in lib/cli/commands/"
-      - "Add --version flag that reads from package.json"
+      - "Implement subcommand routing for: install-skills, orchestrate, status,
+        help"
+      - Each subcommand should be a separate module in lib/cli/commands/
+      - Add --version flag that reads from package.json
     criteria:
-      - "bin/orrery.js exists with proper shebang"
-      - "npm link makes 'orrery' command available globally"
-      - "orrery --help shows available commands"
-      - "orrery --version shows package version"
-      - "Unknown commands show helpful error message"
+      - bin/orrery.js exists with proper shebang
+      - npm link makes 'orrery' command available globally
+      - orrery --help shows available commands
+      - orrery --version shows package version
+      - Unknown commands show helpful error message
     files:
-      - "bin/orrery.js"
-      - "lib/cli/index.js"
-      - "package.json"
+      - bin/orrery.js
+      - lib/cli/index.js
+      - package.json
     context_files:
-      - "package.json"
+      - package.json
     risk_notes: |
       Ensure the shebang uses /usr/bin/env node for cross-platform compatibility.
       Test with both global install (npm link) and npx usage.
@@ -62,28 +65,29 @@ steps:
   - id: "1.2"
     description: "Create placeholder command modules for subcommands"
     status: "pending"
-    deps: ["1.1"]
+    deps:
+      - "1.1"
     parallel: false
     context: |
       Each CLI subcommand should be a separate module for maintainability.
       Create placeholder implementations that will be fleshed out in later steps.
     requirements:
-      - "Create lib/cli/commands/install-skills.js with stub implementation"
-      - "Create lib/cli/commands/orchestrate.js with stub implementation"
-      - "Create lib/cli/commands/status.js with stub implementation"
-      - "Each module exports a function that registers with commander"
-      - "Stubs should print 'Not yet implemented' and exit gracefully"
+      - Create lib/cli/commands/install-skills.js with stub implementation
+      - Create lib/cli/commands/orchestrate.js with stub implementation
+      - Create lib/cli/commands/status.js with stub implementation
+      - Each module exports a function that registers with commander
+      - Stubs should print 'Not yet implemented' and exit gracefully
     criteria:
-      - "orrery install-skills prints 'Not yet implemented'"
-      - "orrery orchestrate prints 'Not yet implemented'"
-      - "orrery status prints 'Not yet implemented'"
-      - "All commands exit with code 0"
+      - orrery install-skills prints 'Not yet implemented'
+      - orrery orchestrate prints 'Not yet implemented'
+      - orrery status prints 'Not yet implemented'
+      - All commands exit with code 0
     files:
-      - "lib/cli/commands/install-skills.js"
-      - "lib/cli/commands/orchestrate.js"
-      - "lib/cli/commands/status.js"
+      - lib/cli/commands/install-skills.js
+      - lib/cli/commands/orchestrate.js
+      - lib/cli/commands/status.js
     context_files:
-      - "bin/orrery.js"
+      - bin/orrery.js
 
   # ============================================================================
   # Feature 2: Self-Contained Skills with Embedded Schemas
@@ -104,20 +108,22 @@ steps:
       the plan schema there. The discovery SKILL.md reference will be updated
       to point to the correct relative path.
     requirements:
-      - "Create agent/skills/discovery/schemas/ directory"
-      - "Copy agent/schemas/plan-schema.yaml to agent/skills/discovery/schemas/plan-schema.yaml"
-      - "Update discovery SKILL.md to reference ./schemas/plan-schema.yaml instead of ./schemas/discovery-plan-schema.yaml"
-      - "Ensure the validate-plan.js hook still works"
+      - Create agent/skills/discovery/schemas/ directory
+      - Copy agent/schemas/plan-schema.yaml to
+        agent/skills/discovery/schemas/plan-schema.yaml
+      - Update discovery SKILL.md to reference ./schemas/plan-schema.yaml
+        instead of ./schemas/discovery-plan-schema.yaml
+      - Ensure the validate-plan.js hook still works
     criteria:
-      - "agent/skills/discovery/schemas/plan-schema.yaml exists"
-      - "Discovery SKILL.md references ./schemas/plan-schema.yaml"
-      - "Plan validation still works when writing plans"
+      - agent/skills/discovery/schemas/plan-schema.yaml exists
+      - Discovery SKILL.md references ./schemas/plan-schema.yaml
+      - Plan validation still works when writing plans
     files:
-      - "agent/skills/discovery/schemas/plan-schema.yaml"
-      - "agent/skills/discovery/SKILL.md"
+      - agent/skills/discovery/schemas/plan-schema.yaml
+      - agent/skills/discovery/SKILL.md
     context_files:
-      - "agent/schemas/plan-schema.yaml"
-      - "agent/scripts/validate-plan.js"
+      - agent/schemas/plan-schema.yaml
+      - agent/scripts/validate-plan.js
     risk_notes: |
       The validate-plan.js script may need updating to find the schema at the
       new location. Check how it currently locates the schema.
@@ -125,23 +131,24 @@ steps:
   - id: "2.2"
     description: "Embed plan schema in execute skill"
     status: "pending"
-    deps: ["2.1"]
+    deps:
+      - "2.1"
     parallel: true
     context: |
       The execute skill needs access to the plan schema to understand the plan
       structure it's executing. Copy the schema to make it self-contained.
     requirements:
-      - "Create agent/skills/execute/schemas/ directory"
-      - "Copy plan-schema.yaml to agent/skills/execute/schemas/"
-      - "Update execute SKILL.md if it references the schema (check first)"
+      - Create agent/skills/execute/schemas/ directory
+      - Copy plan-schema.yaml to agent/skills/execute/schemas/
+      - Update execute SKILL.md if it references the schema (check first)
     criteria:
-      - "agent/skills/execute/schemas/plan-schema.yaml exists"
-      - "Execute skill can be copied anywhere and still have schema access"
+      - agent/skills/execute/schemas/plan-schema.yaml exists
+      - Execute skill can be copied anywhere and still have schema access
     files:
-      - "agent/skills/execute/schemas/plan-schema.yaml"
+      - agent/skills/execute/schemas/plan-schema.yaml
     context_files:
-      - "agent/skills/execute/SKILL.md"
-      - "agent/schemas/plan-schema.yaml"
+      - agent/skills/execute/SKILL.md
+      - agent/schemas/plan-schema.yaml
 
   - id: "2.3"
     description: "Embed report schema in report skill"
@@ -152,18 +159,18 @@ steps:
       The report skill references agent/schemas/report-schema.yaml at line 111.
       This needs to be embedded in the skill directory for self-containment.
     requirements:
-      - "Create agent/skills/report/schemas/ directory"
-      - "Copy agent/schemas/report-schema.yaml to agent/skills/report/schemas/"
-      - "Update report SKILL.md to reference ./schemas/report-schema.yaml"
+      - Create agent/skills/report/schemas/ directory
+      - Copy agent/schemas/report-schema.yaml to agent/skills/report/schemas/
+      - Update report SKILL.md to reference ./schemas/report-schema.yaml
     criteria:
-      - "agent/skills/report/schemas/report-schema.yaml exists"
-      - "Report SKILL.md references ./schemas/report-schema.yaml"
+      - agent/skills/report/schemas/report-schema.yaml exists
+      - Report SKILL.md references ./schemas/report-schema.yaml
     files:
-      - "agent/skills/report/schemas/report-schema.yaml"
-      - "agent/skills/report/SKILL.md"
+      - agent/skills/report/schemas/report-schema.yaml
+      - agent/skills/report/SKILL.md
     context_files:
-      - "agent/schemas/report-schema.yaml"
-      - "agent/skills/report/SKILL.md"
+      - agent/schemas/report-schema.yaml
+      - agent/skills/report/SKILL.md
 
   # ============================================================================
   # Feature 3: Work Directory Configuration (.agent-work/)
@@ -185,50 +192,53 @@ steps:
       - agent/scripts/config/orchestrator.config.js
       - Various SKILL.md files
     requirements:
-      - "Create lib/utils/paths.js"
+      - Create lib/utils/paths.js
       - "Default work directory: process.cwd() + '/.agent-work'"
-      - "Support ORRERY_WORK_DIR environment variable override"
-      - "Export functions: getWorkDir(), getPlansDir(), getCompletedDir(), getReportsDir()"
-      - "Auto-create directories if they don't exist when accessed"
+      - Support ORRERY_WORK_DIR environment variable override
+      - "Export functions: getWorkDir(), getPlansDir(), getCompletedDir(),
+        getReportsDir()"
+      - Auto-create directories if they don't exist when accessed
     criteria:
-      - "lib/utils/paths.js exports all directory getter functions"
-      - "Default returns .agent-work/ subdirectories"
-      - "ORRERY_WORK_DIR=custom getWorkDir() returns 'custom'"
+      - lib/utils/paths.js exports all directory getter functions
+      - Default returns .agent-work/ subdirectories
+      - ORRERY_WORK_DIR=custom getWorkDir() returns 'custom'
     files:
-      - "lib/utils/paths.js"
+      - lib/utils/paths.js
     context_files:
-      - "agent/scripts/orchestrate.js"
-      - "agent/scripts/config/orchestrator.config.js"
+      - agent/scripts/orchestrate.js
+      - agent/scripts/config/orchestrator.config.js
 
   - id: "3.2"
     description: "Update orchestrator to use paths utility"
     status: "pending"
-    deps: ["3.1"]
+    deps:
+      - "3.1"
     parallel: false
     context: |
       The orchestrate.js script hardcodes paths to work/plans/, work/completed/,
       and work/reports/. Update it to use the new paths utility.
     requirements:
-      - "Import paths utility in orchestrate.js"
-      - "Replace hardcoded work/plans references with getPlansDir()"
-      - "Replace hardcoded work/completed references with getCompletedDir()"
-      - "Replace hardcoded work/reports references with getReportsDir()"
-      - "Ensure orchestrator creates .agent-work/ structure on first run"
+      - Import paths utility in orchestrate.js
+      - Replace hardcoded work/plans references with getPlansDir()
+      - Replace hardcoded work/completed references with getCompletedDir()
+      - Replace hardcoded work/reports references with getReportsDir()
+      - Ensure orchestrator creates .agent-work/ structure on first run
     criteria:
-      - "Orchestrator reads from .agent-work/plans/"
-      - "Completed plans move to .agent-work/completed/"
-      - "Reports go to .agent-work/reports/"
-      - "Running in empty project creates .agent-work/ structure"
+      - Orchestrator reads from .agent-work/plans/
+      - Completed plans move to .agent-work/completed/
+      - Reports go to .agent-work/reports/
+      - Running in empty project creates .agent-work/ structure
     files:
-      - "agent/scripts/orchestrate.js"
+      - agent/scripts/orchestrate.js
     context_files:
-      - "lib/utils/paths.js"
-      - "agent/scripts/lib/plan-loader.js"
+      - lib/utils/paths.js
+      - agent/scripts/lib/plan-loader.js
 
   - id: "3.3"
     description: "Update skill instructions to reference .agent-work/"
     status: "pending"
-    deps: ["3.1"]
+    deps:
+      - "3.1"
     parallel: true
     context: |
       All SKILL.md files that mention work/plans or work/reports need updating
@@ -247,24 +257,24 @@ steps:
       - "Update all SKILL.md files: work/plans -> .agent-work/plans"
       - "Update all SKILL.md files: work/completed -> .agent-work/completed"
       - "Update all SKILL.md files: work/reports -> .agent-work/reports"
-      - "Update CLAUDE.md, AGENTS.md, GEMINI.md agent configs"
-      - "Update WORKFLOW.md policy document"
-      - "Update README.md"
+      - Update CLAUDE.md, AGENTS.md, GEMINI.md agent configs
+      - Update WORKFLOW.md policy document
+      - Update README.md
     criteria:
-      - "grep -r 'work/plans' returns no results in skill files"
-      - "All skill instructions reference .agent-work/"
-      - "Agent config files reference .agent-work/"
+      - grep -r 'work/plans' returns no results in skill files
+      - All skill instructions reference .agent-work/
+      - Agent config files reference .agent-work/
     files:
-      - "agent/skills/discovery/SKILL.md"
-      - "agent/skills/simulate/SKILL.md"
-      - "agent/skills/execute/SKILL.md"
-      - "agent/skills/verify/SKILL.md"
-      - "agent/skills/report/SKILL.md"
-      - ".claude/CLAUDE.md"
-      - ".codex/AGENTS.md"
-      - ".gemini/GEMINI.md"
-      - "agent/policies/WORKFLOW.md"
-      - "README.md"
+      - agent/skills/discovery/SKILL.md
+      - agent/skills/simulate/SKILL.md
+      - agent/skills/execute/SKILL.md
+      - agent/skills/verify/SKILL.md
+      - agent/skills/report/SKILL.md
+      - .claude/CLAUDE.md
+      - .codex/AGENTS.md
+      - .gemini/GEMINI.md
+      - agent/policies/WORKFLOW.md
+      - README.md
     context_files: []
     risk_notes: |
       This is a significant change. Be thorough - any mismatch between skill
@@ -284,20 +294,20 @@ steps:
       installed on the user's system. Each agent has a specific directory
       in the user's home folder.
     requirements:
-      - "Create lib/utils/agent-detector.js"
+      - Create lib/utils/agent-detector.js
       - "Detect Claude: check for ~/.claude/ directory"
       - "Detect Codex: check for ~/.codex/ directory"
       - "Detect Gemini: check for ~/.gemini/ directory"
       - "Export function: detectInstalledAgents() -> ['claude', 'gemini', ...]"
       - "Export function: getAgentSkillsDir(agent) -> path to skills dir"
     criteria:
-      - "detectInstalledAgents() returns array of installed agent names"
-      - "getAgentSkillsDir('claude') returns ~/.claude/skills"
-      - "Works on Linux, macOS, and Windows"
+      - detectInstalledAgents() returns array of installed agent names
+      - getAgentSkillsDir('claude') returns ~/.claude/skills
+      - Works on Linux, macOS, and Windows
     files:
-      - "lib/utils/agent-detector.js"
+      - lib/utils/agent-detector.js
     context_files:
-      - "agent/scripts/clone-agent-skills.js"
+      - agent/scripts/clone-agent-skills.js
     risk_notes: |
       Use os.homedir() for cross-platform home directory detection.
       Handle case where home directory doesn't exist (unlikely but possible).
@@ -305,53 +315,57 @@ steps:
   - id: "4.2"
     description: "Create skill copier utility"
     status: "pending"
-    deps: ["4.1"]
+    deps:
+      - "4.1"
     parallel: false
     context: |
       The skill copier handles the actual copying of skill directories from
       the orrery package to user agent directories.
     requirements:
-      - "Create lib/utils/skill-copier.js"
+      - Create lib/utils/skill-copier.js
       - "Export function: copySkills(sourceDir, targetDir, options)"
       - "Options: force (overwrite), dryRun (log only)"
-      - "Recursively copy all files in skill directories"
-      - "Preserve file permissions"
-      - "Return list of files copied"
+      - Recursively copy all files in skill directories
+      - Preserve file permissions
+      - Return list of files copied
     criteria:
-      - "copySkills copies entire skill directory structure"
-      - "dryRun mode logs but doesn't copy"
-      - "force mode overwrites existing files"
-      - "Without force, skip existing files and log warning"
+      - copySkills copies entire skill directory structure
+      - dryRun mode logs but doesn't copy
+      - force mode overwrites existing files
+      - Without force, skip existing files and log warning
     files:
-      - "lib/utils/skill-copier.js"
+      - lib/utils/skill-copier.js
     context_files:
-      - "agent/scripts/clone-agent-skills.js"
+      - agent/scripts/clone-agent-skills.js
 
   - id: "4.3"
     description: "Implement install-skills command"
     status: "pending"
-    deps: ["4.1", "4.2", "1.2"]
+    deps:
+      - "4.1"
+      - "4.2"
+      - "1.2"
     parallel: false
     context: |
       Wire up the install-skills command to use the agent detector and skill
       copier utilities. This replaces the placeholder from step 1.2.
     requirements:
       - "Command: orrery install-skills [--agent claude|codex|gemini|all]"
-      - "Without --agent, auto-detect installed agents"
-      - "Copy agent/skills/* to detected agent skills directories"
-      - "Support --force to overwrite existing skills"
-      - "Support --dry-run to preview what would be copied"
-      - "Show progress and summary of what was installed"
+      - Without --agent, auto-detect installed agents
+      - Copy agent/skills/* to detected agent skills directories
+      - Support --force to overwrite existing skills
+      - Support --dry-run to preview what would be copied
+      - Show progress and summary of what was installed
     criteria:
-      - "orrery install-skills creates ~/.claude/skills/discovery/, etc."
-      - "Running with --dry-run shows files but doesn't copy"
-      - "Running twice without --force shows 'already exists' warnings"
-      - "Running with --force overwrites existing skills"
+      - orrery install-skills creates ~/.claude/skills/discovery/, etc.
+      - Running with --dry-run shows files but doesn't copy
+      - Running twice without --force shows 'already exists' warnings
+      - Running with --force overwrites existing skills
     files:
-      - "lib/cli/commands/install-skills.js"
+      - lib/cli/commands/install-skills.js
     context_files:
-      - "lib/utils/agent-detector.js"
-      - "lib/utils/skill-copier.js"
+      - lib/utils/agent-detector.js
+      - lib/utils/skill-copier.js
 
   # ============================================================================
   # Feature 5: Orchestrate Command
@@ -360,7 +374,9 @@ steps:
   - id: "5.1"
     description: "Implement orchestrate command as CLI wrapper"
     status: "pending"
-    deps: ["1.2", "3.2"]
+    deps:
+      - "1.2"
+      - "3.2"
     parallel: false
     context: |
       The orchestrate command wraps the existing orchestrate.js functionality
@@ -371,22 +387,22 @@ steps:
       rather than reimplementing it.
     requirements:
       - "Command: orrery orchestrate [--plan <file>] [--dry-run] [--verbose]"
-      - "Without --plan, process all plans in .agent-work/plans/"
-      - "With --plan, process only the specified plan file"
-      - "Show progress as steps are executed"
-      - "Exit code 0 for success, 1 for failure"
-      - "Support --verbose for detailed output"
+      - Without --plan, process all plans in .agent-work/plans/
+      - With --plan, process only the specified plan file
+      - Show progress as steps are executed
+      - Exit code 0 for success, 1 for failure
+      - Support --verbose for detailed output
     criteria:
-      - "orrery orchestrate processes plans in .agent-work/plans/"
-      - "Completed steps are marked in plan files"
-      - "Reports generated in .agent-work/reports/"
-      - "Exit code reflects success/failure"
+      - orrery orchestrate processes plans in .agent-work/plans/
+      - Completed steps are marked in plan files
+      - Reports generated in .agent-work/reports/
+      - Exit code reflects success/failure
     files:
-      - "lib/cli/commands/orchestrate.js"
+      - lib/cli/commands/orchestrate.js
     context_files:
-      - "agent/scripts/orchestrate.js"
-      - "agent/scripts/lib/plan-loader.js"
-      - "agent/scripts/lib/agent-invoker.js"
+      - agent/scripts/orchestrate.js
+      - agent/scripts/lib/plan-loader.js
+      - agent/scripts/lib/agent-invoker.js
     risk_notes: |
       The orchestrator spawns agent subprocesses (claude, codex, gemini).
       Ensure errors are handled gracefully when agents are not installed.
@@ -398,7 +414,9 @@ steps:
   - id: "6.1"
     description: "Implement status command"
     status: "pending"
-    deps: ["1.2", "3.1"]
+    deps:
+      - "1.2"
+      - "3.1"
     parallel: false
     context: |
       A utility command to show the status of plans in the current project.
@@ -406,17 +424,17 @@ steps:
     requirements:
       - "Command: orrery status [--plan <file>]"
       - "Show summary: X plans, Y pending steps, Z completed"
-      - "List each plan with overall status"
-      - "With --plan, show detailed step breakdown"
+      - List each plan with overall status
+      - With --plan, show detailed step breakdown
       - "Color coding: green=complete, yellow=in_progress, red=blocked"
     criteria:
-      - "orrery status with no plans shows 'No plans found'"
-      - "orrery status with plans shows accurate summary"
-      - "Output is human-readable"
+      - orrery status with no plans shows 'No plans found'
+      - orrery status with plans shows accurate summary
+      - Output is human-readable
     files:
-      - "lib/cli/commands/status.js"
+      - lib/cli/commands/status.js
     context_files:
-      - "agent/scripts/lib/plan-loader.js"
+      - agent/scripts/lib/plan-loader.js
     risk_notes: |
       Keep this simple. Use chalk or similar for colors, but make sure
       output degrades gracefully in non-TTY environments.
@@ -428,27 +446,30 @@ steps:
   - id: "7.1"
     description: "Update README with CLI installation and usage instructions"
     status: "pending"
-    deps: ["4.3", "5.1", "6.1"]
+    deps:
+      - "4.3"
+      - "5.1"
+      - "6.1"
     parallel: false
     context: |
       The current README reflects orrery as a standalone project. Update it
       to document the new CLI usage model.
     requirements:
-      - "Document npm install -g orrery (global install)"
-      - "Document npx orrery (without global install)"
-      - "Document orrery install-skills with examples"
-      - "Document orrery orchestrate with examples"
-      - "Document orrery status with examples"
-      - "Explain the skill installation model"
-      - "Add Quick Start section"
+      - Document npm install -g orrery (global install)
+      - Document npx orrery (without global install)
+      - Document orrery install-skills with examples
+      - Document orrery orchestrate with examples
+      - Document orrery status with examples
+      - Explain the skill installation model
+      - Add Quick Start section
     criteria:
-      - "New user can follow README to install and use orrery"
-      - "All CLI commands documented with examples"
-      - "Installation section is clear and concise"
+      - New user can follow README to install and use orrery
+      - All CLI commands documented with examples
+      - Installation section is clear and concise
     files:
-      - "README.md"
+      - README.md
     context_files:
-      - "README.md"
+      - README.md
     risk_notes: |
       Keep documentation concise. Don't over-document before API is stable.
       Focus on getting started quickly.
@@ -460,24 +481,27 @@ steps:
   - id: "8.1"
     description: "Add integration tests for CLI commands"
     status: "pending"
-    deps: ["4.3", "5.1", "6.1"]
+    deps:
+      - "4.3"
+      - "5.1"
+      - "6.1"
     parallel: false
     context: |
       Ensure the CLI works correctly with basic integration tests.
       Focus on happy path testing for initial release.
     requirements:
-      - "Test orrery --help shows usage"
-      - "Test orrery --version shows version"
-      - "Test orrery install-skills --dry-run lists files"
-      - "Test orrery status with empty .agent-work/ shows 'No plans'"
-      - "Test orrery orchestrate with no plans exits gracefully"
+      - Test orrery --help shows usage
+      - Test orrery --version shows version
+      - Test orrery install-skills --dry-run lists files
+      - Test orrery status with empty .agent-work/ shows 'No plans'
+      - Test orrery orchestrate with no plans exits gracefully
     criteria:
-      - "npm test runs all tests"
-      - "Tests pass on clean install"
-      - "Tests cover basic CLI functionality"
+      - npm test runs all tests
+      - Tests pass on clean install
+      - Tests cover basic CLI functionality
     files:
-      - "test/cli.test.js"
-      - "package.json"
+      - test/cli.test.js
+      - package.json
     context_files: []
     risk_notes: |
       Don't over-test at this stage. Focus on smoke tests that catch
@@ -486,24 +510,25 @@ steps:
   - id: "8.2"
     description: "Validate npm pack produces valid package"
     status: "pending"
-    deps: ["8.1"]
+    deps:
+      - "8.1"
     parallel: false
     context: |
       Final validation step to ensure the package can be published to npm
       and installed globally.
     requirements:
-      - "npm pack produces a valid tarball"
-      - "Tarball includes bin/, lib/, agent/skills/"
-      - "Installing from tarball makes orrery command available"
-      - "All dependencies are properly declared"
+      - npm pack produces a valid tarball
+      - Tarball includes bin/, lib/, agent/skills/
+      - Installing from tarball makes orrery command available
+      - All dependencies are properly declared
     criteria:
-      - "npm pack succeeds without errors"
-      - "npm install -g ./orrery-1.0.0.tgz installs successfully"
-      - "orrery --help works after installation from tarball"
+      - npm pack succeeds without errors
+      - npm install -g ./orrery-1.0.0.tgz installs successfully
+      - orrery --help works after installation from tarball
     files: []
     context_files:
-      - "package.json"
+      - package.json
     commands:
-      - "npm pack"
-      - "npm install -g ./orrery-*.tgz"
-      - "orrery --help"
+      - npm pack
+      - npm install -g ./orrery-*.tgz
+      - orrery --help
