@@ -2,19 +2,18 @@
 
 ## Overview
 
-This repository implements a canonical 5-phase workflow protocol for coding AI agents. The protocol ensures consistency across different AI tools, enables seamless agent-to-agent handoff, and provides clear checkpoints for quality control.
+This repository implements a canonical 4-phase workflow protocol for coding AI agents. The protocol ensures consistency across different AI tools, enables seamless agent-to-agent handoff, and provides clear checkpoints for quality control.
 
 All agents, regardless of which AI tool powers them (Claude, Gemini, Codex, etc.), follow this unified workflow:
 
-**Intake → Plan → Execute → Verify → Report**
+**Discovery → Execute → Verify → Report**
 
-### The 5 Phases
+### The 4 Phases
 
-1. **Intake**: Fully understand the request, gather context, and clarify ambiguities
-2. **Plan**: Break the task into manageable steps with clear dependencies and acceptance criteria
-3. **Execute**: Implement the plan steps—write code, make changes, commit at logical points
-4. **Verify**: Validate that changes meet acceptance criteria and nothing is broken
-5. **Report**: Summarize results clearly for the user or for handoff to another agent
+1. **Discovery**: Fully understand the request and produce a plan with clear dependencies and acceptance criteria
+2. **Execute**: Implement the plan steps—write code, make changes, commit at logical points
+3. **Verify**: Validate that changes meet acceptance criteria and nothing is broken
+4. **Report**: Summarize results clearly for the user or for handoff to another agent
 
 ### Key Features
 
@@ -28,40 +27,34 @@ All agents, regardless of which AI tool powers them (Claude, Gemini, Codex, etc.
 
 ```mermaid
 graph TD
-    A[Intake] --> B[Plan]
-    B --> C[Execute]
-    C --> D[Verify]
-    D --> E[Report]
+    A[Discovery] --> B[Execute]
+    B --> C[Verify]
+    C --> D[Report]
 
-    D -->|Tests Fail| C
-    C -->|Blocked| B
+    C -->|Tests Fail| B
+    B -->|Blocked| A
 
-    E -->|New Task| A
+    D -->|New Task| A
 
     style A fill:#e1f5ff
-    style B fill:#fff4e1
-    style C fill:#e8f5e9
-    style D fill:#fff3e0
-    style E fill:#f3e5f5
+    style B fill:#e8f5e9
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
 
-    subgraph "Phase 1: Intake"
+    subgraph "Phase 1: Discovery"
         A
     end
 
-    subgraph "Phase 2: Plan"
+    subgraph "Phase 2: Execute"
         B
     end
 
-    subgraph "Phase 3: Execute"
+    subgraph "Phase 3: Verify"
         C
     end
 
-    subgraph "Phase 4: Verify"
+    subgraph "Phase 4: Report"
         D
-    end
-
-    subgraph "Phase 5: Report"
-        E
     end
 ```
 
@@ -82,13 +75,13 @@ For detailed information about each phase, see:
 
 The workflow can be split into two modes for automated plan execution:
 
-### Planning Mode (Intake → Plan)
+### Planning Mode (Discovery)
 
-Create a plan file through intake and planning phases, then stop:
+Create a plan file through Discovery, then stop:
 
 ```bash
 # Use an agent to create a plan
-claude -p "Run intake and plan phases. Create a plan file in work/plans/ for: <your task>"
+claude -p "Run discovery. Create a plan file in work/plans/ for: <your task>"
 ```
 
 Plans are saved to `work/plans/` with the format `YYYY-MM-DD-plan-name.yaml`.
@@ -127,8 +120,8 @@ orrery/
 │   │   ├── plan-schema.yaml     # Plan file schema
 │   │   └── report-schema.yaml   # Report file schema
 │   ├── skills/                  # Skill instructions for each phase
-│   │   ├── intake/
-│   │   ├── plan/
+│   │   ├── discovery/
+│   │   ├── simulate/
 │   │   ├── execute/
 │   │   ├── verify/
 │   │   └── report/

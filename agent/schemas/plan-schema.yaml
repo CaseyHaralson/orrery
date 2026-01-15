@@ -1,12 +1,15 @@
 $schema: http://json-schema.org/draft-07/schema#
 type: object
 title: Plan Schema
-description: Schema for plans used in agent-to-agent handoff
+description: >
+  Extended plan schema for planning output. Includes additional fields for
+  rich context, enabling agents to execute steps autonomously without further
+  user input.
 
 properties:
   metadata:
     type: object
-    description: Plan metadata including creation time and creator
+    description: Plan metadata including creation info and high-level context
     properties:
       created_at:
         type: string
@@ -15,22 +18,18 @@ properties:
         type: string
       version:
         type: string
-      source_branch:
+      source_idea:
         type: string
-        description: Branch where the plan originated (e.g., main or a feature branch)
-      work_branch:
-        type: string
-        description: Branch where work is being done (set by orchestrator when dispatched)
-      completed_at:
-        type: string
-        format: date-time
-        description: Timestamp when plan was completed
-      outcome:
-        type: string
-        enum:
-          - success
-          - partial
-        description: Final outcome of the plan (success if all steps complete, partial if some blocked)
+        description: The original idea or request that triggered discovery
+      outcomes:
+        type: array
+        description: User-visible results this plan delivers
+        items:
+          type: string
+    required:
+      - created_at
+      - created_by
+      - outcomes
 
   steps:
     type: array
@@ -39,22 +38,28 @@ properties:
       $ref: '#/definitions/Step'
 
 required:
+  - metadata
   - steps
 
 definitions:
   Step:
     type: object
-    description: Individual step in the plan
+    description: Individual step in the plan, representing a feature or work unit
     required:
       - id
       - description
+      - context
+      - requirements
+      - criteria
     properties:
       id:
         type: string
         description: Unique identifier for the step
+
       description:
         type: string
-        description: Natural language summary of the task
+        description: Concise summary of what this step accomplishes
+
       status:
         type: string
         enum:
@@ -64,28 +69,64 @@ definitions:
           - blocked
         default: pending
         description: Current status of the step
+
       deps:
         type: array
         description: List of step IDs this step depends on
         items:
           type: string
+        default: []
+
       parallel:
         type: boolean
         description: Whether this step can run in parallel with others
         default: false
-      criteria:
+
+      context:
         type: string
-        description: Acceptance criteria for completion
-      commands:
+        description: >
+          Background information needed to execute this step. Should include
+          why this step exists, how it fits into the larger picture, and any
+          relevant technical context an agent needs to understand before starting.
+
+      requirements:
         type: array
-        description: Specific commands to execute
+        description: Specific requirements for this step
         items:
           type: string
+        minItems: 1
+
+      criteria:
+        type: array
+        description: Acceptance criteria - specific, testable conditions for completion
+        items:
+          type: string
+        minItems: 1
+
       files:
         type: array
         description: Files this step will create or modify
         items:
           type: string
+        default: []
+
+      context_files:
+        type: array
+        description: >
+          Files the agent should read for context before starting. These are
+          not modified, but provide patterns, interfaces, or background needed
+          to complete the step.
+        items:
+          type: string
+        default: []
+
+      commands:
+        type: array
+        description: Specific commands to execute (build, test, etc.)
+        items:
+          type: string
+        default: []
+
       risk_notes:
         type: string
-        description: Warnings or things to watch out for
+        description: Warnings, edge cases, or things to watch out for

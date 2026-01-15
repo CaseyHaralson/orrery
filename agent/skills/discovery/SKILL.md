@@ -6,13 +6,19 @@ description: >
 metadata:
   version: "1.0"
   phase: 0
+hooks:
+  PostToolUse:
+    - matcher: "Write"
+      hooks:
+        - type: command
+          command: "node agent/scripts/validate-plan.js"
 ---
 
 # Discovery Skill
 
 ## When to Use
 
-Use this skill when the request is **larger than a single feature**. Discovery transforms ambiguous ideas into concrete, executable plans.
+Use this skill for **all planning requests**, regardless of size. Discovery transforms ideas into concrete, executable plans.
 
 **Triggers:**
 - "Build a [system/platform/module]"
@@ -20,7 +26,7 @@ Use this skill when the request is **larger than a single feature**. Discovery t
 - Unclear what "done" looks like
 - Requires architectural decisions before implementation
 
-**Skip to Intake if:**
+**Also use Discovery when:**
 - Request is a single, scoped feature
 - Outcomes and scope are already clear
 - You can articulate the task in 1-3 sentences
@@ -153,6 +159,25 @@ it without asking questions.
 
 Use the schema defined in `./schemas/discovery-plan-schema.yaml`.
 
+### Validate the Plan
+
+Plans are automatically validated via the PostToolUse hook when written.
+For manual validation, run:
+
+```bash
+node agent/scripts/validate-plan.js work/plans/<plan>.yaml
+```
+
+This catches common YAML issues like unquoted colons.
+
+### YAML Formatting Rules
+
+- Always quote strings containing special characters (colons, brackets, etc.)
+- BAD: `criteria: Output shows: timestamp value`
+- GOOD: `criteria: "Output shows: timestamp value"`
+- Common gotchas: colons followed by space, special character prefixes, multi-line strings
+- Rule: When in doubt, use double quotes around the entire value
+
 ---
 
 ## Output Format
@@ -283,18 +308,6 @@ steps:
       - "src/components/TrendChart.tsx"
       - "src/components/TrendChart.test.tsx"
 ```
-
----
-
-## Key Differences from Intake
-
-| Aspect | Intake | Discovery |
-|--------|--------|-----------|
-| Input | Single feature request | Big idea or vision |
-| Output | Task summary + requirements | Full executable plan |
-| Conversation | Clarify one task | Define outcomes, decompose |
-| Codebase search | Find relevant context | Deep search per feature |
-| User interaction | Few clarifying questions | Structured validation |
 
 ---
 
