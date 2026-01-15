@@ -201,7 +201,7 @@ criteria: "Shows 'Current time: 12:30'"
 
 **Common YAML gotchas:**
 - Colons followed by space (`: `) are interpreted as key-value separators
-- Strings starting with `[`, `{`, `*`, `&`, `!`, `|`, `>`, `'`, `"`, `%`, `@`, `` ` `` need quoting
+- Strings starting with special characters like brackets, braces, asterisks, ampersands, exclamation marks, pipes, quotes, or backticks need quoting
 - Multi-line strings should use `|` (literal) or `>` (folded) block syntax
 
 **When in doubt, use double quotes** around the entire value.
