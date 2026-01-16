@@ -8,6 +8,8 @@ metadata:
     - The greeting includes the current system time.
   source_branch: main
   work_branch: plan/hello-world-cli
+  completed_at: 2026-01-16T03:52:57.754Z
+  outcome: success
 
 steps:
   # ============================================================================
@@ -16,7 +18,7 @@ steps:
 
   - id: "1.1"
     description: "Create basic hello.js script"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: "The starting point for the CLI. It needs to be a standalone Node.js
@@ -28,10 +30,11 @@ steps:
       - Running `node hello.js` outputs 'Hello, World!'
     files:
       - hello.js
+    agent: codex
 
   - id: "1.2"
     description: "Add name personalization"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
     parallel: false
@@ -45,6 +48,7 @@ steps:
       - Running `node hello.js` still outputs 'Hello World!'
     files:
       - hello.js
+    agent: codex
 
   # ============================================================================
   # Feature 2: Time Awareness
@@ -52,7 +56,7 @@ steps:
 
   - id: "2.1"
     description: "Implement time formatting helper"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: "A utility function is needed to format the current system time."
@@ -63,10 +67,11 @@ steps:
       - Function returns current time in HH:mm format (e.g., 14:30)
     files:
       - lib/time-utils.js
+    agent: codex
 
   - id: "2.2"
     description: "Integrate time into greeting"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.2"
       - "2.1"
@@ -82,3 +87,4 @@ steps:
       - hello.js
     context_files:
       - lib/time-utils.js
+    agent: codex
