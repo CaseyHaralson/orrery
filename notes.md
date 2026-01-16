@@ -2,6 +2,8 @@
   - maybe the report makes the commit message and returns it in the report?
 - clean up workflow.md file and other unused files
 - make sure readme looks good
+- rename execute, report, and verify to have a prefix like orrery
+  - might want to figure out the npm name for this project...
 - 
 - executing plan agents don't have access to the web, so can't do research...
 - 
