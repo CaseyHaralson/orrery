@@ -11,7 +11,7 @@ hooks:
     - matcher: "Write"
       hooks:
         - type: command
-          command: "node ./scripts/validate-plan.js"
+          command: "orrery validate-plan"
 ---
 
 # Discovery Skill
@@ -165,10 +165,10 @@ Plans are automatically validated via the PostToolUse hook when written.
 For manual validation, run:
 
 ```bash
-node ./scripts/validate-plan.js .agent-work/plans/<plan>.yaml
+orrery validate-plan .agent-work/plans/<plan>.yaml
 ```
 
-This catches common YAML issues like unquoted colons.
+This catches common YAML issues like unquoted colons and normalizes formatting.
 
 ### YAML Formatting Rules
 
