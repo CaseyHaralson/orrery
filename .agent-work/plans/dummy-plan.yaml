@@ -6,6 +6,8 @@ metadata:
   outcomes:
     - The system has a demonstration plan file that follows the schema.
     - A dummy output file is created to verify step execution.
+  source_branch: main
+  work_branch: plan/dummy-plan
 
 steps:
   - id: "1.1"
