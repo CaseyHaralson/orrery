@@ -159,6 +159,12 @@ it without asking questions.
 
 Use the schema defined in `./schemas/plan-schema.yaml`.
 
+**Output Location:**
+- Directory: `.agent-work/plans/`
+- Filename: `<date>-<plan-name>.yaml`
+- Date format: YYYY-MM-DD (e.g., `2026-01-11`)
+- Plan name: kebab-case description of the task (e.g., `fix-clone-agent-skills`)
+
 ### Validate the Plan
 
 Plans are automatically validated via the PostToolUse hook when written.
