@@ -1,13 +1,17 @@
 - clean up workflow.md file and other unused files
 - make sure readme looks good
+- rename orchestrate command to "work" or "do-work"
+- 
 - executing plan agents don't have access to the web, so can't do research...
 - have an option to add a .devcontainer to the project
 - make .devcontainer use shared volumes
 - get gemini working in devcontainer
-- make plan creation use same yaml project as post hook so plan doesn't change much during processing
-- rename orchestrate command to "work" or "do-work"
 - 
-	
+
+test
+- make plan creation use same yaml project as post hook so plan doesn't change much during processing
+
+
 done
 - failover to next agent didn't work
 - the yaml thing removes comments and does other formatting
