@@ -1,6 +1,7 @@
+- fix up where commit happens, make it happen during orchestrator? 
+  - maybe the report makes the commit message and returns it in the report?
 - clean up workflow.md file and other unused files
 - make sure readme looks good
-- rename orchestrate command to "work" or "do-work"
 - 
 - executing plan agents don't have access to the web, so can't do research...
 - have an option to add a .devcontainer to the project
@@ -20,6 +21,7 @@ done
 - make plan creation use same yaml project as post hook so plan doesn't change much during processing
 - combine some report info into the plan and just save data to the plan
   - then remove report schema
+- rename orchestrate command to "work" or "do-work"
 
 
 

@@ -108,3 +108,22 @@ test("orrery orchestrate exits cleanly with no plans", async (t) => {
   assert.equal(result.code, 0);
   assert.match(result.stdout, /No new plans to process/);
 });
+
+test("orrery exec alias works", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const gitRepo = initTempGitRepo();
+  t.after(() => {
+    cleanupDir(projectDir);
+    cleanupDir(gitRepo);
+  });
+
+  const env = {
+    ...process.env,
+    GIT_DIR: path.join(gitRepo, ".git"),
+    GIT_WORK_TREE: gitRepo,
+  };
+  const result = await runCli(["exec"], { cwd: projectDir, env });
+
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /No new plans to process/);
+});

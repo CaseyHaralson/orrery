@@ -91,7 +91,7 @@ Plans are saved to `.agent-work/plans/` with the format `YYYY-MM-DD-plan-name.ya
 Run the orchestrator to execute pending plans:
 
 ```bash
-orrery orchestrate
+orrery exec
 ```
 
 The orchestrator will:
@@ -167,7 +167,7 @@ orrery install-skills
 claude -p "Run discovery. Create a plan file in .agent-work/plans/ for: <your task>"
 
 # 3) Run the orchestrator in your project
-orrery orchestrate
+orrery exec
 ```
 
 ## Skill Installation Model
@@ -205,13 +205,13 @@ orrery install-skills --dry-run
 Run orchestration for all plans:
 
 ```bash
-orrery orchestrate
+orrery exec
 ```
 
 Run a specific plan:
 
 ```bash
-orrery orchestrate --plan .agent-work/plans/2026-01-14-some-plan.yaml
+orrery exec --plan .agent-work/plans/2026-01-14-some-plan.yaml
 ```
 
 Check plan status:
