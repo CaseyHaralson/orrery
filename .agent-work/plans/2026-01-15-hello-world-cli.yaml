@@ -1,0 +1,82 @@
+metadata:
+  created_at: "2026-01-15T10:00:00Z"
+  created_by: "Discovery-Agent"
+  version: "1.0"
+  source_idea: "Create a Hello World CLI with name personalization and time awareness."
+  outcomes:
+    - Users can receive a greeting that includes their name.
+    - The greeting includes the current system time.
+
+steps:
+  # ============================================================================
+  # Feature 1: Basic CLI and Personalization
+  # ============================================================================
+
+  - id: "1.1"
+    description: "Create basic hello.js script"
+    status: "pending"
+    deps: []
+    parallel: false
+    context: "The starting point for the CLI. It needs to be a standalone Node.js
+      script."
+    requirements:
+      - Create hello.js in the root directory
+      - Script should output 'Hello, World!' to stdout
+    criteria:
+      - Running `node hello.js` outputs 'Hello, World!'
+    files:
+      - hello.js
+
+  - id: "1.2"
+    description: "Add name personalization"
+    status: "pending"
+    deps:
+      - "1.1"
+    parallel: false
+    context: "Enhance the script to accept a name via command line arguments."
+    requirements:
+      - Modify hello.js to parse --name argument
+      - If --name is provided, use it in the greeting (e.g., 'Hello Alice!')
+      - Default to 'World' if no name is provided
+    criteria:
+      - Running `node hello.js --name=Alice` outputs 'Hello Alice!'
+      - Running `node hello.js` still outputs 'Hello World!'
+    files:
+      - hello.js
+
+  # ============================================================================
+  # Feature 2: Time Awareness
+  # ============================================================================
+
+  - id: "2.1"
+    description: "Implement time formatting helper"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: "A utility function is needed to format the current system time."
+    requirements:
+      - Create lib/time-utils.js
+      - Export a function getCurrentTime() that returns time in HH:mm format
+    criteria:
+      - Function returns current time in HH:mm format (e.g., 14:30)
+    files:
+      - lib/time-utils.js
+
+  - id: "2.2"
+    description: "Integrate time into greeting"
+    status: "pending"
+    deps:
+      - "1.2"
+      - "2.1"
+    parallel: false
+    context: "Combine the personalized greeting with the time awareness feature."
+    requirements:
+      - Import getCurrentTime from lib/time-utils.js into hello.js
+      - "Update output to: 'Hello [Name]! The current time is [Time]'"
+    criteria:
+      - Running `node hello.js --name=Alice` outputs something like 'Hello
+        Alice! The current time is 15:45'
+    files:
+      - hello.js
+    context_files:
+      - lib/time-utils.js
