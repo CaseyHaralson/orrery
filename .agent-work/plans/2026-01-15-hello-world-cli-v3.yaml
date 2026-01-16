@@ -6,8 +6,6 @@ metadata:
   outcomes:
     - Users can receive a greeting that includes their name.
     - The greeting includes the current system time.
-  source_branch: main
-  work_branch: plan/hello-world-cli-v2
 
 steps:
   # ============================================================================
@@ -19,7 +17,8 @@ steps:
     status: "pending"
     deps: []
     parallel: false
-    context: "The starting point for the CLI. It needs to be a standalone Node.js
+    context:
+      "The starting point for the CLI. It needs to be a standalone Node.js
       script."
     requirements:
       - Create hello.js in the root directory
