@@ -8,11 +8,13 @@ metadata:
     - A dummy output file is created to verify step execution.
   source_branch: main
   work_branch: plan/dummy-plan
+  completed_at: 2026-01-16T03:00:24.521Z
+  outcome: success
 
 steps:
   - id: "1.1"
     description: "Create a dummy output file"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: "This is a demonstration step to show how a plan is structured and
@@ -25,3 +27,4 @@ steps:
       - File content is exactly 'Hello World'
     files:
       - dummy-output.txt
+    agent: codex
