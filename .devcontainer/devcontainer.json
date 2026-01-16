@@ -37,9 +37,9 @@
   "remoteUser": "vscode",
   "mounts": [
     "source=orrery-sandbox-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
-    "source=orrery-sandbox-claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
-    "source=orrery-sandbox-codex-config-${devcontainerId},target=/home/vscode/.codex,type=volume",
-    "source=orrery-sandbox-gemini-config-${devcontainerId},target=/home/vscode/.gemini,type=volume"
+    "source=shared-sandbox-claude-code-config,target=/home/vscode/.claude,type=volume",
+    "source=shared-sandbox-codex-config,target=/home/vscode/.codex,type=volume",
+    "source=shared-sandbox-gemini-config,target=/home/vscode/.gemini,type=volume"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",

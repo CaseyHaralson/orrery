@@ -4,11 +4,11 @@
 - make sure readme looks good
 - 
 - executing plan agents don't have access to the web, so can't do research...
-- have an option to add a .devcontainer to the project
-- make .devcontainer use shared volumes
 - 
 
 test
+- have an option to add a .devcontainer to the project
+- make .devcontainer use shared volumes
 
 
 done
