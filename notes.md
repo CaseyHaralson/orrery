@@ -8,8 +8,6 @@
 - 
 
 test
-- combine some report info into the plan and just save data to the plan
-  - then remove report schema
 
 
 done
@@ -20,6 +18,8 @@ done
 	- and change agent config back to correct order
 - get gemini working in devcontainer
 - make plan creation use same yaml project as post hook so plan doesn't change much during processing
+- combine some report info into the plan and just save data to the plan
+  - then remove report schema
 
 
 
