@@ -9,8 +9,6 @@
 - 
 
 test
-- have an option to add a .devcontainer to the project
-- make .devcontainer use shared volumes
 
 
 done
@@ -24,6 +22,8 @@ done
 - combine some report info into the plan and just save data to the plan
   - then remove report schema
 - rename orchestrate command to "work" or "do-work"
+- have an option to add a .devcontainer to the project
+- make .devcontainer use shared volumes
 
 
 
