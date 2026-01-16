@@ -4,6 +4,8 @@
 - have an option to add a .devcontainer to the project
 - make .devcontainer use shared volumes
 - get gemini working in devcontainer
+- make plan creation use same yaml project as post hook so plan doesn't change much during processing
+- rename orchestrate command to "work" or "do-work"
 - 
 	
 done

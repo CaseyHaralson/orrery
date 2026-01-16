@@ -6,7 +6,6 @@
     "orrery": "./bin/orrery.js"
   },
   "scripts": {
-    "clone-agent-skills": "node agent/scripts/clone-agent-skills.js",
     "do-work": "node agent/scripts/orchestrate.js",
     "test": "node --test"
   },

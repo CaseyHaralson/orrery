@@ -5,14 +5,45 @@
  * concurrency settings, and directory paths.
  */
 
-module.exports = {
-  // Directory paths (relative to repository root)
-  paths: {
-    plans: "work/plans",
-    completed: "work/completed",
-    reports: "work/reports",
-  },
+// Shared prompt for all worker agents
+const WORKER_PROMPT = `You are a Worker Agent executing plan steps.
 
+Plan file: {planFile}
+Steps to execute: {stepIds}
+
+## Workflow
+
+For each step:
+
+1. Read the plan file to understand the step's requirements, criteria, and files
+2. Execute: Implement the changes following project conventions. Commit your work.
+3. Verify: Run tests and confirm acceptance criteria are met. Fix issues before proceeding.
+4. Report: Output a JSON result for the step (see format below)
+
+Use /execute, /verify, and /report skills for detailed guidance on each phase.
+
+## Output Contract
+
+Output one JSON object per step to stdout:
+
+Success:
+{"stepId": "<id>", "status": "complete", "summary": "Brief description", "artifacts": ["file1.js", "file2.js"]}
+
+Blocked:
+{"stepId": "<id>", "status": "blocked", "blockedReason": "What went wrong and why"}
+
+## Exit Codes
+
+- Exit 0: All steps completed successfully
+- Exit 1: One or more steps blocked
+
+## Rules
+
+- The plan file is READ-ONLY—never modify it
+- Complete each step fully before starting the next
+- Output clean JSON to stdout—no extra text or markdown wrapping`;
+
+module.exports = {
   // Agent configurations (keyed by agent name)
   agents: {
     claude: {
@@ -22,66 +53,19 @@ module.exports = {
         "sonnet",
         "--dangerously-skip-permissions",
         "-p",
-        "You are a Worker Agent. Execute the following steps from the plan.\n\n" +
-          "Plan file: {planFile}\n" +
-          "Steps to execute: {stepIds}\n\n" +
-          "Instructions:\n" +
-          "1. Read the plan file to understand the step requirements\n" +
-          "2. Load the execute, verify, and report skills from agent/skills/\n" +
-          "3. For each step:\n" +
-          "   - Implement the changes following the step requirements\n" +
-          "   - Verify the work meets the acceptance criteria\n" +
-          "4. Output your results as JSON to stdout in this format:\n" +
-          '   {"stepId": "<id>", "status": "complete", "summary": "...", "artifacts": [...]}\n' +
-          "   or if blocked:\n" +
-          '   {"stepId": "<id>", "status": "blocked", "blockedReason": "..."}\n\n' +
-          "Do not modify the plan file. Report results via stdout JSON only.",
+        WORKER_PROMPT,
       ],
     },
     codex: {
       command: "codex",
-      args: [
-        "exec",
-        "--yolo",
-        "You are a Worker Agent. Execute the following steps from the plan.\n\n" +
-          "Plan file: {planFile}\n" +
-          "Steps to execute: {stepIds}\n\n" +
-          "Instructions:\n" +
-          "1. Read the plan file to understand the step requirements\n" +
-          "2. Load the execute, verify, and report skills from agent/skills/\n" +
-          "3. For each step:\n" +
-          "   - Implement the changes following the step requirements\n" +
-          "   - Verify the work meets the acceptance criteria\n" +
-          "4. Output your results as JSON to stdout in this format:\n" +
-          '   {"stepId": "<id>", "status": "complete", "summary": "...", "artifacts": [...]}\n' +
-          "   or if blocked:\n" +
-          '   {"stepId": "<id>", "status": "blocked", "blockedReason": "..."}\n\n' +
-          "Do not modify the plan file. Report results via stdout JSON only.",
-      ],
+      args: ["exec", "--yolo", WORKER_PROMPT],
       // Codex writes progress to stderr and final result to stdout
       stderrIsProgress: true,
     },
     gemini: {
       command: "gemini",
-      args: [
-        "--yolo",
-        "-p",
-        "You are a Worker Agent. Execute the following steps from the plan.\n\n" +
-          "Plan file: {planFile}\n" +
-          "Steps to execute: {stepIds}\n\n" +
-          "Instructions:\n" +
-          "1. Read the plan file to understand the step requirements\n" +
-          "2. Load the execute, verify, and report skills from agent/skills/\n" +
-          "3. For each step:\n" +
-          "   - Implement the changes following the step requirements\n" +
-          "   - Verify the work meets the acceptance criteria\n" +
-          "4. Output your results as JSON to stdout in this format:\n" +
-          '   {"stepId": "<id>", "status": "complete", "summary": "...", "artifacts": [...]}\n' +
-          "   or if blocked:\n" +
-          '   {"stepId": "<id>", "status": "blocked", "blockedReason": "..."}\n\n' +
-          "Do not modify the plan file. Report results via stdout JSON only.",
-      ],
-      // Codex writes progress to stderr and final result to stdout
+      args: ["--yolo", "-p", WORKER_PROMPT],
+      // Gemini writes progress to stderr and final result to stdout
       stderrIsProgress: true,
     },
   },

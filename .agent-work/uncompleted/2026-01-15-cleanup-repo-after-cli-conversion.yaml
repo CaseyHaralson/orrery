@@ -1,0 +1,193 @@
+metadata:
+  created_at: "2026-01-15T18:00:00Z"
+  created_by: "Discovery-Agent"
+  version: "1.0"
+  source_idea: "Clean up repo after CLI conversion - remove obsolete project-level agent configs, old npm scripts, and consolidate schemas"
+  outcomes:
+    - "Repository contains only the portable CLI tool without project-specific agent configs"
+    - "No obsolete npm scripts or orphaned files"
+    - "Schema references in skills are correct and self-contained"
+
+steps:
+  # ============================================================================
+  # Feature 1: Remove Project-Level Agent Configuration Folders
+  # ============================================================================
+
+  - id: "1.1"
+    description: "Remove .claude, .gemini, .codex project folders"
+    status: "pending"
+    deps: []
+    parallel: false
+    context: |
+      These folders (.claude/, .gemini/, .codex/) contain project-specific agent
+      configurations that are no longer needed now that orrery is a portable CLI
+      tool. The skills/ subdirectories are gitignored and populated by the
+      clone-agent-skills script, which is also being removed.
+
+      Note: .claude/settings.local.json exists but is likely user-specific and
+      not tracked in git.
+    requirements:
+      - "Delete .claude/ directory and all contents"
+      - "Delete .gemini/ directory and all contents"
+      - "Delete .codex/ directory and all contents"
+      - "Update .gitignore to remove the .claude/skills, .codex/skills, .gemini/skills entries"
+    criteria:
+      - "Directories .claude/, .gemini/, .codex/ no longer exist"
+      - ".gitignore no longer references agent skill directories"
+    files:
+      - ".claude/"
+      - ".gemini/"
+      - ".codex/"
+      - ".gitignore"
+
+  # ============================================================================
+  # Feature 2: Remove WORKFLOW.md
+  # ============================================================================
+
+  - id: "2.1"
+    description: "Remove agent/policies/WORKFLOW.md"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      WORKFLOW.md is a policy document that defined the Discovery → Execute →
+      Verify → Report workflow. This is now embedded in the skill files themselves
+      and the orchestrator. The document is not needed for the portable CLI tool.
+    requirements:
+      - "Delete agent/policies/WORKFLOW.md"
+      - "Delete agent/policies/ directory if empty"
+    criteria:
+      - "agent/policies/WORKFLOW.md no longer exists"
+      - "agent/policies/ directory no longer exists (if empty)"
+    files:
+      - "agent/policies/WORKFLOW.md"
+
+  # ============================================================================
+  # Feature 3: Handle agent/schemas Directory
+  # ============================================================================
+
+  - id: "3.1"
+    description: "Analyze schema references and decide on consolidation"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      agent/schemas/ contains plan-schema.yaml and report-schema.yaml.
+
+      Current references:
+      - discovery SKILL.md references "./schemas/plan-schema.yaml" (broken - file doesn't exist)
+      - validate-plan.js does NOT use schema file - has hardcoded validation
+      - WORKFLOW.md references agent/schemas/plan-schema.yaml (being removed)
+      - README.md references agent/schemas/ schemas
+
+      Options:
+      A) Remove agent/schemas/ entirely since validate-plan.js has hardcoded logic
+      B) Keep schemas in agent/schemas/ and fix the broken reference in discovery
+      C) Copy schemas to skill directories for true portability
+
+      Recommendation: Option A - remove schemas since they're not programmatically
+      used. Update discovery SKILL.md to remove the broken reference.
+    requirements:
+      - "Delete agent/schemas/ directory"
+      - "Update discovery SKILL.md to remove reference to ./schemas/plan-schema.yaml"
+      - "Update README.md to remove references to agent/schemas/"
+    criteria:
+      - "agent/schemas/ directory no longer exists"
+      - "discovery SKILL.md no longer references a schema file"
+      - "README.md no longer references agent/schemas/"
+    files:
+      - "agent/schemas/"
+      - "agent/skills/discovery/SKILL.md"
+      - "README.md"
+
+  # ============================================================================
+  # Feature 4: Remove Obsolete NPM Scripts
+  # ============================================================================
+
+  - id: "4.1"
+    description: "Remove clone-agent-skills and do-work npm scripts"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      The CLI provides equivalent functionality:
+      - "orrery install-skills" replaces "npm run clone-agent-skills"
+      - "orrery orchestrate" replaces "npm run do-work"
+
+      These npm scripts are no longer needed.
+    requirements:
+      - "Remove clone-agent-skills script from package.json"
+      - "Remove do-work script from package.json"
+    criteria:
+      - "package.json scripts section only contains 'test'"
+    files:
+      - "package.json"
+
+  - id: "4.2"
+    description: "Remove orphaned script files after npm script removal"
+    status: "pending"
+    deps: ["4.1"]
+    parallel: false
+    context: |
+      After removing the npm scripts, the corresponding script files become orphans
+      if they're not used elsewhere.
+
+      - agent/scripts/clone-agent-skills.js - only referenced by npm run clone-agent-skills
+      - agent/scripts/orchestrate.js - referenced by npm run do-work AND CLI orchestrate command
+
+      Need to verify CLI orchestrate command references before removing.
+    requirements:
+      - "Delete agent/scripts/clone-agent-skills.js (confirmed orphan)"
+      - "Keep agent/scripts/orchestrate.js if used by CLI, otherwise delete"
+      - "Keep agent/scripts/validate-plan.js (used by hook)"
+      - "Keep agent/scripts/config/ and agent/scripts/lib/ if orchestrate.js is kept"
+    criteria:
+      - "agent/scripts/clone-agent-skills.js no longer exists"
+      - "No orphaned script files remain"
+    files:
+      - "agent/scripts/clone-agent-skills.js"
+    context_files:
+      - "lib/cli/commands/orchestrate.js"
+
+  # ============================================================================
+  # Feature 5: Final Cleanup and Verification
+  # ============================================================================
+
+  - id: "5.1"
+    description: "Update README.md for post-cleanup state"
+    status: "pending"
+    deps: ["1.1", "2.1", "3.1", "4.2"]
+    parallel: false
+    context: |
+      README.md may reference removed files/directories. Update to reflect
+      the new structure.
+    requirements:
+      - "Remove references to .claude/, .gemini/, .codex/ directories"
+      - "Remove references to agent/policies/WORKFLOW.md"
+      - "Remove references to agent/schemas/"
+      - "Remove references to npm run clone-agent-skills and npm run do-work"
+      - "Update any directory structure diagrams"
+    criteria:
+      - "README.md accurately reflects current repository structure"
+      - "No references to removed files/directories"
+    files:
+      - "README.md"
+
+  - id: "5.2"
+    description: "Verify no broken references remain"
+    status: "pending"
+    deps: ["5.1"]
+    parallel: false
+    context: |
+      Final verification that all cleanup was complete and no broken
+      references remain in the codebase.
+    requirements:
+      - "Search for references to removed paths"
+      - "Verify CLI commands still work"
+      - "Ensure no import/require statements reference removed files"
+    criteria:
+      - "No grep results for removed file paths in active code"
+      - "orrery --help executes successfully"
+      - "orrery install-skills --help executes successfully"
+      - "orrery orchestrate --help executes successfully"
+    files: []
