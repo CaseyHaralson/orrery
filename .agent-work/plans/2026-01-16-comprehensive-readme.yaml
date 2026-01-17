@@ -42,7 +42,7 @@ steps:
   # ============================================================================
   - id: "2.1"
     description: "Document Core Concepts (Skills, Plans, Orchestration)"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
     parallel: false
@@ -61,6 +61,7 @@ steps:
       - README.md
     context_files:
       - docs/agent-skills-definition.md
+    agent: codex
 
   # ============================================================================
   # Feature 3: The Workflow Guide
