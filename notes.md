@@ -7,8 +7,6 @@
 - 
 
 test
-- fix up where commit happens, make it happen during orchestrator? 
-  - maybe the report makes the commit message and returns it in the report?
 
 
 done
@@ -24,6 +22,8 @@ done
 - rename orchestrate command to "work" or "do-work"
 - have an option to add a .devcontainer to the project
 - make .devcontainer use shared volumes
+- fix up where commit happens, make it happen during orchestrator? 
+  - maybe the report makes the commit message and returns it in the report?
 
 
 
