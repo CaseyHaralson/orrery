@@ -17,7 +17,7 @@ steps:
   # ============================================================================
   - id: "1.1"
     description: "Write Introduction and Installation sections"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -35,6 +35,7 @@ steps:
       - Introduction clearly explains what Orrery is
     files:
       - README.md
+    agent: codex
 
   # ============================================================================
   # Feature 2: Core Concepts & Architecture
