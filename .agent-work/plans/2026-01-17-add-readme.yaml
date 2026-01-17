@@ -20,7 +20,7 @@ steps:
 
   - id: "1.1"
     description: "Inspect CLI commands and docs to confirm behavior and wording"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -41,6 +41,7 @@ steps:
       - lib/cli/commands/orchestrate.js
       - lib/cli/commands/status.js
       - docs/agent-skills-definition.md
+    agent: codex
 
   # ============================================================================
   # Feature 2: Draft the end-user README structure and content
