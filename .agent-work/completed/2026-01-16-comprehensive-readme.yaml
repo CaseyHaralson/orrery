@@ -10,6 +10,8 @@ metadata:
     - Developers have a reference for all CLI commands and file structures
   source_branch: main
   work_branch: plan/comprehensive-readme
+  completed_at: 2026-01-17T03:00:48.611Z
+  outcome: success
 
 steps:
   # ============================================================================
@@ -17,7 +19,7 @@ steps:
   # ============================================================================
   - id: "1.1"
     description: "Write Introduction and Installation sections"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -35,13 +37,14 @@ steps:
       - Introduction clearly explains what Orrery is
     files:
       - README.md
+    agent: codex
 
   # ============================================================================
   # Feature 2: Core Concepts & Architecture
   # ============================================================================
   - id: "2.1"
     description: "Document Core Concepts (Skills, Plans, Orchestration)"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
     parallel: false
@@ -60,13 +63,14 @@ steps:
       - README.md
     context_files:
       - docs/agent-skills-definition.md
+    agent: codex
 
   # ============================================================================
   # Feature 3: The Workflow Guide
   # ============================================================================
   - id: "3.1"
     description: "Document the End-to-End Workflow"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.1"
     parallel: false
@@ -86,13 +90,14 @@ steps:
       - README.md
     context_files:
       - lib/orchestration/index.js
+    agent: codex
 
   # ============================================================================
   # Feature 4: CLI Reference & Configuration
   # ============================================================================
   - id: "4.1"
     description: "Document CLI Commands and Directory Structure"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
     parallel: false
@@ -111,3 +116,4 @@ steps:
     context_files:
       - lib/cli/commands/orchestrate.js
       - lib/cli/commands/install-skills.js
+    agent: codex
