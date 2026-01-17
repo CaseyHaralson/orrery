@@ -83,7 +83,7 @@ steps:
 
   - id: "3.1"
     description: "Review README for clarity, accuracy, and user flow"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.1"
     parallel: false
@@ -102,3 +102,4 @@ steps:
       - README.md
     context_files:
       - README.md
+    agent: codex

@@ -17,6 +17,8 @@ npm install -g orrery
 
 ## Quickstart
 
+Create or place a plan YAML in `.agent-work/plans/`, then:
+
 ```bash
 orrery install-skills --agent all
 orrery orchestrate
