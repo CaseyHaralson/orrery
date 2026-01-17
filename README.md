@@ -11,7 +11,7 @@ All agents, regardless of which AI tool powers them (Claude, Gemini, Codex, etc.
 ### The 4 Phases
 
 1. **Discovery**: Fully understand the request and produce a plan with clear dependencies and acceptance criteria
-2. **Execute**: Implement the plan steps—write code, make changes, commit at logical points
+2. **Execute**: Implement the plan steps—write code, make changes (commits are handled automatically by the orchestrator)
 3. **Verify**: Validate that changes meet acceptance criteria and nothing is broken
 4. **Report**: Summarize results clearly for the user or for handoff to another agent
 
@@ -21,7 +21,7 @@ All agents, regardless of which AI tool powers them (Claude, Gemini, Codex, etc.
 - **Agent Handoff**: Any agent can resume work from another by reading the plan file
 - **Cross-Tool Compatibility**: Works seamlessly across different AI coding tools
 - **Clear Checkpoints**: Each phase has defined completion criteria
-- **Version Control Integration**: Changes are committed incrementally with meaningful messages
+- **Automated Commits**: The orchestrator commits changes after each successful step with meaningful messages
 
 ## Workflow Diagram
 
@@ -66,9 +66,8 @@ For detailed information about each phase, see:
 
 ## Agent Roles
 
-- **Coordinator Agent**: Oversees multi-step work, maintains the plan, dispatches steps to workers
+- **Coordinator Agent**: Oversees multi-step work, maintains the plan, dispatches steps to workers (usually via the Orchestrator)
 - **Worker Agent**: Executes individual plan steps, loads appropriate skills, reports completion
-- **Single-Agent Mode**: One agent acts as both coordinator and worker for simpler tasks
 
 ## Skills
 
@@ -76,7 +75,7 @@ The orrery skills fall into two categories:
 
 ### User-Invocable Skills
 
-These skills are invoked directly by users via slash commands:
+These skills are invoked directly by users via slash commands (if supported by the agent) or by name:
 
 - **discovery** (`/discovery`) - Create a structured plan file from a task description. This is the entry point to the workflow.
 - **simulate-plan** (`/simulate-plan`) - Explore a plan through conversational dialogue before committing to execution. Ask "what if" questions and trace dependencies.
@@ -109,13 +108,13 @@ Plans are saved to `.agent-work/plans/` with the format `YYYY-MM-DD-plan-name.ya
 Run the orchestrator to execute pending plans:
 
 ```bash
-orrery exec
+orrery orchestrate
 ```
 
 The orchestrator will:
 1. Scan `.agent-work/plans/` for YAML plan files
 2. Identify steps ready to execute (pending with dependencies satisfied)
-3. Spawn agent subprocesses to execute steps (supports parallel execution)
+3. Spawn agent subprocesses to execute steps
 4. Update plan statuses and write reports
 5. Move completed plans to `.agent-work/completed/`
 
@@ -124,7 +123,7 @@ The orchestrator will:
 Edit `lib/orchestration/config.js` to customize:
 
 - **agents**: Command configurations for each AI tool (claude, codex, gemini)
-- **concurrency.maxParallel**: Maximum concurrent agent processes (default: 1, parallel currently disabled)
+- **concurrency.maxParallel**: Maximum concurrent agent processes
 - **failover**: Agent failover settings and error patterns
 - **retry**: Retry policy for failed steps
 
@@ -136,6 +135,7 @@ orrery/
 │   └── orrery.js               # CLI entry point
 ├── lib/
 │   ├── cli/                    # CLI implementation
+│   │   ├── index.js            # CLI registration
 │   │   └── commands/           # Individual command handlers
 │   ├── orchestration/          # Plan orchestrator logic
 │   │   └── config.js           # Orchestrator configuration
@@ -186,73 +186,76 @@ orrery install-skills
 claude -p "Run discovery. Create a plan file in .agent-work/plans/ for: <your task>"
 
 # 3) Run the orchestrator in your project
-orrery exec
+orrery orchestrate
 ```
-
-## Skill Installation Model
-
-`orrery install-skills` copies the built-in skill instructions from this package
-into each installed agent's skills directory:
-
-- Claude: `~/.claude/skills/`
-- Codex: `~/.codex/skills/`
-- Gemini: `~/.gemini/skills/`
-
-This keeps skills self-contained and lets agents use them without the project
-needing to know about orrery.
 
 ## CLI Usage
 
-Install skills (auto-detect agents):
+### `install-skills`
+
+Install orrery skills for supported agents (Claude, Codex, Gemini).
 
 ```bash
-orrery install-skills
+orrery install-skills [options]
 ```
 
-Install skills for a specific agent:
+Options:
+- `--agent <agent>`: Target specific agent (claude|codex|gemini|all). Defaults to auto-detect.
+- `--force`: Overwrite existing skills.
+- `--dry-run`: Show what would be copied without writing files.
+
+### `orchestrate` (alias: `exec`)
+
+Run plan orchestration for the current project.
 
 ```bash
-orrery install-skills --agent claude
+orrery orchestrate [options]
+# or
+orrery exec [options]
 ```
 
-Preview what would be copied:
+Options:
+- `--plan <file>`: Process only a specific plan file.
+- `--dry-run`: Show what would be executed without running agents.
+- `--verbose`: Show detailed agent output.
+- `--resume`: Resume orchestration on the current work branch.
+
+### `status`
+
+Show orchestration status for plans in this project.
 
 ```bash
-orrery install-skills --dry-run
+orrery status [options]
 ```
 
-Run orchestration for all plans:
+Options:
+- `--plan <file>`: Show detailed status for a specific plan.
+
+### `validate-plan`
+
+Validate a plan YAML file and normalize its formatting.
 
 ```bash
-orrery exec
+orrery validate-plan [file] [options]
 ```
 
-Run a specific plan:
+Arguments:
+- `[file]`: Path to the plan file (reads from stdin if omitted, for hook mode).
+
+Options:
+- `--no-resave`: Skip re-saving the file after validation (default: resaves to normalize).
+
+### `install-devcontainer`
+
+Copy the orrery devcontainer configuration to a target directory.
 
 ```bash
-orrery exec --plan .agent-work/plans/2026-01-14-some-plan.yaml
+orrery install-devcontainer [target] [options]
 ```
 
-Check plan status:
+Arguments:
+- `[target]`: Target directory (defaults to current working directory).
 
-```bash
-orrery status
-```
-
-Show details for a single plan:
-
-```bash
-orrery status --plan .agent-work/plans/2026-01-14-some-plan.yaml
-```
-
-Install devcontainer configuration to a project:
-
-```bash
-orrery install-devcontainer [target-directory]
-```
-
-Validate and normalize a plan YAML file:
-
-```bash
-orrery validate-plan .agent-work/plans/my-plan.yaml
-```
+Options:
+- `--force`: Overwrite existing devcontainer configuration.
+- `--dry-run`: Show what would be copied without writing files.
