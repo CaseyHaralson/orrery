@@ -1,0 +1,44 @@
+metadata:
+  created_at: "2026-01-16T10:00:00Z"
+  created_by: "Discovery-Agent"
+  version: "1.0"
+  source_idea: "A readme for this project needs to be written"
+  outcomes:
+    - "Users understand what Orrery is and its purpose"
+    - "Users can install and configure Orrery"
+    - "Users understand the core workflow (Plan -> Orchestrate)"
+    - "Users have a reference for available CLI commands"
+
+steps:
+  # ============================================================================
+  # Feature 1: Create README.md
+  # ============================================================================
+
+  - id: "1.1"
+    description: "Write the README.md file"
+    status: "pending"
+    deps: []
+    parallel: false
+    context: |
+      The project currently lacks a comprehensive README. This step creates one
+      that covers the tool's purpose (Agent Skill Orchestration), installation,
+      standard workflow, and CLI command reference.
+    requirements:
+      - "Title: Orrery"
+      - "Description: Agent skill management and workflow orchestration"
+      - "Installation section (npm install -g .)"
+      - "Workflow section: Explain Discovery -> Plan -> Orchestrate loop"
+      - "Commands section: Document orchestrate, validate-plan, install-skills, install-devcontainer, status"
+      - "Project Structure section: Explain .agent-work directory"
+    criteria:
+      - "File README.md exists in root"
+      - "Contains all required sections"
+      - "Command documentation is accurate based on source code"
+    files:
+      - "README.md"
+    context_files:
+      - "package.json"
+      - "lib/cli/commands/orchestrate.js"
+      - "lib/cli/commands/validate-plan.js"
+      - "lib/cli/commands/install-skills.js"
+      - "lib/cli/commands/status.js"
