@@ -32,7 +32,8 @@ The Orchestrator expects a **single JSON object** printed to `stdout`. This is h
   "status": "complete",
   "summary": "Brief description of work done and verification results",
   "artifacts": ["file1.js", "src/components/NewComp.tsx"],
-  "testResults": "Passed 8/8 tests" 
+  "testResults": "Passed 8/8 tests",
+  "commitMessage": "feat: add user authentication with session handling"
 }
 ```
 
@@ -71,6 +72,7 @@ Map your gathered info to the JSON fields.
 *   `status`: "complete" (if verified) or "blocked".
 *   `summary`: Human-readable explanation.
 *   `artifacts`: Array of file paths.
+*   `commitMessage`: A conventional commit message (e.g., "feat: add login", "fix: resolve null check").
 
 ### Step 3: Output to Stdout
 
@@ -92,7 +94,7 @@ Print the JSON string. **This is your final action.**
 
 **3. Action:**
 ```json
-{"stepId": "3", "status": "complete", "summary": "Implemented login logic and verified with unit tests", "artifacts": ["src/auth/login.ts"], "testResults": "2/2 passed"}
+{"stepId": "3", "status": "complete", "summary": "Implemented login logic and verified with unit tests", "artifacts": ["src/auth/login.ts"], "testResults": "2/2 passed", "commitMessage": "feat: add login endpoint with session handling"}
 ```
 
 ---

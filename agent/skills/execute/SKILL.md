@@ -1,7 +1,7 @@
 ---
 name: execute
 description: >
-  Write or modify code according to a plan step. Handle implementation and commits.
+  Write or modify code according to a plan step. Handle implementation.
   This is Phase 3 of the workflow protocol.
 metadata:
   version: "1.2"
@@ -43,25 +43,15 @@ Write the code:
 
 ### Step 3: Initial Check
 
-Before committing:
+Before handing off:
 - **Compile/Build:** Ensure no syntax errors.
 - **Smoke Test:** Does it run?
 
-### Step 4: Commit the Change
+### Step 4: Handoff to Verify
 
-Make a commit with a meaningful message:
+Once implementation is complete, activate the **Verify** skill.
 
-```
-<type>: <short description>
-
-<body explaining what and why, if needed>
-```
-
-### Step 5: Handoff to Verify
-
-Once implementation is complete and committed, you **MUST** activate the **Verify** skill.
-
-**Do not** output any JSON status. The `verify` skill will handle validation and the `report` skill will handle the final output.
+**Important:** Do NOT commit your changes. The orchestrator handles all commits after receiving your report.
 
 ---
 
@@ -78,8 +68,7 @@ Once implementation is complete and committed, you **MUST** activate the **Verif
 1. **Read** the plan to understand Step 2.
 2. **Implement** `src/api/routes/upload.ts`.
 3. **Run** `npm build` -> Passes.
-4. **Commit**: `feat: add CSV upload endpoint`.
-5. **Activate Skill:** `verify`
+4. **Activate Skill:** `verify`
 
 ---
 
