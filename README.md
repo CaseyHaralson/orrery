@@ -61,3 +61,92 @@ This is the full lifecycle Orrery follows from idea to PR:
 Resume capability:
 - If orchestration is interrupted, check out the plan's work branch and run `orrery orchestrate --resume`.
 - Resume mode reloads the plan, resets any `in_progress` steps to `pending`, and continues execution.
+
+## CLI Reference
+
+All commands are registered in `lib/cli/index.js` and exposed through the `orrery` binary.
+
+### install-skills
+
+Install Orrery skills for supported agents (Claude, Codex, Gemini).
+
+```bash
+orrery install-skills [options]
+```
+
+Options:
+- `--agent <agent>`: Target agent (`claude|codex|gemini|all`), defaults to auto-detect.
+- `--force`: Overwrite existing skills.
+- `--dry-run`: Show what would be copied without writing files.
+
+### install-devcontainer
+
+Copy the bundled devcontainer into a target directory.
+
+```bash
+orrery install-devcontainer [target] [options]
+```
+
+Arguments:
+- `target`: Target directory (defaults to the current working directory).
+
+Options:
+- `--force`: Overwrite existing `.devcontainer`.
+- `--dry-run`: Show what would be copied without writing files.
+
+### orchestrate (alias: exec)
+
+Run plan orchestration for the current project.
+
+```bash
+orrery orchestrate [options]
+orrery exec [options]
+```
+
+Options:
+- `--plan <file>`: Process only a specific plan file.
+- `--dry-run`: Show what would be executed without running agents.
+- `--verbose`: Show detailed agent output.
+- `--resume`: Resume orchestration on the current work branch.
+
+### status
+
+Show orchestration status for plans in the project.
+
+```bash
+orrery status [options]
+```
+
+Options:
+- `--plan <file>`: Show detailed status for a specific plan.
+
+### validate-plan
+
+Validate a plan YAML file and normalize formatting.
+
+```bash
+orrery validate-plan [file] [options]
+```
+
+Arguments:
+- `file`: Path to the plan file (if omitted, the command reads from stdin for hook mode).
+
+Options:
+- `--no-resave`: Skip re-saving the file after validation.
+
+### help
+
+Display help for a command (or general help if no command is provided).
+
+```bash
+orrery help [command]
+```
+
+## Directory Structure
+
+By default, Orrery stores work artifacts under `.agent-work/` (override with `ORRERY_WORK_DIR`).
+
+- `.agent-work/plans/`: Active plan YAML files; incomplete work remains here.
+- `.agent-work/reports/`: Step-level report YAML files emitted by agents during orchestration.
+- `.agent-work/completed/`: Plans moved here once orchestration finishes (success or partial).
+- There is no dedicated `.agent-work/uncompleted/`; active plans stay in `.agent-work/plans/`.

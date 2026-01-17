@@ -95,7 +95,7 @@ steps:
   # ============================================================================
   - id: "4.1"
     description: "Document CLI Commands and Directory Structure"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
     parallel: false
@@ -114,3 +114,4 @@ steps:
     context_files:
       - lib/cli/commands/orchestrate.js
       - lib/cli/commands/install-skills.js
+    agent: codex

@@ -1,0 +1,11 @@
+step_id: "4.1"
+agent: codex
+outcome: success
+details: Added CLI command reference (with arguments/options) and documented the
+  .agent-work directory layout in README, including note about active plans
+  remaining in plans.
+timestamp: 2026-01-17T03:00:48.590Z
+artifacts:
+  - README.md
+blocked_reason: null
+test_results: 6/6 passed
