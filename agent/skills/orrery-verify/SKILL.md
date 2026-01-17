@@ -1,8 +1,9 @@
 ---
 name: orrery-verify
 description: >
-  Run tests and validation to ensure changes meet acceptance criteria
-  and nothing is broken. This is Phase 4 of the workflow protocol.
+  Run tests, linting, and validation to verify changes work correctly.
+  Use after implementation to check acceptance criteria, run test suites,
+  and ensure nothing is broken.
 user-invocable: false
 ---
 

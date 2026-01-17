@@ -2,7 +2,6 @@
 name: orrery-execute
 description: >
   Write or modify code according to a plan step. Handle implementation.
-  This is Phase 3 of the workflow protocol.
 user-invocable: false
 ---
 
