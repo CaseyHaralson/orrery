@@ -1,8 +1,9 @@
 ---
 name: orrery-report
 description: >
-  Summarize execution results and communicate status to the Orchestrator.
-  This is Phase 5 of the workflow protocol.
+  Final reporting phase for the orrery workflow. Outputs structured JSON
+  summarizing execution results, test outcomes, and status. Use after
+  orrery-verify completes or when reporting blocked status.
 user-invocable: false
 ---
 
@@ -100,5 +101,5 @@ Print the JSON string. **This is your final action.**
 ## Common Pitfalls
 
 - **Outputting Text:** "I have finished the step." (The Orchestrator cannot read this).
-- **Outputting YAML:** Do not output YAML. The Orchestrator converts your JSON to a YAML report file automatically.
 - **Markdown Blocks:** ```json { ... } ``` (This breaks the parser).
+- **Invalid JSON:** Ensure the JSON is properly formatted and all strings are quoted.

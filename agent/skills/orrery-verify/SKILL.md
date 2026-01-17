@@ -54,13 +54,13 @@ Ask yourself: Does the implementation actually satisfy this?
 **Case A: Verification FAILED**
 If tests fail, linting errors occur, or criteria are not met:
 1.  Analyze the error.
-2.  **Return to Execute:** Activate the **Execute** skill to fix the issues.
+2.  **Return to Execute:** Invoke the `orrery-execute` skill using the Skill tool to fix the issues.
 3.  *Do not* proceed to Report until issues are resolved (unless completely blocked).
 
 **Case B: Verification PASSED**
 If all checks pass:
 1.  **Gather Stats:** Note the number of tests passed (e.g., "8/8 passed").
-2.  **Activate Report:** Activate the **Report** skill to finalize the step.
+2.  **Handoff to Report:** Invoke the `orrery-report` skill using the Skill tool to finalize the step.
 
 ---
 
@@ -69,11 +69,11 @@ If all checks pass:
 **Scenario:** You implemented `src/api/routes/upload.ts`.
 
 1.  **Run tests:** `npm test` -> **FAIL** (ReferenceError).
-    *   **Action:** Activate `execute` to fix the ReferenceError.
+    *   **Action:** Invoke the `orrery-execute` skill using the Skill tool to fix the ReferenceError.
 
 2.  **Run tests (Attempt 2):** `npm test` -> **PASS** (5 tests passed).
 3.  **Run lint:** `npm run lint` -> **PASS**.
-4.  **Action:** Activate `report`.
+4.  **Action:** Invoke the `orrery-report` skill using the Skill tool.
 
 ---
 
@@ -81,4 +81,4 @@ If all checks pass:
 
 - **Ignoring failures:** Passing a failed test suite to the Report skill.
 - **Skipping regression checks:** Not running the full suite to ensure old code still works.
-- **Infinite Loops:** If you keep bouncing between Execute and Verify without progress, stop and activate **Report** with a "Blocked" status.
+- **Infinite Loops:** If you keep bouncing between Execute and Verify without progress, stop and invoke the `orrery-report` skill using the Skill tool with a "Blocked" status.
