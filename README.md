@@ -9,6 +9,7 @@ Orrery is a CLI tool designed to transform high-level development goals into exe
 Prerequisites:
 - Node.js
 - Git
+- Initialized Git repository (your project where you want work done)
 - Access to LLM agent tools (Claude Code, Gemini cli, etc.)
 
 ### Global Installation
@@ -38,50 +39,35 @@ Follow this workflow to go from a high-level goal to finished code.
 
 ### 1. Initialize Agent Skills
 
-Install the necessary "Skills" into your project's agent configuration directories (e.g., `.gemini/` or `.claude/`).
+Install the necessary "Skills" into your global agent configuration directories (e.g., `~/.gemini/skills` or `~/.claude/skills`). Orrery will auto-detect which agents you have installed.
 
 ```bash
 orrery install-skills
 ```
 
-<!--
-this needs to be in a target directory. we need to mention that somehow
--->
 ### 2. Create a Plan
 
-Use your AI agent (equipped with the `discovery` skill) to generate a plan.
+Navigate to your project directory (root of the git repository). Use your AI agent (equipped with the `discovery` skill) to generate a plan.
 
 *   **Prompt your agent:** *"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."*
 
-<!-- 
-change this next step to use the simulate-plan skill 
-the user doesn't need to validate the plan, that is done automatically. don't mention it.
--->
-### 3. Validate the Plan
+### 3. Simulate the Plan
 
-Ensure the generated plan adheres to the schema and has valid dependencies.
+Use the `simulate-plan` skill to explore the plan through conversational dialogue before execution. This helps you identify risks and verify the approach.
 
-```bash
-orrery validate-plan
-```
+*   **Prompt your agent:** *"Let's think through this plan before we start."* or *"/simulate .agent-work/plans/my-plan.yaml"*
 
-<!--
-this needs to be in a target directory. we need to mention that somehow
--->
 ### 4. Execute (Orchestrate)
 
-Run the orchestrator to execute the plan steps. Orrery will manage the agent interactions, code generation, and verification.
+Run the orchestrator to execute the plan steps. Orrery will create a dedicated work branch, manage agent interactions, and automatically create a Pull Request upon completion.
 
 ```bash
 orrery exec
 ```
 
-<!--
-check the PR or create a PR for the work.
-question, will this project work in a non-git repo? i'm not sure
--->
-### 5. Monitor Progress
-Check the status of active plans.
+### 5. Monitor and Review
+
+Check the status of active plans using `orrery status`. Once complete, review and merge the generated Pull Request.
 
 ```bash
 orrery status
@@ -96,7 +82,7 @@ orrery status
 Skills are modular instruction sets that teach an agent how to perform specific phases of work.
 
 *   **Discovery:** Analyze requirements and generate plans.
-<!-- add the simulate-plan skill here -->
+*   **Simulate:** Conversational dialogue to explore plans, identify risks, and verify approaches before execution.
 
 ### Plans
 
