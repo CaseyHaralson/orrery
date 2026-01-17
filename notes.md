@@ -1,8 +1,6 @@
 - clean up workflow.md file and other unused files
 - make sure readme looks good
 - 
-- executing plan agents don't have access to the web, so can't do research...
-- 
 
 test
 - rename execute, report, and verify to have a prefix like orrery
