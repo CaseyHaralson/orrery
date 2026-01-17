@@ -12,6 +12,8 @@ metadata:
     - End users can find next steps via links to existing docs as needed.
   source_branch: main
   work_branch: plan/add-readme
+  completed_at: 2026-01-17T02:52:22.537Z
+  outcome: success
 
 steps:
   # ============================================================================
@@ -20,7 +22,7 @@ steps:
 
   - id: "1.1"
     description: "Inspect CLI commands and docs to confirm behavior and wording"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -41,6 +43,7 @@ steps:
       - lib/cli/commands/orchestrate.js
       - lib/cli/commands/status.js
       - docs/agent-skills-definition.md
+    agent: codex
 
   # ============================================================================
   # Feature 2: Draft the end-user README structure and content
@@ -48,7 +51,7 @@ steps:
 
   - id: "2.1"
     description: "Create README with end-user overview, install, skills, and commands"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
     parallel: false
@@ -74,6 +77,7 @@ steps:
       - lib/cli/commands/orchestrate.js
       - lib/cli/commands/status.js
       - docs/agent-skills-definition.md
+    agent: codex
 
   # ============================================================================
   # Feature 3: Final pass for clarity and consistency
@@ -81,7 +85,7 @@ steps:
 
   - id: "3.1"
     description: "Review README for clarity, accuracy, and user flow"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.1"
     parallel: false
@@ -100,3 +104,4 @@ steps:
       - README.md
     context_files:
       - README.md
+    agent: codex

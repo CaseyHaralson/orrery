@@ -1,0 +1,10 @@
+step_id: "1.1"
+agent: codex
+outcome: success
+details: Recorded CLI command flags/aliases and relevant docs for README
+  accuracy; verified with npm test.
+timestamp: 2026-01-17T02:50:32.294Z
+artifacts:
+  - .agent-work/notes/step-1.1-readme-notes.md
+blocked_reason: null
+test_results: 6/6 passed
