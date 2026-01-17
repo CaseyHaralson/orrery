@@ -61,15 +61,33 @@ graph TD
 ## Documentation
 
 For detailed information about each phase, see:
-- [Agent Workflow Protocol](agent/policies/WORKFLOW.md) - Complete workflow specification
-- [Plan Schema](agent/schemas/plan-schema.yaml) - YAML schema for plan files
-- [Report Schema](agent/schemas/report-schema.yaml) - YAML schema for report files
+- [Plan Schema](agent/skills/discovery/schemas/plan-schema.yaml) - YAML schema for plan files
+- [Agent Skills Definition](docs/agent-skills-definition.md) - Skill structure and conventions
 
 ## Agent Roles
 
 - **Coordinator Agent**: Oversees multi-step work, maintains the plan, dispatches steps to workers
 - **Worker Agent**: Executes individual plan steps, loads appropriate skills, reports completion
 - **Single-Agent Mode**: One agent acts as both coordinator and worker for simpler tasks
+
+## Skills
+
+The orrery skills fall into two categories:
+
+### User-Invocable Skills
+
+These skills are invoked directly by users via slash commands:
+
+- **discovery** (`/discovery`) - Create a structured plan file from a task description. This is the entry point to the workflow.
+- **simulate-plan** (`/simulate-plan`) - Explore a plan through conversational dialogue before committing to execution. Ask "what if" questions and trace dependencies.
+
+### Orchestrator-Only Skills
+
+These skills are invoked by the orchestrator during automated execution:
+
+- **orrery-execute** - Implement plan steps (write code, make changes)
+- **orrery-verify** - Run tests and validate acceptance criteria
+- **orrery-report** - Output structured results for the orchestrator
 
 ## Orchestration System
 
@@ -103,33 +121,34 @@ The orchestrator will:
 
 ### Configuration
 
-Edit `agent/scripts/config/orchestrator.config.js` to customize:
+Edit `lib/orchestration/config.js` to customize:
 
 - **agents**: Command configurations for each AI tool (claude, codex, gemini)
-- **concurrency.maxParallel**: Maximum concurrent agent processes (default: 3)
-- **paths**: Directories for plans, completed, and reports
+- **concurrency.maxParallel**: Maximum concurrent agent processes (default: 1, parallel currently disabled)
+- **failover**: Agent failover settings and error patterns
+- **retry**: Retry policy for failed steps
 
 ## Directory Structure
 
 ```
 orrery/
+├── bin/
+│   └── orrery.js               # CLI entry point
+├── lib/
+│   ├── cli/                    # CLI implementation
+│   │   └── commands/           # Individual command handlers
+│   ├── orchestration/          # Plan orchestrator logic
+│   │   └── config.js           # Orchestrator configuration
+│   └── utils/                  # Utilities (git, paths, etc.)
 ├── agent/
-│   ├── policies/
-│   │   └── WORKFLOW.md          # Workflow protocol specification
-│   ├── schemas/
-│   │   ├── plan-schema.yaml     # Plan file schema
-│   │   └── report-schema.yaml   # Report file schema
-│   ├── skills/                  # Skill instructions for each phase
-│   │   ├── discovery/
-│   │   ├── simulate-plan/
-│   │   ├── orrery-execute/
-│   │   ├── orrery-verify/
-│   │   └── orrery-report/
-│   └── scripts/
-│       ├── orchestrate.js       # Plan orchestrator
-│       ├── clone-agent-skills.js
-│       ├── lib/                 # Orchestrator modules
-│       └── config/              # Orchestrator configuration
+│   └── skills/                 # Skill definitions
+│       ├── discovery/          # Plan creation (user-invocable)
+│       │   └── schemas/        # Plan YAML schema
+│       ├── simulate-plan/      # Plan exploration (user-invocable)
+│       ├── orrery-execute/     # Implementation (orchestrator-only)
+│       ├── orrery-verify/      # Verification (orchestrator-only)
+│       └── orrery-report/      # Reporting (orchestrator-only)
+├── docs/                       # Documentation
 └── package.json
 ```
 
@@ -224,4 +243,16 @@ Show details for a single plan:
 
 ```bash
 orrery status --plan .agent-work/plans/2026-01-14-some-plan.yaml
+```
+
+Install devcontainer configuration to a project:
+
+```bash
+orrery install-devcontainer [target-directory]
+```
+
+Validate and normalize a plan YAML file:
+
+```bash
+orrery validate-plan .agent-work/plans/my-plan.yaml
 ```
