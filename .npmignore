@@ -1,0 +1,8 @@
+.agent-work
+.claude
+docs
+node_modules
+test
+.gitignore
+.npmignore
+orrery*.tgz

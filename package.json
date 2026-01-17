@@ -1,7 +1,7 @@
 {
   "name": "orrery",
   "version": "0.1.0",
-  "description": "Agent skill management and workflow orchestration",
+  "description": "Structured Workflow Orchestration for AI Agents",
   "bin": {
     "orrery": "./bin/orrery.js"
   },
