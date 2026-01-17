@@ -6,6 +6,8 @@ metadata:
   outcomes:
     - Users can receive a greeting that includes their name.
     - The greeting includes the current system time.
+  source_branch: main
+  work_branch: plan/hello-world-cli-v4
 
 steps:
   # ============================================================================
