@@ -39,7 +39,7 @@ Follow this workflow to go from a high-level goal to finished code.
 
 ### 1. Initialize Agent Skills
 
-Install the necessary "Skills" into your global agent configuration directories (e.g., `~/.gemini/skills` or `~/.claude/skills`). Orrery will auto-detect which agents you have installed.
+Install the necessary "Skills" into your global agent configuration directories (e.g., `~/.claude/skills`). Orrery will auto-detect which agents you have installed.
 
 ```bash
 orrery install-skills
