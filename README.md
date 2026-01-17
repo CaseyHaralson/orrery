@@ -103,10 +103,10 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 | Command | Description |
 | :--- | :--- |
 | `orrery` | Command reference. |
-| `orrery install-skills` | Installs/Updates agent skills in your project. |
+| `orrery install-skills` | Installs/Updates agent skills to your global agent configuration directories. |
 | `orrery orchestrate` | Executes the active plan. Alias: `exec`. |
 | `orrery status` | Shows the progress of current plans. |
-| `orrery install-devcontainer` | Sets up a standardized dev environment. |
+| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project. |
 
 ## Directory Structure
 
