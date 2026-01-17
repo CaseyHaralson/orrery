@@ -1,11 +1,9 @@
 ---
 name: discovery
 description: >
-  Transform big ideas into executable plans by decomposing through
-  outcomes, capabilities, and features. Phase 0 of the workflow protocol.
-metadata:
-  version: "1.0"
-  phase: 0
+  Create executable plans for building systems, features, or modules. Use for
+  planning requests, architectural decisions, or when decomposing big ideas
+  into concrete implementation steps.
 hooks:
   PostToolUse:
     - matcher: "Write"

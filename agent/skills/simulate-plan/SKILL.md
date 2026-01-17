@@ -4,9 +4,6 @@ description: >
   Explore a plan through conversational dialogue before committing to execution.
   Ask "what if" questions, trace dependencies, and build intuition about
   what you're building.
-metadata:
-  version: "1.0"
-  phase: 1.5
 ---
 
 # Simulate Skill

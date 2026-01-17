@@ -3,9 +3,7 @@ name: orrery-verify
 description: >
   Run tests and validation to ensure changes meet acceptance criteria
   and nothing is broken. This is Phase 4 of the workflow protocol.
-metadata:
-  version: "1.1"
-  phase: 4
+user-invocable: false
 ---
 
 # Verify Skill
