@@ -94,6 +94,7 @@ for domain in \
     "statsig.com" \
     "api.anthropic.com" \
     "statsig.anthropic.com" \
+    "code.claude.com" \
     "api.openai.com" \
     "auth.openai.com" \
     "platform.openai.com" \
