@@ -4,10 +4,12 @@ metadata:
   version: "2.0"
   source_idea: "Create a comprehensive README for the Orrery project"
   outcomes:
-    - "Users understand the Orrery architecture (Agents + Skills + Orchestrator)"
-    - "Users can install and configure the CLI tool"
-    - "Users can execute the full end-to-end workflow"
-    - "Developers have a reference for all CLI commands and file structures"
+    - Users understand the Orrery architecture (Agents + Skills + Orchestrator)
+    - Users can install and configure the CLI tool
+    - Users can execute the full end-to-end workflow
+    - Developers have a reference for all CLI commands and file structures
+  source_branch: main
+  work_branch: plan/comprehensive-readme
 
 steps:
   # ============================================================================
@@ -26,13 +28,13 @@ steps:
       - Installation: `npm install -g .` (or local usage via `./bin/orrery.js`)
       - Prerequisites: Node.js, Git, access to LLM agents (Claude/Gemini)
     requirements:
-      - "Clear value proposition"
-      - "Step-by-step installation instructions"
+      - Clear value proposition
+      - Step-by-step installation instructions
     criteria:
-      - "README.md exists"
-      - "Introduction clearly explains what Orrery is"
+      - README.md exists
+      - Introduction clearly explains what Orrery is
     files:
-      - "README.md"
+      - README.md
 
   # ============================================================================
   # Feature 2: Core Concepts & Architecture
@@ -40,7 +42,8 @@ steps:
   - id: "2.1"
     description: "Document Core Concepts (Skills, Plans, Orchestration)"
     status: "pending"
-    deps: ["1.1"]
+    deps:
+      - "1.1"
     parallel: false
     context: |
       Explain the three pillars of the system:
@@ -48,15 +51,15 @@ steps:
       2. Plans: YAML files defining steps and dependencies
       3. Orchestrator: The engine that executes plans using agents
     requirements:
-      - "Define 'Skill' (referencing agent/skills/)"
-      - "Define 'Plan' (referencing schemas/plan-schema.yaml)"
-      - "Define 'Orchestrator' (referencing lib/orchestration/)"
+      - Define 'Skill' (referencing agent/skills/)
+      - Define 'Plan' (referencing schemas/plan-schema.yaml)
+      - Define 'Orchestrator' (referencing lib/orchestration/)
     criteria:
-      - "Conceptual overview is accurate to the codebase"
+      - Conceptual overview is accurate to the codebase
     files:
-      - "README.md"
+      - README.md
     context_files:
-      - "docs/agent-skills-definition.md"
+      - docs/agent-skills-definition.md
 
   # ============================================================================
   # Feature 3: The Workflow Guide
@@ -64,7 +67,8 @@ steps:
   - id: "3.1"
     description: "Document the End-to-End Workflow"
     status: "pending"
-    deps: ["2.1"]
+    deps:
+      - "2.1"
     parallel: false
     context: |
       Write a "Getting Started" or "Usage" section that walks through the lifecycle:
@@ -73,15 +77,15 @@ steps:
       3. Execution: `orrery orchestrate` (explain branching model)
       4. Completion: PR creation and plan archiving
     requirements:
-      - "Explain the Discovery phase"
-      - "Explain how the Orchestrator manages git branches (source -> work -> PR)"
-      - "Explain the resume capability"
+      - Explain the Discovery phase
+      - Explain how the Orchestrator manages git branches (source -> work -> PR)
+      - Explain the resume capability
     criteria:
-      - "Workflow steps match the logic in lib/orchestration/index.js"
+      - Workflow steps match the logic in lib/orchestration/index.js
     files:
-      - "README.md"
+      - README.md
     context_files:
-      - "lib/orchestration/index.js"
+      - lib/orchestration/index.js
 
   # ============================================================================
   # Feature 4: CLI Reference & Configuration
@@ -89,20 +93,21 @@ steps:
   - id: "4.1"
     description: "Document CLI Commands and Directory Structure"
     status: "pending"
-    deps: ["3.1"]
+    deps:
+      - "3.1"
     parallel: false
     context: |
       Add a detailed reference section.
       - Commands: install-skills, install-devcontainer, orchestrate, status, validate-plan
       - Directory Structure: Explain `.agent-work/` (plans, reports, completed, uncompleted)
     requirements:
-      - "List all commands from lib/cli/index.js"
-      - "Document arguments and options for each command"
-      - "Explain the purpose of .agent-work subdirectories"
+      - List all commands from lib/cli/index.js
+      - Document arguments and options for each command
+      - Explain the purpose of .agent-work subdirectories
     criteria:
-      - "Command usage matches help text in source code"
+      - Command usage matches help text in source code
     files:
-      - "README.md"
+      - README.md
     context_files:
-      - "lib/cli/commands/orchestrate.js"
-      - "lib/cli/commands/install-skills.js"
+      - lib/cli/commands/orchestrate.js
+      - lib/cli/commands/install-skills.js
