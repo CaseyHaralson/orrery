@@ -121,10 +121,10 @@ orrery/
 │   │   └── report-schema.yaml   # Report file schema
 │   ├── skills/                  # Skill instructions for each phase
 │   │   ├── discovery/
-│   │   ├── simulate/
-│   │   ├── execute/
-│   │   ├── verify/
-│   │   └── report/
+│   │   ├── simulate-plan/
+│   │   ├── orrery-execute/
+│   │   ├── orrery-verify/
+│   │   └── orrery-report/
 │   └── scripts/
 │       ├── orchestrate.js       # Plan orchestrator
 │       ├── clone-agent-skills.js

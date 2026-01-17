@@ -1,5 +1,5 @@
 ---
-name: simulate
+name: simulate-plan
 description: >
   Explore a plan through conversational dialogue before committing to execution.
   Ask "what if" questions, trace dependencies, and build intuition about

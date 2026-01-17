@@ -1,5 +1,5 @@
 ---
-name: report
+name: orrery-report
 description: >
   Summarize execution results and communicate status to the Orchestrator.
   This is Phase 5 of the workflow protocol.
