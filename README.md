@@ -1,91 +1,134 @@
 # Orrery
 
-**Turn AI Chaos into Engineered Progress.**
+**Structured Workflow Orchestration for AI Agents**
 
-Orrery is a CLI tool that structures your interaction with AI coding agents. Instead of endless chat loops and copy-pasting, Orrery provides a disciplined workflow: **Discovery, Planning, Execution, and Verification.**
+Orrery is a CLI tool designed to transform high-level development goals into executable, traceable, and engineered workflows. It turns high-level goals ("Add a user login system") into executable, step-by-step plans that agents follow autonomously, ensuring consistent and high-quality results.
 
-It turns high-level goals ("Add a user login system") into executable, step-by-step plans that agents follow autonomously, ensuring consistent and high-quality results.
+## Installation
 
----
+Prerequisites:
+- Node.js
+- Git
+- Access to LLM agent tools (Claude Code, Gemini cli, etc.)
 
-## Why Orrery?
+### Global Installation
 
-*   **Stop Micromanaging:** Don't paste code back and forth. Give the agent a plan and let it execute.
-*   **Structured Workflow:** Move from "Idea" to "Pull Request" using a proven engineering process (Plan -> Execute -> Verify).
-*   **Skill Injection:** Automatically teaching your agents (Claude, Gemini, etc.) specialized skills for the task at hand.
-*   **Traceability:** Every step is recorded. You know exactly what the agent did and why.
-
-## How to Use Orrery (Step-by-Step)
-
-Follow this path to go from zero to finished code.
-
-### 1. Install the CLI
-Get the tool installed on your machine.
+To install Orrery globally on your system:
 
 ```bash
 npm install -g orrery
 ```
 
-### 2. Equip Your Agent
-Orrery works by giving your AI agent (Claude, Gemini, etc.) specific "Skills" to understand this workflow. You need to install these skills into your project configuration.
+### Local Development
+
+To run Orrery from the source repository:
 
 ```bash
-orrery install-skills --agent all
+git clone https://github.com/CaseyHaralson/orrery.git
+cd orrery
+npm install
+npm link
 ```
-*Effect: This copies instruction files into `.gemini/` or `.claude/` folders so your agent knows how to generate plans.*
 
-### 3. Create a Plan
-Now, talk to your agent. Don't ask it to write code yet; ask it to **plan**. Use the `discovery` skill.
+---
 
-**Copy-paste this prompt to your agent:**
-> "I want to [describe your goal, e.g., 'add a dark mode toggle to the website']. Please activate the `discovery` skill and create a comprehensive plan for this."
+## Quick Start
 
-*Effect: The agent will think and generate a YAML plan in `.agent-work/plans/` (e.g., `add-dark-mode.yaml`).*
+Follow this workflow to go from a high-level goal to finished code.
 
-### 4. Review & Validate
-Check the plan the agent created. It's just a text file.
+### 1. Initialize Agent Skills
+
+Install the necessary "Skills" into your project's agent configuration directories (e.g., `.gemini/` or `.claude/`).
+
+```bash
+orrery install-skills
+```
+
+<!--
+this needs to be in a target directory. we need to mention that somehow
+-->
+### 2. Create a Plan
+
+Use your AI agent (equipped with the `discovery` skill) to generate a plan.
+
+*   **Prompt your agent:** *"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."*
+
+<!-- 
+change this next step to use the simulate-plan skill 
+the user doesn't need to validate the plan, that is done automatically. don't mention it.
+-->
+### 3. Validate the Plan
+
+Ensure the generated plan adheres to the schema and has valid dependencies.
 
 ```bash
 orrery validate-plan
 ```
-*Effect: Ensures the plan structure is valid. If you want to change the plan, just edit the YAML file directly.*
 
-### 5. Execute the Plan
-This is where the magic happens. Run the orchestrator to have agents execute the steps defined in the plan.
+<!--
+this needs to be in a target directory. we need to mention that somehow
+-->
+### 4. Execute (Orchestrate)
+
+Run the orchestrator to execute the plan steps. Orrery will manage the agent interactions, code generation, and verification.
 
 ```bash
-orrery orchestrate
+orrery exec
 ```
-*Effect: Orrery creates a new git branch, spins up agents for each step, writes code, runs tests, and commits the changes.*
 
-### 6. Finish
-Once finished, Orrery will archive the plan. You can now review the code on the new branch and merge it!
+<!--
+check the PR or create a PR for the work.
+question, will this project work in a non-git repo? i'm not sure
+-->
+### 5. Monitor Progress
+Check the status of active plans.
+
+```bash
+orrery status
+```
 
 ---
 
-## Commands Reference
+## Core Concepts
+
+### Skills
+
+Skills are modular instruction sets that teach an agent how to perform specific phases of work.
+
+*   **Discovery:** Analyze requirements and generate plans.
+<!-- add the simulate-plan skill here -->
+
+### Plans
+
+Plans are YAML files that define the "contract" for the work. They break down complex goals into ordered steps with:
+
+*   **Dependencies:** Pre-requisites for execution.
+*   **Acceptance Criteria:** explicit conditions for success.
+*   **Context:** Instructions and file paths relevant to the step.
+
+### The Orchestrator
+
+The Orchestrator (`orrery exec`) is the engine that drives the process. It loads plans, resolves dependencies, invokes the appropriate agents, and manages the lifecycle of the task, including reporting and archiving.
+
+---
+
+## Command Reference
 
 | Command | Description |
 | :--- | :--- |
+| `orrery` | Command reference. |
 | `orrery install-skills` | Installs/Updates agent skills in your project. |
 | `orrery orchestrate` | Executes the active plan. Alias: `exec`. |
 | `orrery status` | Shows the progress of current plans. |
-| `orrery validate-plan` | Checks a plan file for errors. |
 | `orrery install-devcontainer` | Sets up a standardized dev environment. |
 
-## Core Concepts
+## Directory Structure
 
-*   **Skills:** Reusable "personas" for agents (e.g., "The Architect", "The Tester").
-*   **Plans:** YAML files defining *what* needs to be done. They are the contract between you and the agent.
-*   **Orchestrator:** The CLI tool that drives the agents through the plan.
+Orrery maintains its state in the `.agent-work/` directory (configurable via `ORRERY_WORK_DIR`).
 
-## Directory Layout
-
-Orrery keeps its state in your project folder (git-ignored by default):
-
-*   `.agent-work/plans/`: Your active todo lists.
-*   `.agent-work/reports/`: Logs of what the agents did.
-*   `.agent-work/completed/`: Archived finished plans.
+*   `.agent-work/plans/`: **Active Plans.** New and in-progress plan files.
+*   `.agent-work/reports/`: **Reports.** Step-level execution logs and outcomes.
+*   `.agent-work/completed/`: **Archive.** Successfully executed plans are moved here.
 
 ---
 
