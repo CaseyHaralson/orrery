@@ -1,5 +1,3 @@
-- fix up where commit happens, make it happen during orchestrator? 
-  - maybe the report makes the commit message and returns it in the report?
 - clean up workflow.md file and other unused files
 - make sure readme looks good
 - rename execute, report, and verify to have a prefix like orrery
@@ -9,6 +7,8 @@
 - 
 
 test
+- fix up where commit happens, make it happen during orchestrator? 
+  - maybe the report makes the commit message and returns it in the report?
 
 
 done
