@@ -49,7 +49,7 @@ steps:
 
   - id: "2.1"
     description: "Create README with end-user overview, install, skills, and commands"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
     parallel: false
@@ -75,6 +75,7 @@ steps:
       - lib/cli/commands/orchestrate.js
       - lib/cli/commands/status.js
       - docs/agent-skills-definition.md
+    agent: codex
 
   # ============================================================================
   # Feature 3: Final pass for clarity and consistency
