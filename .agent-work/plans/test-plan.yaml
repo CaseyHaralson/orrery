@@ -1,0 +1,80 @@
+# test-plan.yaml
+metadata:
+  created_at: "2026-01-18T07:46:00Z"
+  created_by: "Test-Plan-Generator"
+  version: "1.0"
+  source_idea: "Simple test plan for parallel and dependency testing"
+  outcomes:
+    - "Test parallel step execution"
+    - "Test dependency resolution"
+
+steps:
+  # These two can run in parallel - no dependencies
+  - id: "1"
+    description: "Create config file"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: "Initial config file with basic settings"
+    requirements:
+      - "Create config.json with app name and version"
+    criteria:
+      - "File exists and contains valid JSON"
+    files:
+      - "test-output/config.json"
+
+  - id: "2"
+    description: "Create utils file"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: "Utility functions file"
+    requirements:
+      - "Create utils.js with a hello function"
+    criteria:
+      - "File exists and exports a function"
+    files:
+      - "test-output/utils.js"
+
+  # This depends on step 1
+  - id: "3"
+    description: "Create main app file"
+    status: "pending"
+    deps: ["1"]
+    parallel: false
+    context: "Main application file that imports config"
+    requirements:
+      - "Create app.js that imports config.json"
+    criteria:
+      - "File exists and references config"
+    files:
+      - "test-output/app.js"
+    context_files:
+      - "test-output/config.json"
+
+  # These two can run in parallel once step 3 is done
+  - id: "4"
+    description: "Create test file"
+    status: "pending"
+    deps: ["3"]
+    parallel: true
+    context: "Test file for the app"
+    requirements:
+      - "Create app.test.js"
+    criteria:
+      - "File exists with test cases"
+    files:
+      - "test-output/app.test.js"
+
+  - id: "5"
+    description: "Create README"
+    status: "pending"
+    deps: ["3"]
+    parallel: true
+    context: "Documentation for the app"
+    requirements:
+      - "Create README.md with usage instructions"
+    criteria:
+      - "File exists with markdown content"
+    files:
+      - "test-output/README.md"

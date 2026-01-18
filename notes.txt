@@ -1,0 +1,17 @@
+- delete the work/reports folder as last stage before PR
+	- actually delete everything except for "plans" folder and "completed" folder
+	- make a cleanup step?
+- change status to report on plans that have a work branch as "in flight" or something?
+- 
+- change simulate-plan to specifically require a .agent-work plan file
+- readme: actually, sometimes you do want to drop a plan off...
+	- maybe add a section to manually drop a plan off and then run validation against it
+	- or maybe drop a plan off and run orrery against it to injest it into the correct place?
+- 
+
+
+testing
+- need to create temp smaller plans in the orchestrator so agents only read the parts of the plan that are needed
+
+
+
