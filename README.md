@@ -79,17 +79,18 @@ Sometimes a plan step cannot be completed due to external issues (e.g., an API i
 
 ### Identifying Blocked Steps
 
-Use the `orrery status` command to see which plans are blocked:
+Use the `orrery status` command to see which plans are blocked and which steps are blocked:
 
 ```bash
-orrery status
+orrery status # view the plans that are blocked
+orrery status --plan .agent-work/plans/<plan> # view the status of each step
 ```
 
 Inspect the plan file directly in `.agent-work/plans/` to see the `blocked_reason` for each blocked step.
 
 ### Recovery Workflow
 
-1. **Check the blocked reason**: Use `orrery status` to identify which plans are blocked and then check on the blocked reason in te plan
+1. **Check the blocked reason**: Use `orrery status` to identify which plans are blocked and then check on the blocked reason in the plan
 2. **Fix the underlying issue**: Address the problem (e.g., restore the API, install the missing dependency)
 3. **Edit the plan file**: Change the step status from `blocked` to `pending` in the YAML file
 4. **Resume orchestration**:
