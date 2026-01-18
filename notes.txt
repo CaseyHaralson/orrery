@@ -1,4 +1,4 @@
-- update status command to change the status of plans that have a "work_branch" to "in flight" or some status that is more accurate
-- update the simulate-plan skill description to require a plan file. the skill was triggered in my previous testing without telling the agent to look at a plan, which isn't what we want
-- the orchestrator is condensing plan steps correctly, but the output order is weird. it would be better for the output to be ordered in assending order instead of purely by dependency order (which is what I think it is doing now).
-- make an injest-plan command that runs plan validation and puts the plan in the correct place so it can be executed
+- add ability to override the config fallback order (agentPriority) via env. Maybe ORRERY_AGENT_PRIORITY
+  - add to readme
+- failures.log needs to go to the .agent-work/reports directory (or whatever common work directory)
+  - right now they are going to the work/reports directory which is old
