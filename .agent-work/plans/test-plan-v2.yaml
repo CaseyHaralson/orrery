@@ -7,6 +7,8 @@ metadata:
   outcomes:
     - Test parallel step execution
     - Test dependency resolution
+  source_branch: main
+  work_branch: plan/test-plan-v2
 
 steps:
   # These two can run in parallel - no dependencies
