@@ -82,7 +82,7 @@ Sometimes a plan step cannot be completed due to external issues (e.g., an API i
 Use the `orrery status` command to see which plans are blocked and which steps are blocked:
 
 ```bash
-orrery status # view the plans that are blocked
+orrery status                                 # view the plans that are blocked
 orrery status --plan .agent-work/plans/<plan> # view the status of each step
 ```
 
