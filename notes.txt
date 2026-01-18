@@ -11,6 +11,11 @@
 
 
 testing
+
+
+
+
+done
 - need to create temp smaller plans in the orchestrator so agents only read the parts of the plan that are needed
 
 
