@@ -73,6 +73,33 @@ Check the status of active plans using `orrery status`. Once complete, review an
 orrery status
 ```
 
+## Handling Blocked Plans
+
+Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution.
+
+### Identifying Blocked Steps
+
+Use the `orrery status` command to see which plans are blocked:
+
+```bash
+orrery status
+```
+
+Inspect the plan file directly in `.agent-work/plans/` to see the `blocked_reason` for each blocked step.
+
+### Recovery Workflow
+
+1. **Check the blocked reason**: Use `orrery status` to identify which plans are blocked and then check on the blocked reason in te plan
+2. **Fix the underlying issue**: Address the problem (e.g., restore the API, install the missing dependency)
+3. **Edit the plan file**: Change the step status from `blocked` to `pending` in the YAML file
+4. **Resume orchestration**:
+   ```bash
+   git checkout <work-branch>  # Switch to the plan's work branch
+   orrery orchestrate --resume
+   ```
+
+The `--resume` flag finds the plan matching your current branch and continues execution from where it left off.
+
 ---
 
 ## Core Concepts
@@ -104,7 +131,7 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 | :--- | :--- |
 | `orrery` | Command reference. |
 | `orrery install-skills` | Installs/Updates agent skills to your global agent configuration directories. |
-| `orrery orchestrate` | Executes the active plan. Alias: `exec`. |
+| `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
 | `orrery status` | Shows the progress of current plans. |
 | `orrery install-devcontainer` | Installs/Updates a devcontainer in your project. |
 

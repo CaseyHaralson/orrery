@@ -7,6 +7,7 @@
 - readme: actually, sometimes you do want to drop a plan off...
 	- maybe add a section to manually drop a plan off and then run validation against it
 	- or maybe drop a plan off and run orrery against it to injest it into the correct place?
+- need to make sure project dependencies are installed before moving on to other steps
 - 
 
 
