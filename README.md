@@ -145,6 +145,13 @@ Orrery maintains its state in the `.agent-work/` directory (configurable via `OR
 *   `.agent-work/reports/`: **Reports.** Step-level execution logs and outcomes.
 *   `.agent-work/completed/`: **Archive.** Successfully executed plans are moved here.
 
+## Environment Variables
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `ORRERY_WORK_DIR` | Override the work directory path | `.agent-work` |
+| `ORRERY_AGENT_PRIORITY` | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
+
 ---
 
-*Happy Building.*
+*Happy Building!*
