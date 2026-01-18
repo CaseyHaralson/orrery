@@ -1,23 +1,4 @@
-- delete the work/reports folder as last stage before PR
-	- actually delete everything except for "plans" folder and "completed" folder
-	- make a cleanup step?
-- change status to report on plans that have a work branch as "in flight" or something?
-- 
-- change simulate-plan to specifically require a .agent-work plan file
-- readme: actually, sometimes you do want to drop a plan off...
-	- maybe add a section to manually drop a plan off and then run validation against it
-	- or maybe drop a plan off and run orrery against it to injest it into the correct place?
-- need to make sure project dependencies are installed before moving on to other steps
-- 
-
-
-testing
-
-
-
-
-done
-- need to create temp smaller plans in the orchestrator so agents only read the parts of the plan that are needed
-
-
-
+- update status command to change the status of plans that have a "work_branch" to "in flight" or some status that is more accurate
+- update the simulate-plan skill description to require a plan file. the skill was triggered in my previous testing without telling the agent to look at a plan, which isn't what we want
+- the orchestrator is condensing plan steps correctly, but the output order is weird. it would be better for the output to be ordered in assending order instead of purely by dependency order (which is what I think it is doing now).
+- make an injest-plan command that runs plan validation and puts the plan in the correct place so it can be executed
