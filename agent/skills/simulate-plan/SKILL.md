@@ -2,8 +2,8 @@
 name: simulate-plan
 description: >
   Explore a plan through conversational dialogue before committing to execution.
-  Ask "what if" questions, trace dependencies, and build intuition about
-  what you're building.
+  Requires a plan file argument (e.g., /simulate-plan .agent-work/plans/my-plan.yaml, /simulate-plan my-plan).
+  Ask "what if" questions, trace dependencies, and build intuition about what you're building.
 ---
 
 # Simulate Skill
