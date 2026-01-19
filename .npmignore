@@ -1,5 +1,5 @@
 .agent-work
-.claude
+.devcontainer
 docs
 node_modules
 test

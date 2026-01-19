@@ -135,7 +135,7 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 | `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
 | `orrery status` | Shows the progress of current plans. |
 | `orrery install-devcontainer` | Installs/Updates a devcontainer in your project. |
-| `orrery ingest-plan` | Validates a non-orrery generated plan and imports it into the plans directory. |
+| `orrery ingest-plan` | Validates an externally generated plan and imports it into your project's plans directory. |
 
 ## Directory Structure
 
