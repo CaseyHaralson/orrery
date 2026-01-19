@@ -1,4 +1,5 @@
-- add ability to override the config fallback order (agentPriority) via env. Maybe ORRERY_AGENT_PRIORITY
-  - add to readme
-- failures.log needs to go to the .agent-work/reports directory (or whatever common work directory)
-  - right now they are going to the work/reports directory which is old
+- need to make sure that plans that install dependencies have that step before anything that would use it, and need to make sure that those other steps have the dependency step as a step dependency.
+  - also, need to make sure that testing dependencies are installed if used
+
+
+The above needs to be added to the agent discovery skill in a way that makes sense. I ran into a situation where a project had a dependency install step, but no other steps depended on it so they were failing in weird ways. Also, when I manually ran the install it didn't install testing dependencies so the next things to run weren't able to run the testing framework.
