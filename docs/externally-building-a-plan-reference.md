@@ -1,35 +1,149 @@
----
-name: discovery
+<!-- 
+this comes from agent/skills/discovery
+- keep this up-to-date with that documentation
+- remove step 8 "Output Location" and "Validate the Plan" sections 
+-->
+
+# Plan Schema Reference
+
+The schema defined in `./schemas/plan-schema.yaml`:
+
+```yaml
+$schema: http://json-schema.org/draft-07/schema#
+type: object
+title: Plan Schema
 description: >
-  Create executable plans for building systems, features, or modules. Use for
-  planning requests, architectural decisions, or when decomposing big ideas
-  into concrete implementation steps.
-hooks:
-  PostToolUse:
-    - matcher: "Write"
-      hooks:
-        - type: command
-          command: "orrery validate-plan"
----
+  Extended plan schema for planning output. Includes additional fields for
+  rich context, enabling agents to execute steps autonomously without further
+  user input.
 
-# Discovery Skill
+properties:
+  metadata:
+    type: object
+    description: Plan metadata including creation info and high-level context
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      created_by:
+        type: string
+      version:
+        type: string
+      source_idea:
+        type: string
+        description: The original idea or request that triggered discovery
+      outcomes:
+        type: array
+        description: User-visible results this plan delivers
+        items:
+          type: string
+    required:
+      - created_at
+      - created_by
+      - outcomes
 
-## When to Use
+  steps:
+    type: array
+    description: Array of plan steps defining the work to be done
+    items:
+      $ref: '#/definitions/Step'
 
-Use this skill for **all planning requests**, regardless of size. Discovery transforms ideas into concrete, executable plans.
+required:
+  - metadata
+  - steps
 
-**Triggers:**
-- "Build a [system/platform/module]"
-- Request spans multiple features or domains
-- Unclear what "done" looks like
-- Requires architectural decisions before implementation
+definitions:
+  Step:
+    type: object
+    description: Individual step in the plan, representing a feature or work unit
+    required:
+      - id
+      - description
+      - context
+      - requirements
+      - criteria
+    properties:
+      id:
+        type: string
+        description: Unique identifier for the step
 
-**Also use Discovery when:**
-- Request is a single, scoped feature
-- Outcomes and scope are already clear
-- You can articulate the task in 1-3 sentences
+      description:
+        type: string
+        description: Concise summary of what this step accomplishes
 
----
+      status:
+        type: string
+        enum:
+          - pending
+          - in_progress
+          - complete
+          - blocked
+        default: pending
+        description: Current status of the step
+
+      deps:
+        type: array
+        description: List of step IDs this step depends on
+        items:
+          type: string
+        default: []
+
+      parallel:
+        type: boolean
+        description: Whether this step can run in parallel with others
+        default: false
+
+      context:
+        type: string
+        description: >
+          Background information needed to execute this step. Should include
+          why this step exists, how it fits into the larger picture, and any
+          relevant technical context an agent needs to understand before starting.
+
+      requirements:
+        type: array
+        description: Specific requirements for this step
+        items:
+          type: string
+        minItems: 1
+
+      criteria:
+        type: array
+        description: Acceptance criteria - specific, testable conditions for completion
+        items:
+          type: string
+        minItems: 1
+
+      files:
+        type: array
+        description: Files this step will create or modify
+        items:
+          type: string
+        default: []
+
+      context_files:
+        type: array
+        description: >
+          Files the agent should read for context before starting. These are
+          not modified, but provide patterns, interfaces, or background needed
+          to complete the step.
+        items:
+          type: string
+        default: []
+
+      commands:
+        type: array
+        description: Specific commands to execute (build, test, etc.)
+        items:
+          type: string
+        default: []
+
+      risk_notes:
+        type: string
+        description: Warnings, edge cases, or things to watch out for
+```
+
+# Building A Plan
 
 ## The Decomposition Ladder
 
@@ -174,23 +288,6 @@ Each step must be **self-contained** - an agent should be able to execute
 it without asking questions.
 
 Use the schema defined in `./schemas/plan-schema.yaml`.
-
-**Output Location:**
-- Directory: `.agent-work/plans/`
-- Filename: `<date>-<plan-name>.yaml`
-- Date format: YYYY-MM-DD (e.g., `2026-01-11`)
-- Plan name: kebab-case description of the task (e.g., `fix-clone-agent-skills`)
-
-### Validate the Plan
-
-Plans are automatically validated via the PostToolUse hook when written.
-For manual validation, run:
-
-```bash
-orrery validate-plan .agent-work/plans/<plan>.yaml
-```
-
-This catches common YAML issues like unquoted colons and normalizes formatting.
 
 ### YAML Formatting Rules
 
