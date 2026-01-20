@@ -37,6 +37,12 @@ properties:
         description: User-visible results this plan delivers
         items:
           type: string
+      notes:
+        type: string
+        description: >
+          General notes for agents executing this plan. Include testing commands,
+          environment setup, project conventions, or any context that applies
+          across all steps.
     required:
       - created_at
       - created_by
@@ -289,6 +295,18 @@ it without asking questions.
 
 Use the schema defined in `./schemas/plan-schema.yaml`.
 
+**Document Project Context in Notes:**
+
+Use the `notes` field in metadata to capture project-specific context that agents need throughout execution. This is critical because when plans are broken into substeps, agents executing individual steps might not know project conventions.
+
+Include in notes:
+- **Testing commands**: How to run tests (e.g., `uv run pytest`, `npm test`, `make test`)
+- **Build commands**: How to build the project (e.g., `uv run build`, `npm run build`)
+- **Linting/formatting**: How to check code quality (e.g., `uv run ruff check .`)
+- **Environment setup**: Required environment variables, virtual environments, etc.
+- **Project conventions**: Naming conventions, file organization, coding standards
+- **Tool-specific notes**: e.g., "Always prefix Python commands with 'uv run'"
+
 ### YAML Formatting Rules
 
 - Always quote strings containing special characters (colons, brackets, etc.)
@@ -311,6 +329,11 @@ metadata:
   outcomes:
     - "Users can see usage trends over time"
     - "Admins can export reports for stakeholders"
+  notes: |
+    This project uses uv for dependency management.
+    - Run tests: uv run pytest
+    - Run linting: uv run ruff check .
+    Always prefix Python commands with 'uv run'.
 
 steps:
   # ============================================================================

@@ -26,6 +26,12 @@ properties:
         description: User-visible results this plan delivers
         items:
           type: string
+      notes:
+        type: string
+        description: >
+          General notes for agents executing this plan. Include testing commands,
+          environment setup, project conventions, or any context that applies
+          across all steps.
     required:
       - created_at
       - created_by

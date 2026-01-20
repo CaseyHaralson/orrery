@@ -181,6 +181,18 @@ Use the schema defined in `./schemas/plan-schema.yaml`.
 - Date format: YYYY-MM-DD (e.g., `2026-01-11`)
 - Plan name: kebab-case description of the task (e.g., `fix-clone-agent-skills`)
 
+**Document Project Context in Notes:**
+
+Use the `notes` field in metadata to capture project-specific context that agents need throughout execution. This is critical because when plans are broken into substeps, agents executing individual steps might not know project conventions.
+
+Include in notes:
+- **Testing commands**: How to run tests (e.g., `uv run pytest`, `npm test`, `make test`)
+- **Build commands**: How to build the project (e.g., `uv run build`, `npm run build`)
+- **Linting/formatting**: How to check code quality (e.g., `uv run ruff check .`)
+- **Environment setup**: Required environment variables, virtual environments, etc.
+- **Project conventions**: Naming conventions, file organization, coding standards
+- **Tool-specific notes**: e.g., "Always prefix Python commands with 'uv run'"
+
 ### Validate the Plan
 
 Plans are automatically validated via the PostToolUse hook when written.
@@ -214,6 +226,11 @@ metadata:
   outcomes:
     - "Users can see usage trends over time"
     - "Admins can export reports for stakeholders"
+  notes: |
+    This project uses uv for dependency management.
+    - Run tests: uv run pytest
+    - Run linting: uv run ruff check .
+    Always prefix Python commands with 'uv run'.
 
 steps:
   # ============================================================================
