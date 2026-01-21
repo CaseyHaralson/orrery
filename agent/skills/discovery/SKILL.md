@@ -186,7 +186,7 @@ Use the schema defined in `./schemas/plan-schema.yaml`.
 Use the `notes` field in metadata to capture project-specific context that agents need throughout execution. This is critical because when plans are broken into substeps, agents executing individual steps might not know project conventions.
 
 Include in notes:
-- **Testing commands**: How to run tests (e.g., `uv run pytest`, `npm test`, `make test`)
+- **Testing commands**: How to run tests (e.g., `uv run pytest`, `npm test`, `make test`) (check the README, pyproject.toml, package.json, etc. if applicable to understand: project manager, how to run tests, project conventions)
 - **Build commands**: How to build the project (e.g., `uv run build`, `npm run build`)
 - **Linting/formatting**: How to check code quality (e.g., `uv run ruff check .`)
 - **Environment setup**: Required environment variables, virtual environments, etc.
