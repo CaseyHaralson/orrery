@@ -52,6 +52,17 @@ Run the orchestrator to execute the plan steps. Orrery will create a dedicated w
 orrery exec
 ```
 
+## Important: Autonomous Execution
+
+When you run `orrery exec`, agents execute plan steps **autonomously without step-by-step confirmation**. This enables fully automated workflows but means agents can modify files and run commands without asking.
+
+**Built-in safeguards:**
+- All work happens on an isolated branch (not your main branch)
+- A Pull Request is created for review before merging
+- Agents cannot push directly to main
+
+**For additional isolation**, run Orrery inside a devcontainer. This provides a sandboxed environment where agent actions are contained. See [Devcontainer Setup](docs/advanced-workflows.md#devcontainer-setup) in Advanced Workflows.
+
 ## Advanced Workflows
 
 For advanced usage including devcontainer setup, external plan creation, and handling blocked plans, see [Advanced Workflows](docs/advanced-workflows.md).
