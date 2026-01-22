@@ -1,7 +1,29 @@
 {
-  "name": "orrery",
+  "name": "@caseyharalson/orrery",
   "version": "0.5.0",
   "description": "Structured Workflow Orchestration for AI Agents",
+  "license": "MIT",
+  "author": "Casey Haralson",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CaseyHaralson/orrery.git"
+  },
+  "homepage": "https://github.com/CaseyHaralson/orrery#readme",
+  "bugs": {
+    "url": "https://github.com/CaseyHaralson/orrery/issues"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "workflow",
+    "orchestration",
+    "cli",
+    "automation",
+    "llm"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "bin": {
     "orrery": "./bin/orrery.js"
   },

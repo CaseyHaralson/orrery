@@ -31,7 +31,7 @@ Prerequisites:
 To install Orrery globally on your system:
 
 ```bash
-npm install -g orrery
+npm install -g @caseyharalson/orrery
 ```
 
 ## Quick Start
