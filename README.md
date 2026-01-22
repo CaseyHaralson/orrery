@@ -24,7 +24,7 @@ Prerequisites:
 - Node.js
 - Git
 - Initialized Git repository (your project where you want work done)
-- Access to LLM agent tools (Claude Code, Gemini cli, etc.)
+- Access to LLM agent tools (Claude Code, Codex cli, or Gemini cli)
 
 ### Global Installation
 
@@ -56,7 +56,7 @@ Navigate to your project directory (root of the git repository). Use your AI age
 
 Use the `simulate-plan` skill to explore the plan through conversational dialogue before execution. This helps you identify risks and verify the approach.
 
-*   **Prompt your agent:** *"Let's think through this plan before we start."* or *"/simulate .agent-work/plans/my-plan.yaml"*
+*   **Prompt your agent:** *"Activate the `simulate-plan` skill and let's think through [my-plan] before we start."* or *"/simulate-plan.agent-work/plans/my-plan.yaml"*
 
 ### 4. Execute (Orchestrate)
 
@@ -90,7 +90,7 @@ For advanced usage including devcontainer setup, external plan creation, and han
 Skills are modular instruction sets that teach an agent how to perform specific phases of work.
 
 *   **Discovery:** Analyze requirements and generate plans.
-*   **Simulate:** Conversational dialogue to explore plans, identify risks, and verify approaches before execution.
+*   **Simulate-Plan:** Conversational dialogue to explore plans, identify risks, and verify approaches before execution.
 
 ### Plans
 
