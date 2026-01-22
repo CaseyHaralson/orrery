@@ -115,10 +115,11 @@ RUN mkdir -p "${HOME}/.fzf" \
   && echo '[ -f ~/.fzf/key-bindings.zsh ] && source ~/.fzf/key-bindings.zsh' >> "${HOME}/.zshrc" \
   && echo '[ -f ~/.fzf/completion.zsh ] && source ~/.fzf/completion.zsh' >> "${HOME}/.zshrc"
 
-# ---- Install CLI tools via npm (Claude, Codex, Gemini) ----
+# ---- Install CLI tools via npm (Claude, Codex, Gemini, Orrery) ----
 ARG CLAUDE_CODE_VERSION=latest
 ARG CODEX_VERSION=latest
 ARG GEMINI_VERSION=latest
+ARG ORRERY_VERSION=latest
 
 RUN export NVM_DIR="$HOME/.nvm" \
   && source "$NVM_DIR/nvm.sh" \
@@ -126,16 +127,8 @@ RUN export NVM_DIR="$HOME/.nvm" \
   && npm install -g \
       "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
       "@openai/codex@${CODEX_VERSION}" \
-      "@google/gemini-cli@${GEMINI_VERSION}"
-
-# ---- Install orrery ----
-COPY --chown=vscode:vscode ./*.tgz /tmp/devcontainer/
-
-RUN export NVM_DIR="$HOME/.nvm" \
-  && source "$NVM_DIR/nvm.sh" \
-  && nvm use default \
-  && npm install -g /tmp/devcontainer/*.tgz \
-  && rm -rf /tmp/devcontainer
+      "@google/gemini-cli@${GEMINI_VERSION}" \
+      "@caseyharalson/orrery@${ORRERY_VERSION}"
 
 # ---- Back to root for firewall script setup ----
 USER root

@@ -125,4 +125,4 @@ Orrery maintains its state in the `.agent-work/` directory (configurable via `OR
 
 ---
 
-*Happy Building!*
+*Happy Building!* ❤️

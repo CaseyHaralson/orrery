@@ -15,13 +15,17 @@ For isolated, reproducible development environments, Orrery provides a devcontai
    orrery install-devcontainer
    ```
 
-2. **Configure the devcontainer** (optional):
-   - Set agent priority via environment variables
-   - Add firewall rules if needed
+2. **Configure the devcontainer** (`.devcontainer/devcontainer.json`):
+   - Set your agent priority if you use multiple or edit to your prefered agent via environment variable (`ORRERY_AGENT_PRIORITY`)
+   - Add firewall to start if needed:
+      ```json
+      "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+      "waitFor": "postStartCommand"
+      ```
 
 3. **Open your project in the devcontainer**
 
-4. **Sign into your agents**:
+4. **Sign into your agent(s)**:
    - The devcontainer uses shared volumes between containers, so you only need to authenticate once
 
 5. **Initialize Orrery**:
@@ -115,10 +119,6 @@ blocked add-feature.yaml
    ```bash
    orrery resume --dry-run
    ```
-
-### Manual Recovery
-
-If you prefer, you can still manually edit the plan YAML file to change step status from `blocked` to `pending`, then run `orrery exec --resume`.
 
 ---
 
