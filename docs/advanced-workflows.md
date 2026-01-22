@@ -95,21 +95,30 @@ blocked add-feature.yaml
 
 1. **Fix the underlying issue**: Address the problem (e.g., restore the API, install the missing dependency)
 
-2. **Reset blocked steps to pending**:
+2. **Unblock and resume** with a single command:
    ```bash
-   orrery unblock --all          # Reset all blocked steps
-   # Or reset a specific step:
-   orrery unblock --step step-2
+   orrery resume
    ```
 
-3. **Resume orchestration**:
+   This command automatically:
+   - Detects the plan for the current branch
+   - Resets blocked steps to pending
+   - Commits the plan file changes
+   - Resumes orchestration
+
+   You can also unblock a specific step:
    ```bash
-   orrery exec --resume
+   orrery resume --step step-2
+   ```
+
+   Or preview what would be unblocked:
+   ```bash
+   orrery resume --dry-run
    ```
 
 ### Manual Recovery
 
-If you prefer, you can still manually edit the plan YAML file to change step status from `blocked` to `pending`.
+If you prefer, you can still manually edit the plan YAML file to change step status from `blocked` to `pending`, then run `orrery exec --resume`.
 
 ---
 
@@ -123,8 +132,8 @@ If you prefer, you can still manually edit the plan YAML file to change step sta
 | `orrery install-devcontainer` | Installs/Updates a devcontainer in your project. |
 | `orrery install-skills` | Installs/Updates agent skills to your global agent configuration directories. |
 | `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
+| `orrery resume` | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes. |
 | `orrery status` | Shows the progress of current plans. Auto-detects plan when on a work branch. |
-| `orrery unblock` | Reset blocked steps to pending. Auto-detects plan when on a work branch. |
 
 ## Environment Variables
 
