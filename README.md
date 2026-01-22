@@ -20,34 +20,21 @@ To install Orrery globally on your system:
 npm install -g orrery
 ```
 
-### Local Development
-
-To run Orrery from the source repository:
-
-```bash
-git clone https://github.com/CaseyHaralson/orrery.git
-cd orrery
-npm install
-npm link
-```
-
----
-
 ## Quick Start
 
 Follow this workflow to go from a high-level goal to finished code.
 
-### 1. Initialize Agent Skills
+### 1. Initialize Orrery
 
 Install the necessary "Skills" into your global agent configuration directories (e.g., `~/.claude/skills`). Orrery will auto-detect which agents you have installed.
 
 ```bash
-orrery install-skills
+orrery init
 ```
 
 ### 2. Create a Plan
 
-Navigate to your project directory (root of the git repository). Use your AI agent (equipped with the `discovery` skill) to generate a plan.
+Navigate to your project directory (root of the git repository). Use your AI agent (now equipped with the `discovery` skill) to generate a plan.
 
 *   **Prompt your agent:** *"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."*
 
@@ -65,41 +52,9 @@ Run the orchestrator to execute the plan steps. Orrery will create a dedicated w
 orrery exec
 ```
 
-### 5. Monitor and Review
+## Advanced Workflows
 
-Check the status of active plans using `orrery status`. Once complete, review and merge the generated Pull Request.
-
-```bash
-orrery status
-```
-
-## Handling Blocked Plans
-
-Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution.
-
-### Identifying Blocked Steps
-
-Use the `orrery status` command to see which plans are blocked and which steps are blocked:
-
-```bash
-orrery status                                 # view the plans that are blocked
-orrery status --plan .agent-work/plans/<plan> # view the status of each step
-```
-
-Inspect the plan file directly in `.agent-work/plans/` to see the `blocked_reason` for each blocked step.
-
-### Recovery Workflow
-
-1. **Check the blocked reason**: Use `orrery status` to identify which plans are blocked and then check on the blocked reason in the plan
-2. **Fix the underlying issue**: Address the problem (e.g., restore the API, install the missing dependency)
-3. **Edit the plan file**: Change the step status from `blocked` to `pending` in the YAML file
-4. **Resume orchestration**:
-   ```bash
-   git checkout <work-branch>  # Switch to the plan's work branch
-   orrery orchestrate --resume
-   ```
-
-The `--resume` flag finds the plan matching your current branch and continues execution from where it left off.
+For advanced usage including devcontainer setup, external plan creation, and handling blocked plans, see [Advanced Workflows](docs/advanced-workflows.md).
 
 ---
 
@@ -131,11 +86,9 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 | Command | Description |
 | :--- | :--- |
 | `orrery` | Command reference. |
-| `orrery install-skills` | Installs/Updates agent skills to your global agent configuration directories. |
+| `orrery init` | Initialize Orrery: install skills to detected agents. |
 | `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
 | `orrery status` | Shows the progress of current plans. |
-| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project. |
-| `orrery ingest-plan` | Validates an externally generated plan and imports it into your project's plans directory. |
 
 ## Directory Structure
 
@@ -144,13 +97,6 @@ Orrery maintains its state in the `.agent-work/` directory (configurable via `OR
 *   `.agent-work/plans/`: **Active Plans.** New and in-progress plan files.
 *   `.agent-work/reports/`: **Reports.** Step-level execution logs and outcomes.
 *   `.agent-work/completed/`: **Archive.** Successfully executed plans are moved here.
-
-## Environment Variables
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `ORRERY_WORK_DIR` | Override the work directory path | `.agent-work` |
-| `ORRERY_AGENT_PRIORITY` | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
 
 ---
 
