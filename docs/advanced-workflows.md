@@ -70,34 +70,46 @@ See [externally-building-a-plan-reference.md](./externally-building-a-plan-refer
 
 ## Handling Blocked Plans
 
-Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution.
+Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution, staying on the work branch.
 
-### Identifying Blocked Steps
+### Viewing Blocked Status
 
-Use the `orrery status` command to see which plans are blocked:
+When on the work branch, `orrery status` auto-detects the plan and shows blocked reasons:
 
 ```bash
-orrery status                                 # View plans that are blocked
-orrery status --plan .agent-work/plans/<plan> # View the status of each step
+orrery status
 ```
 
-Inspect the plan file directly in `.agent-work/plans/` to see the `blocked_reason` for each blocked step.
+Output:
+```
+(detected plan for branch: plan/add-feature)
+
+blocked add-feature.yaml
+  complete step-1 - Setup configuration
+  blocked step-2 - Create database schema
+    Reason: Could not connect to database server
+  pending step-3 - Add migration scripts
+```
 
 ### Recovery Workflow
 
-1. **Check the blocked reason**: Use `orrery status` to identify which plans are blocked and then check the blocked reason in the plan file
+1. **Fix the underlying issue**: Address the problem (e.g., restore the API, install the missing dependency)
 
-2. **Fix the underlying issue**: Address the problem (e.g., restore the API, install the missing dependency)
-
-3. **Edit the plan file**: Change the step status from `blocked` to `pending` in the YAML file
-
-4. **Resume orchestration**:
+2. **Reset blocked steps to pending**:
    ```bash
-   git checkout <work-branch>  # Switch to the plan's work branch
+   orrery unblock --all          # Reset all blocked steps
+   # Or reset a specific step:
+   orrery unblock --step step-2
+   ```
+
+3. **Resume orchestration**:
+   ```bash
    orrery exec --resume
    ```
 
-The `--resume` flag finds the plan matching your current branch and continues execution from where it left off.
+### Manual Recovery
+
+If you prefer, you can still manually edit the plan YAML file to change step status from `blocked` to `pending`.
 
 ---
 
@@ -111,7 +123,8 @@ The `--resume` flag finds the plan matching your current branch and continues ex
 | `orrery install-devcontainer` | Installs/Updates a devcontainer in your project. |
 | `orrery install-skills` | Installs/Updates agent skills to your global agent configuration directories. |
 | `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
-| `orrery status` | Shows the progress of current plans. |
+| `orrery status` | Shows the progress of current plans. Auto-detects plan when on a work branch. |
+| `orrery unblock` | Reset blocked steps to pending. Auto-detects plan when on a work branch. |
 
 ## Environment Variables
 

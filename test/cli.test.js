@@ -127,3 +127,199 @@ test("orrery exec alias works", async (t) => {
   assert.equal(result.code, 0);
   assert.match(result.stdout, /No new plans to process/);
 });
+
+test("orrery unblock --help shows usage", async () => {
+  const result = await runCli(["unblock", "--help"]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Reset blocked steps to pending/);
+  assert.match(result.stdout, /--step/);
+  assert.match(result.stdout, /--all/);
+  assert.match(result.stdout, /--dry-run/);
+});
+
+test("orrery unblock without plan shows error when not on work branch", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const gitRepo = initTempGitRepo();
+  t.after(() => {
+    cleanupDir(projectDir);
+    cleanupDir(gitRepo);
+  });
+
+  const result = await runCli(["unblock"], { cwd: gitRepo });
+  assert.equal(result.code, 1);
+  // Error goes to stderr, usage hint to stdout
+  assert.match(result.stderr, /No plan specified/);
+});
+
+test("orrery unblock with non-existent plan shows error", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["unblock", "non-existent.yaml"], { cwd: projectDir });
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /Plan not found/);
+});
+
+test("orrery status shows blocked reason for blocked steps", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const plansDir = path.join(projectDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+
+  // Create a plan with a blocked step
+  const planContent = `metadata:
+  name: test-plan
+steps:
+  - id: step-1
+    description: First step
+    status: complete
+  - id: step-2
+    description: Second step
+    status: blocked
+    blocked_reason: Could not connect to database
+  - id: step-3
+    description: Third step
+    status: pending
+`;
+  fs.writeFileSync(path.join(plansDir, "test-plan.yaml"), planContent);
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["status", "--plan", "test-plan.yaml"], { cwd: projectDir });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /blocked step-2/);
+  assert.match(result.stdout, /Reason: Could not connect to database/);
+});
+
+test("orrery unblock shows blocked steps without --all or --step", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const plansDir = path.join(projectDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+
+  const planContent = `metadata:
+  name: test-plan
+steps:
+  - id: step-1
+    description: First step
+    status: complete
+  - id: step-2
+    description: Second step
+    status: blocked
+    blocked_reason: API unavailable
+`;
+  fs.writeFileSync(path.join(plansDir, "test-plan.yaml"), planContent);
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["unblock", "test-plan.yaml"], { cwd: projectDir });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Blocked steps in test-plan.yaml/);
+  assert.match(result.stdout, /step-2/);
+  assert.match(result.stdout, /Reason: API unavailable/);
+});
+
+test("orrery unblock --all resets blocked steps to pending", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const plansDir = path.join(projectDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+
+  const planPath = path.join(plansDir, "test-plan.yaml");
+  const planContent = `metadata:
+  name: test-plan
+steps:
+  - id: step-1
+    description: First step
+    status: blocked
+    blocked_reason: Error 1
+  - id: step-2
+    description: Second step
+    status: blocked
+    blocked_reason: Error 2
+`;
+  fs.writeFileSync(planPath, planContent);
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["unblock", "test-plan.yaml", "--all"], { cwd: projectDir });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Unblocked 2 step\(s\)/);
+
+  // Verify the plan file was updated
+  const updatedContent = fs.readFileSync(planPath, "utf8");
+  assert.match(updatedContent, /status: pending/);
+  assert.ok(!updatedContent.includes("blocked_reason"));
+});
+
+test("orrery unblock --step resets specific step", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const plansDir = path.join(projectDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+
+  const planPath = path.join(plansDir, "test-plan.yaml");
+  const planContent = `metadata:
+  name: test-plan
+steps:
+  - id: step-1
+    description: First step
+    status: blocked
+    blocked_reason: Error 1
+  - id: step-2
+    description: Second step
+    status: blocked
+    blocked_reason: Error 2
+`;
+  fs.writeFileSync(planPath, planContent);
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["unblock", "test-plan.yaml", "--step", "step-1"], { cwd: projectDir });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Unblocked 1 step\(s\)/);
+  assert.match(result.stdout, /step-1/);
+
+  // Verify the plan file was updated - step-1 pending, step-2 still blocked
+  const updatedContent = fs.readFileSync(planPath, "utf8");
+  assert.match(updatedContent, /id: step-2[\s\S]*?status: blocked/);
+});
+
+test("orrery unblock --dry-run shows preview without changes", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const plansDir = path.join(projectDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+
+  const planPath = path.join(plansDir, "test-plan.yaml");
+  const planContent = `metadata:
+  name: test-plan
+steps:
+  - id: step-1
+    description: First step
+    status: blocked
+    blocked_reason: Error 1
+`;
+  fs.writeFileSync(planPath, planContent);
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["unblock", "test-plan.yaml", "--all", "--dry-run"], { cwd: projectDir });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Dry run/);
+  assert.match(result.stdout, /step-1/);
+
+  // Verify the plan file was NOT changed
+  const unchangedContent = fs.readFileSync(planPath, "utf8");
+  assert.match(unchangedContent, /status: blocked/);
+});
+
+test("orrery unblock reports no blocked steps when plan has none", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const plansDir = path.join(projectDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+
+  const planContent = `metadata:
+  name: test-plan
+steps:
+  - id: step-1
+    description: First step
+    status: complete
+`;
+  fs.writeFileSync(path.join(plansDir, "test-plan.yaml"), planContent);
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["unblock", "test-plan.yaml"], { cwd: projectDir });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /No blocked steps/);
+});
