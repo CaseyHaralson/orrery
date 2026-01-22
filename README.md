@@ -4,6 +4,20 @@
 
 Orrery is a CLI tool designed to transform high-level development goals into executable, traceable, and engineered workflows. It turns high-level goals ("Add a user login system") into executable, step-by-step plans that agents follow autonomously, ensuring consistent and high-quality results.
 
+## When to Use Orrery
+
+**Good fit:**
+- Multi-step features requiring coordinated changes across many files
+- You want to review a plan before letting it run autonomously
+- Tasks with clear dependencies between implementation steps
+
+**Use your AI agent directly when:**
+- Quick fixes or small changes
+- Exploratory development where you're discovering as you go
+- You want to stay interactive with every decision
+
+See [Comparison](docs/COMPARISON.md) for a detailed analysis.
+
 ## Installation
 
 Prerequisites:
