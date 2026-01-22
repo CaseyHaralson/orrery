@@ -56,7 +56,7 @@ Navigate to your project directory (root of the git repository). Use your AI age
 
 Use the `simulate-plan` skill to explore the plan through conversational dialogue before execution. This helps you identify risks and verify the approach.
 
-*   **Prompt your agent:** *"Activate the `simulate-plan` skill and let's think through [my-plan] before we start."* or *"/simulate-plan.agent-work/plans/my-plan.yaml"*
+*   **Prompt your agent:** *"Activate the `simulate-plan` skill and let's think through [my-plan] before we start."* or *"/simulate-plan .agent-work/plans/my-plan.yaml"*
 
 ### 4. Execute (Orchestrate)
 
