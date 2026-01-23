@@ -57,7 +57,7 @@ Navigate to your project directory (root of the git repository). Use your AI age
 
 ### 3. Refine the Plan (Optional)
 
-Use the `refine-plan` skill to analyze and improve the plan. This performs additional thinking to fix oversights, improve context quality, and strengthen acceptance criteria.
+Use the `refine-plan` skill to analyze and improve the plan autonomously. This performs additional thinking to fix oversights, improve context quality, and strengthen acceptance criteria.
 
 - **Prompt your agent:** _"Activate the `refine-plan` skill on [my-plan]."_ or _"/refine-plan .agent-work/plans/my-plan.yaml"_
 

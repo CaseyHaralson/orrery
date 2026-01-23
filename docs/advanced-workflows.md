@@ -24,10 +24,36 @@ For isolated, reproducible development environments, Orrery provides a devcontai
      "waitFor": "postStartCommand"
      ```
 
-3. **Open your project in the devcontainer**
+3. **Open your project in the devcontainer**:
+
+   **VS Code:**
+   - Open your project folder in VS Code
+   - When prompted "Folder contains a Dev Container configuration file", click **Reopen in Container**
+   - Or use the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and select **Dev Containers: Reopen in Container**
+
+   **VS Code with Remote - SSH:**
+   - If working on a remote machine, first connect via Remote - SSH
+   - Then use **Dev Containers: Reopen in Container** from the Command Palette
+
+   **CLI (devcontainer CLI):**
+
+   ```bash
+   # Install the CLI if needed
+   npm install -g @devcontainers/cli
+
+   # Build and start the container
+   devcontainer up --workspace-folder .
+
+   # Open a shell in the container
+   devcontainer exec --workspace-folder . bash
+   ```
+
+   **JetBrains IDEs:**
+   - Open the project and navigate to `.devcontainer/devcontainer.json`
+   - Click the container icon in the gutter or use **Create Dev Container and Mount Sources**
 
 4. **Sign into your agent(s)**:
-   - The devcontainer uses shared volumes between containers, so you only need to authenticate once
+   - The devcontainer uses shared volumes between containers, so you only need to authenticate once per agent
 
 5. **Initialize Orrery**:
 
@@ -59,7 +85,7 @@ Plans can be created outside of an agent using the `ingest-plan` command. This i
 
    This validates the plan against the schema and copies it to `.agent-work/plans/`.
 
-3. **Simulate the plan** (optional but recommended):
+3. **Simulate the plan** (optional):
 
    ```bash
    # Using an agent with the simulate-plan skill
@@ -74,61 +100,6 @@ Plans can be created outside of an agent using the `ingest-plan` command. This i
 ### Plan Schema Reference
 
 See [externally-building-a-plan-reference.md](./externally-building-a-plan-reference.md) for the complete plan schema and detailed guidance on building orchestrator-ready plans.
-
----
-
-## Plan Refinement
-
-The `refine-plan` skill analyzes existing plans and implements improvements directly. Unlike `simulate-plan` (which is read-only), `refine-plan` writes changes to the plan file.
-
-### When to Use
-
-- Plan validation failed and you need to fix issues
-- Context seems thin for autonomous execution
-- Acceptance criteria are vague or untestable
-- Missing dependency declarations (especially install step dependencies)
-- Want to verify a plan is ready before execution
-
-### Workflow
-
-1. **Run the refine-plan skill**:
-
-   ```bash
-   # Using an agent with the refine-plan skill
-   /refine-plan .agent-work/plans/your-plan.yaml
-   ```
-
-2. **Review the analysis**: The skill reports what improvements it found (or confirms the plan is ready if none needed)
-
-3. **Changes are applied automatically**: Unlike simulate, refine writes directly to the plan file
-
-4. **Validation runs automatically**: The PostToolUse hook validates the plan after writing
-
-### What It Checks
-
-| Category              | Examples                                         |
-| :-------------------- | :----------------------------------------------- |
-| **Structural issues** | Missing required fields, malformed step IDs      |
-| **Dependency issues** | Missing install step deps, circular dependencies |
-| **Context quality**   | Thin context, missing context_files              |
-| **Criteria quality**  | Vague or untestable acceptance criteria          |
-| **Risk coverage**     | Complex steps without risk_notes                 |
-| **Schema compliance** | Invalid field types, missing required fields     |
-
-### Example
-
-```bash
-/refine-plan .agent-work/plans/analytics-dashboard.yaml
-
-# Output:
-# Found 3 improvements:
-# - Dependency issues: Steps 1.1, 2.1 don't depend on install step (0.1)
-# - Context quality: Step 1.2 has thin context
-# - Criteria quality: Step 2.3 has vague criteria ("error handling works")
-#
-# Implementing changes...
-# Plan validated successfully.
-```
 
 ---
 
