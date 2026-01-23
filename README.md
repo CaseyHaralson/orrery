@@ -7,11 +7,13 @@ Orrery is a CLI tool designed to transform high-level development goals into exe
 ## When to Use Orrery
 
 **Good fit:**
+
 - Multi-step features requiring coordinated changes across many files
 - You want to review a plan before letting it run autonomously
 - Tasks with clear dependencies between implementation steps
 
 **Use your AI agent directly when:**
+
 - Quick fixes or small changes
 - Exploratory development where you're discovering as you go
 - You want to stay interactive with every decision
@@ -21,6 +23,7 @@ See [Comparison](docs/COMPARISON.md) for a detailed analysis.
 ## Installation
 
 Prerequisites:
+
 - Node.js
 - Git
 - Initialized Git repository (your project where you want work done)
@@ -50,13 +53,13 @@ orrery init
 
 Navigate to your project directory (root of the git repository). Use your AI agent (now equipped with the `discovery` skill) to generate a plan.
 
-*   **Prompt your agent:** *"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."*
+- **Prompt your agent:** _"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."_
 
 ### 3. Simulate the Plan
 
 Use the `simulate-plan` skill to explore the plan through conversational dialogue before execution. This helps you identify risks and verify the approach.
 
-*   **Prompt your agent:** *"Activate the `simulate-plan` skill and let's think through [my-plan] before we start."* or *"/simulate-plan .agent-work/plans/my-plan.yaml"*
+- **Prompt your agent:** _"Activate the `simulate-plan` skill and let's think through [my-plan] before we start."_ or _"/simulate-plan .agent-work/plans/my-plan.yaml"_
 
 ### 4. Execute (Orchestrate)
 
@@ -71,6 +74,7 @@ orrery exec
 When you run `orrery exec`, agents execute plan steps **autonomously without step-by-step confirmation**. This enables fully automated workflows but means agents can modify files and run commands without asking.
 
 **Built-in safeguards:**
+
 - All work happens on an isolated branch (not your main branch)
 - A Pull Request is created for review before merging
 - Agents cannot push directly to main
@@ -89,16 +93,16 @@ For advanced usage including devcontainer setup, external plan creation, and han
 
 Skills are modular instruction sets that teach an agent how to perform specific phases of work.
 
-*   **Discovery:** Analyze requirements and generate plans.
-*   **Simulate-Plan:** Conversational dialogue to explore plans, identify risks, and verify approaches before execution.
+- **Discovery:** Analyze requirements and generate plans.
+- **Simulate-Plan:** Conversational dialogue to explore plans, identify risks, and verify approaches before execution.
 
 ### Plans
 
 Plans are YAML files that define the "contract" for the work. They break down complex goals into ordered steps with:
 
-*   **Dependencies:** Pre-requisites for execution.
-*   **Acceptance Criteria:** explicit conditions for success.
-*   **Context:** Instructions and file paths relevant to the step.
+- **Dependencies:** Pre-requisites for execution.
+- **Acceptance Criteria:** explicit conditions for success.
+- **Context:** Instructions and file paths relevant to the step.
 
 ### The Orchestrator
 
@@ -108,21 +112,21 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 
 ## Command Reference
 
-| Command | Description |
-| :--- | :--- |
-| `orrery` | Command reference. |
-| `orrery init` | Initialize Orrery: install skills to detected agents. |
+| Command              | Description                                                                                                           |
+| :------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `orrery`             | Command reference.                                                                                                    |
+| `orrery init`        | Initialize Orrery: install skills to detected agents.                                                                 |
 | `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
-| `orrery status` | Shows the progress of current plans. |
+| `orrery status`      | Shows the progress of current plans.                                                                                  |
 
 ## Directory Structure
 
 Orrery maintains its state in the `.agent-work/` directory (configurable via `ORRERY_WORK_DIR`).
 
-*   `.agent-work/plans/`: **Active Plans.** New and in-progress plan files.
-*   `.agent-work/reports/`: **Reports.** Step-level execution logs and outcomes.
-*   `.agent-work/completed/`: **Archive.** Successfully executed plans are moved here.
+- `.agent-work/plans/`: **Active Plans.** New and in-progress plan files.
+- `.agent-work/reports/`: **Reports.** Step-level execution logs and outcomes.
+- `.agent-work/completed/`: **Archive.** Successfully executed plans are moved here.
 
 ---
 
-*Happy Building!* ❤️
+_Happy Building!_ ❤️

@@ -1,0 +1,10 @@
+step_id: "2.1"
+agent: codex
+outcome: success
+details: Added Keep a Changelog-style CHANGELOG with Unreleased and 0.5.0
+  baseline plus compare/release links.
+timestamp: 2026-01-23T01:59:20.114Z
+artifacts:
+  - CHANGELOG.md
+blocked_reason: null
+test_results: 213/213 passed

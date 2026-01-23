@@ -47,7 +47,7 @@ function initTempGitRepo() {
       "user.email=orrery@example.com",
       "commit",
       "-m",
-      "init",
+      "init"
     ],
     { cwd: gitDir, stdio: "ignore" }
   );
@@ -72,9 +72,12 @@ test("orrery install-skills --dry-run lists files", async (t) => {
   t.after(() => cleanupDir(homeDir));
 
   const env = { ...process.env, HOME: homeDir, USERPROFILE: homeDir };
-  const result = await runCli(["install-skills", "--dry-run", "--agent", "codex"], {
-    env,
-  });
+  const result = await runCli(
+    ["install-skills", "--dry-run", "--agent", "codex"],
+    {
+      env
+    }
+  );
 
   assert.equal(result.code, 0);
   assert.match(result.stdout, /Dry run enabled/);
@@ -101,7 +104,7 @@ test("orrery orchestrate exits cleanly with no plans", async (t) => {
   const env = {
     ...process.env,
     GIT_DIR: path.join(gitRepo, ".git"),
-    GIT_WORK_TREE: gitRepo,
+    GIT_WORK_TREE: gitRepo
   };
   const result = await runCli(["orchestrate"], { cwd: projectDir, env });
 
@@ -120,7 +123,7 @@ test("orrery exec alias works", async (t) => {
   const env = {
     ...process.env,
     GIT_DIR: path.join(gitRepo, ".git"),
-    GIT_WORK_TREE: gitRepo,
+    GIT_WORK_TREE: gitRepo
   };
   const result = await runCli(["exec"], { cwd: projectDir, env });
 
@@ -171,7 +174,9 @@ steps:
   fs.writeFileSync(path.join(plansDir, "test-plan.yaml"), planContent);
   t.after(() => cleanupDir(projectDir));
 
-  const result = await runCli(["status", "--plan", "test-plan.yaml"], { cwd: projectDir });
+  const result = await runCli(["status", "--plan", "test-plan.yaml"], {
+    cwd: projectDir
+  });
   assert.equal(result.code, 0);
   assert.match(result.stdout, /blocked step-2/);
   assert.match(result.stdout, /Reason: Could not connect to database/);
@@ -192,13 +197,16 @@ function initGitRepoWithPlan(branchName, planContent) {
       "user.email=orrery@example.com",
       "commit",
       "-m",
-      "init",
+      "init"
     ],
     { cwd: gitDir, stdio: "ignore" }
   );
 
   // Create and checkout the work branch
-  execFileSync("git", ["checkout", "-b", branchName], { cwd: gitDir, stdio: "ignore" });
+  execFileSync("git", ["checkout", "-b", branchName], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
 
   // Create the plan directory and file
   const plansDir = path.join(gitDir, ".agent-work", "plans");
@@ -217,7 +225,7 @@ function initGitRepoWithPlan(branchName, planContent) {
       "user.email=orrery@example.com",
       "commit",
       "-m",
-      "add plan",
+      "add plan"
     ],
     { cwd: gitDir, stdio: "ignore" }
   );
@@ -238,7 +246,10 @@ steps:
     status: blocked
     blocked_reason: API unavailable
 `;
-  const { gitDir, planPath } = initGitRepoWithPlan("plan/test-feature", planContent);
+  const { gitDir, planPath } = initGitRepoWithPlan(
+    "plan/test-feature",
+    planContent
+  );
   t.after(() => cleanupDir(gitDir));
 
   const result = await runCli(["resume", "--dry-run"], { cwd: gitDir });
@@ -267,10 +278,15 @@ steps:
     status: blocked
     blocked_reason: Error 2
 `;
-  const { gitDir, planPath } = initGitRepoWithPlan("plan/test-feature", planContent);
+  const { gitDir, planPath } = initGitRepoWithPlan(
+    "plan/test-feature",
+    planContent
+  );
   t.after(() => cleanupDir(gitDir));
 
-  const result = await runCli(["resume", "--step", "step-1", "--dry-run"], { cwd: gitDir });
+  const result = await runCli(["resume", "--step", "step-1", "--dry-run"], {
+    cwd: gitDir
+  });
   assert.equal(result.code, 0);
   assert.match(result.stdout, /Dry run/);
   assert.match(result.stdout, /step-1/);
@@ -295,7 +311,9 @@ steps:
   const { gitDir } = initGitRepoWithPlan("plan/test-feature", planContent);
   t.after(() => cleanupDir(gitDir));
 
-  const result = await runCli(["resume", "--step", "non-existent"], { cwd: gitDir });
+  const result = await runCli(["resume", "--step", "non-existent"], {
+    cwd: gitDir
+  });
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Step "non-existent" is not blocked/);
 });

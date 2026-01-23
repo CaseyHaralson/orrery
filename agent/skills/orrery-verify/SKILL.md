@@ -14,6 +14,7 @@ user-invocable: false
 Use this skill **after execution** to validate that changes work correctly and meet acceptance criteria.
 
 **Triggers:**
+
 - Execution phase is complete.
 - You have been handed off from the **Execute** skill.
 
@@ -54,12 +55,14 @@ Ask yourself: Does the implementation actually satisfy this?
 
 **Case A: Verification FAILED**
 If tests fail, linting errors occur, or criteria are not met:
+
 1.  Analyze the error.
 2.  **Return to Execute:** Invoke the `orrery-execute` skill using the Skill tool to fix the issues.
-3.  *Do not* proceed to Report until issues are resolved (unless completely blocked).
+3.  _Do not_ proceed to Report until issues are resolved (unless completely blocked).
 
 **Case B: Verification PASSED**
 If all checks pass:
+
 1.  **Gather Stats:** Note the number of tests passed (e.g., "8/8 passed").
 2.  **Handoff to Report:** Invoke the `orrery-report` skill using the Skill tool to finalize the step.
 
@@ -70,7 +73,7 @@ If all checks pass:
 **Scenario:** You implemented `src/api/routes/upload.ts`.
 
 1.  **Run tests:** `npm test` -> **FAIL** (ReferenceError).
-    *   **Action:** Invoke the `orrery-execute` skill using the Skill tool to fix the ReferenceError.
+    - **Action:** Invoke the `orrery-execute` skill using the Skill tool to fix the ReferenceError.
 
 2.  **Run tests (Attempt 2):** `npm test` -> **PASS** (5 tests passed).
 3.  **Run lint:** `npm run lint` -> **PASS**.

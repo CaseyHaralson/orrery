@@ -8,19 +8,20 @@ Orrery is a **structured workflow orchestration layer** that sits on top of AI c
 
 ## Key Differences from Direct Agent Use
 
-| Aspect | Direct AI CLI | Orrery |
-|--------|--------------|--------|
-| **Planning** | Implicit in conversation | Explicit YAML contracts with acceptance criteria |
-| **Execution** | Interactive back-and-forth | "Fire and forget" autonomous execution |
-| **Dependencies** | You track in your head | Topologically sorted, explicit in plan |
-| **Quality gates** | You verify manually | Built-in Execute → Verify → Report cycle |
-| **Git workflow** | You manage branches/PRs | Auto-creates branches, PRs per plan |
-| **Resumability** | Limited (chat history) | Plans are persistent, resumable state machines |
-| **Multi-step tasks** | Prone to drift/forgetting | Deterministic execution path |
+| Aspect               | Direct AI CLI              | Orrery                                           |
+| -------------------- | -------------------------- | ------------------------------------------------ |
+| **Planning**         | Implicit in conversation   | Explicit YAML contracts with acceptance criteria |
+| **Execution**        | Interactive back-and-forth | "Fire and forget" autonomous execution           |
+| **Dependencies**     | You track in your head     | Topologically sorted, explicit in plan           |
+| **Quality gates**    | You verify manually        | Built-in Execute → Verify → Report cycle         |
+| **Git workflow**     | You manage branches/PRs    | Auto-creates branches, PRs per plan              |
+| **Resumability**     | Limited (chat history)     | Plans are persistent, resumable state machines   |
+| **Multi-step tasks** | Prone to drift/forgetting  | Deterministic execution path                     |
 
 ## When Orrery Adds Value
 
 **Good fit:**
+
 - Large features requiring 10+ coordinated changes across files
 - You want to plan upfront, review the plan, then let it run unattended
 - Multiple developers need to share/review AI-generated plans
@@ -28,6 +29,7 @@ Orrery is a **structured workflow orchestration layer** that sits on top of AI c
 - Complex dependency chains between implementation steps
 
 **Less useful:**
+
 - Quick one-off fixes or small changes
 - Exploratory/interactive development where you're discovering as you go
 - Tasks where you want to stay in the loop for every decision
@@ -36,6 +38,7 @@ Orrery is a **structured workflow orchestration layer** that sits on top of AI c
 ## Honest Assessment
 
 **Pros:**
+
 1. Forces structured thinking before code (the 5-level decomposition ladder is genuinely useful)
 2. Plans are version-controllable, reviewable artifacts
 3. Auto-verification prevents silently broken implementations
@@ -43,6 +46,7 @@ Orrery is a **structured workflow orchestration layer** that sits on top of AI c
 5. Resumable state means you can step away mid-execution
 
 **Cons:**
+
 1. **Overhead for small tasks** - Writing a full plan for a bug fix is overkill
 2. **Extra abstraction layer** - More moving parts that can break
 3. **Learning curve** - You need to understand the plan schema, skill system, and orchestration flow

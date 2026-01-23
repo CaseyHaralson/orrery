@@ -6,7 +6,7 @@ const test = require("node:test");
 
 const {
   detectInstalledAgents,
-  getAgentSkillsDir,
+  getAgentSkillsDir
 } = require("../../lib/utils/agent-detector");
 const { createTempDir, cleanupDir } = require("../helpers/test-utils");
 

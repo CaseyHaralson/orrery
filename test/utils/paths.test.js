@@ -8,7 +8,7 @@ const {
   getPlansDir,
   getCompletedDir,
   getReportsDir,
-  getTempDir,
+  getTempDir
 } = require("../../lib/utils/paths");
 const { createTempDir, cleanupDir } = require("../helpers/test-utils");
 

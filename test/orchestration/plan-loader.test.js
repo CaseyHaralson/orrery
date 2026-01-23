@@ -2,7 +2,6 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
-const YAML = require("yaml");
 
 const {
   loadPlan,
@@ -11,9 +10,14 @@ const {
   updateStepsStatus,
   getPlanFiles,
   movePlanToCompleted,
-  getCompletedPlanNames,
+  getCompletedPlanNames
 } = require("../../lib/orchestration/plan-loader");
-const { createTempDir, cleanupDir, createMinimalPlan, writeTempPlan } = require("../helpers/test-utils");
+const {
+  createTempDir,
+  cleanupDir,
+  createMinimalPlan,
+  writeTempPlan
+} = require("../helpers/test-utils");
 
 // ============================================================================
 // loadPlan tests
@@ -27,8 +31,8 @@ test("loadPlan loads and parses YAML plan file", (t) => {
     metadata: { name: "my-plan" },
     steps: [
       { id: "step-1", description: "First step", status: "pending" },
-      { id: "step-2", description: "Second step", status: "complete" },
-    ],
+      { id: "step-2", description: "Second step", status: "complete" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test-plan.yaml", planContent);
 
@@ -48,8 +52,8 @@ test("loadPlan provides getCompletedSteps helper", (t) => {
     steps: [
       { id: "step-1", status: "complete" },
       { id: "step-2", status: "pending" },
-      { id: "step-3", status: "complete" },
-    ],
+      { id: "step-3", status: "complete" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -69,8 +73,8 @@ test("loadPlan provides getBlockedSteps helper", (t) => {
   const planContent = createMinimalPlan({
     steps: [
       { id: "step-1", status: "blocked" },
-      { id: "step-2", status: "pending" },
-    ],
+      { id: "step-2", status: "pending" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -89,8 +93,8 @@ test("loadPlan provides isComplete helper", (t) => {
   const planContent = createMinimalPlan({
     steps: [
       { id: "step-1", status: "complete" },
-      { id: "step-2", status: "blocked" },
-    ],
+      { id: "step-2", status: "blocked" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -105,8 +109,8 @@ test("loadPlan isComplete returns false with pending steps", (t) => {
   const planContent = createMinimalPlan({
     steps: [
       { id: "step-1", status: "complete" },
-      { id: "step-2", status: "pending" },
-    ],
+      { id: "step-2", status: "pending" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -121,8 +125,8 @@ test("loadPlan provides isSuccessful helper", (t) => {
   const planContent = createMinimalPlan({
     steps: [
       { id: "step-1", status: "complete" },
-      { id: "step-2", status: "complete" },
-    ],
+      { id: "step-2", status: "complete" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -137,8 +141,8 @@ test("loadPlan isSuccessful returns false with blocked steps", (t) => {
   const planContent = createMinimalPlan({
     steps: [
       { id: "step-1", status: "complete" },
-      { id: "step-2", status: "blocked" },
-    ],
+      { id: "step-2", status: "blocked" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -155,7 +159,7 @@ test("savePlan writes updated plan to file", (t) => {
   t.after(() => cleanupDir(tempDir));
 
   const planContent = createMinimalPlan({
-    steps: [{ id: "step-1", status: "pending" }],
+    steps: [{ id: "step-1", status: "pending" }]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -172,7 +176,7 @@ test("savePlan preserves metadata updates", (t) => {
   t.after(() => cleanupDir(tempDir));
 
   const planContent = createMinimalPlan({
-    metadata: { name: "original" },
+    metadata: { name: "original" }
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -195,8 +199,8 @@ test("updateStepStatus updates step status in file", (t) => {
   const planContent = createMinimalPlan({
     steps: [
       { id: "step-1", status: "pending" },
-      { id: "step-2", status: "pending" },
-    ],
+      { id: "step-2", status: "pending" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
@@ -212,11 +216,13 @@ test("updateStepStatus adds extra fields", (t) => {
   t.after(() => cleanupDir(tempDir));
 
   const planContent = createMinimalPlan({
-    steps: [{ id: "step-1", status: "pending" }],
+    steps: [{ id: "step-1", status: "pending" }]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
-  updateStepStatus(planPath, "step-1", "blocked", { blocked_reason: "API down" });
+  updateStepStatus(planPath, "step-1", "blocked", {
+    blocked_reason: "API down"
+  });
 
   const plan = loadPlan(planPath);
   assert.equal(plan.steps[0].status, "blocked");
@@ -235,14 +241,14 @@ test("updateStepsStatus updates multiple steps at once", (t) => {
     steps: [
       { id: "step-1", status: "pending" },
       { id: "step-2", status: "pending" },
-      { id: "step-3", status: "pending" },
-    ],
+      { id: "step-3", status: "pending" }
+    ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
   updateStepsStatus(planPath, [
     { stepId: "step-1", status: "complete" },
-    { stepId: "step-3", status: "blocked", extras: { blocked_reason: "Error" } },
+    { stepId: "step-3", status: "blocked", extras: { blocked_reason: "Error" } }
   ]);
 
   const plan = loadPlan(planPath);
@@ -257,12 +263,12 @@ test("updateStepsStatus removes fields with null value", (t) => {
   t.after(() => cleanupDir(tempDir));
 
   const planContent = createMinimalPlan({
-    steps: [{ id: "step-1", status: "blocked", blocked_reason: "Error" }],
+    steps: [{ id: "step-1", status: "blocked", blocked_reason: "Error" }]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
   updateStepsStatus(planPath, [
-    { stepId: "step-1", status: "pending", extras: { blocked_reason: null } },
+    { stepId: "step-1", status: "pending", extras: { blocked_reason: null } }
   ]);
 
   const plan = loadPlan(planPath);

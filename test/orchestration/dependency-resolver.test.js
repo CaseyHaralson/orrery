@@ -6,7 +6,7 @@ const {
   resolveExecutionGroups,
   detectCycles,
   getBlockedDependents,
-  partitionSteps,
+  partitionSteps
 } = require("../../lib/orchestration/dependency-resolver");
 const { createMockPlan } = require("../helpers/test-utils");
 
@@ -17,7 +17,7 @@ const { createMockPlan } = require("../helpers/test-utils");
 test("getReadySteps returns pending steps with no dependencies", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "pending" },
-    { id: "step-2", status: "pending" },
+    { id: "step-2", status: "pending" }
   ]);
 
   const ready = getReadySteps(plan);
@@ -33,7 +33,7 @@ test("getReadySteps excludes non-pending steps", () => {
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "in_progress" },
     { id: "step-3", status: "blocked" },
-    { id: "step-4", status: "pending" },
+    { id: "step-4", status: "pending" }
   ]);
 
   const ready = getReadySteps(plan);
@@ -45,21 +45,18 @@ test("getReadySteps returns steps with all deps complete", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "pending", deps: ["step-1"] },
-    { id: "step-3", status: "pending", deps: ["step-1"] },
+    { id: "step-3", status: "pending", deps: ["step-1"] }
   ]);
 
   const ready = getReadySteps(plan);
   assert.equal(ready.length, 2);
-  assert.deepEqual(
-    ready.map((s) => s.id).sort(),
-    ["step-2", "step-3"]
-  );
+  assert.deepEqual(ready.map((s) => s.id).sort(), ["step-2", "step-3"]);
 });
 
 test("getReadySteps excludes steps with incomplete deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "pending" },
-    { id: "step-2", status: "pending", deps: ["step-1"] },
+    { id: "step-2", status: "pending", deps: ["step-1"] }
   ]);
 
   const ready = getReadySteps(plan);
@@ -70,7 +67,7 @@ test("getReadySteps excludes steps with incomplete deps", () => {
 test("getReadySteps excludes steps with blocked deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "blocked" },
-    { id: "step-2", status: "pending", deps: ["step-1"] },
+    { id: "step-2", status: "pending", deps: ["step-1"] }
   ]);
 
   const ready = getReadySteps(plan);
@@ -80,7 +77,7 @@ test("getReadySteps excludes steps with blocked deps", () => {
 test("getReadySteps excludes steps with in_progress deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "in_progress" },
-    { id: "step-2", status: "pending", deps: ["step-1"] },
+    { id: "step-2", status: "pending", deps: ["step-1"] }
   ]);
 
   const ready = getReadySteps(plan);
@@ -91,7 +88,7 @@ test("getReadySteps handles steps with multiple deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "complete" },
-    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] },
+    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] }
   ]);
 
   const ready = getReadySteps(plan);
@@ -103,7 +100,7 @@ test("getReadySteps returns empty for steps with partial deps complete", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "pending" },
-    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] },
+    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] }
   ]);
 
   const ready = getReadySteps(plan);
@@ -116,11 +113,7 @@ test("getReadySteps returns empty for steps with partial deps complete", () => {
 // ============================================================================
 
 test("resolveExecutionGroups returns single group for independent steps", () => {
-  const steps = [
-    { id: "step-1" },
-    { id: "step-2" },
-    { id: "step-3" },
-  ];
+  const steps = [{ id: "step-1" }, { id: "step-2" }, { id: "step-3" }];
 
   const groups = resolveExecutionGroups(steps);
   // All are serial by default (parallel !== true), so each is its own group
@@ -131,7 +124,7 @@ test("resolveExecutionGroups groups parallel steps together", () => {
   const steps = [
     { id: "step-1", parallel: true },
     { id: "step-2", parallel: true },
-    { id: "step-3", parallel: true },
+    { id: "step-3", parallel: true }
   ];
 
   const groups = resolveExecutionGroups(steps);
@@ -143,7 +136,7 @@ test("resolveExecutionGroups respects dependency ordering", () => {
   const steps = [
     { id: "step-1" },
     { id: "step-2", deps: ["step-1"] },
-    { id: "step-3", deps: ["step-2"] },
+    { id: "step-3", deps: ["step-2"] }
   ];
 
   const groups = resolveExecutionGroups(steps);
@@ -158,7 +151,7 @@ test("resolveExecutionGroups handles diamond dependencies", () => {
     { id: "step-1" },
     { id: "step-2", deps: ["step-1"], parallel: true },
     { id: "step-3", deps: ["step-1"], parallel: true },
-    { id: "step-4", deps: ["step-2", "step-3"] },
+    { id: "step-4", deps: ["step-2", "step-3"] }
   ];
 
   const groups = resolveExecutionGroups(steps);
@@ -171,7 +164,7 @@ test("resolveExecutionGroups handles diamond dependencies", () => {
 test("resolveExecutionGroups throws on circular dependency", () => {
   const steps = [
     { id: "step-1", deps: ["step-2"] },
-    { id: "step-2", deps: ["step-1"] },
+    { id: "step-2", deps: ["step-1"] }
   ];
 
   assert.throws(
@@ -198,7 +191,7 @@ test("resolveExecutionGroups handles mixed parallel and serial at same level", (
   const steps = [
     { id: "step-1", parallel: true },
     { id: "step-2", parallel: true },
-    { id: "step-3", parallel: false },
+    { id: "step-3", parallel: false }
   ];
 
   const groups = resolveExecutionGroups(steps);
@@ -216,7 +209,7 @@ test("resolveExecutionGroups handles mixed parallel and serial at same level", (
 test("detectCycles returns hasCycle false for valid plan", () => {
   const plan = createMockPlan([
     { id: "step-1" },
-    { id: "step-2", deps: ["step-1"] },
+    { id: "step-2", deps: ["step-1"] }
   ]);
 
   const result = detectCycles(plan);
@@ -228,7 +221,7 @@ test("detectCycles returns hasCycle true for circular dependency", () => {
   const plan = createMockPlan([
     { id: "step-1", deps: ["step-3"] },
     { id: "step-2", deps: ["step-1"] },
-    { id: "step-3", deps: ["step-2"] },
+    { id: "step-3", deps: ["step-2"] }
   ]);
 
   const result = detectCycles(plan);
@@ -252,7 +245,7 @@ test("getBlockedDependents returns direct dependents", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "blocked" },
     { id: "step-2", deps: ["step-1"] },
-    { id: "step-3", deps: ["step-1"] },
+    { id: "step-3", deps: ["step-1"] }
   ]);
 
   const dependents = getBlockedDependents(plan, "step-1");
@@ -264,7 +257,7 @@ test("getBlockedDependents returns transitive dependents", () => {
     { id: "step-1", status: "blocked" },
     { id: "step-2", deps: ["step-1"] },
     { id: "step-3", deps: ["step-2"] },
-    { id: "step-4", deps: ["step-3"] },
+    { id: "step-4", deps: ["step-3"] }
   ]);
 
   const dependents = getBlockedDependents(plan, "step-1");
@@ -274,7 +267,7 @@ test("getBlockedDependents returns transitive dependents", () => {
 test("getBlockedDependents returns empty for step with no dependents", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "blocked" },
-    { id: "step-2" },
+    { id: "step-2" }
   ]);
 
   const dependents = getBlockedDependents(plan, "step-1");
@@ -286,7 +279,7 @@ test("getBlockedDependents handles diamond dependency pattern", () => {
     { id: "step-1", status: "blocked" },
     { id: "step-2", deps: ["step-1"] },
     { id: "step-3", deps: ["step-1"] },
-    { id: "step-4", deps: ["step-2", "step-3"] },
+    { id: "step-4", deps: ["step-2", "step-3"] }
   ]);
 
   const dependents = getBlockedDependents(plan, "step-1");
@@ -304,7 +297,7 @@ test("partitionSteps separates parallel and serial steps", () => {
   const readySteps = [
     { id: "step-1", parallel: true },
     { id: "step-2", parallel: true },
-    { id: "step-3", parallel: false },
+    { id: "step-3", parallel: false }
   ];
 
   const result = partitionSteps(readySteps, 10);
@@ -317,7 +310,7 @@ test("partitionSteps respects maxParallel limit", () => {
     { id: "step-1", parallel: true },
     { id: "step-2", parallel: true },
     { id: "step-3", parallel: true },
-    { id: "step-4", parallel: true },
+    { id: "step-4", parallel: true }
   ];
 
   const result = partitionSteps(readySteps, 2);
@@ -328,7 +321,7 @@ test("partitionSteps respects maxParallel limit", () => {
 test("partitionSteps accounts for currently running steps", () => {
   const readySteps = [
     { id: "step-1", parallel: true },
-    { id: "step-2", parallel: true },
+    { id: "step-2", parallel: true }
   ];
 
   const result = partitionSteps(readySteps, 3, 2);
@@ -337,10 +330,7 @@ test("partitionSteps accounts for currently running steps", () => {
 });
 
 test("partitionSteps returns empty when no slots available", () => {
-  const readySteps = [
-    { id: "step-1", parallel: true },
-    { id: "step-2" },
-  ];
+  const readySteps = [{ id: "step-1", parallel: true }, { id: "step-2" }];
 
   const result = partitionSteps(readySteps, 2, 2);
   assert.equal(result.parallel.length, 0);
@@ -351,7 +341,7 @@ test("partitionSteps fills serial slots after parallel", () => {
   const readySteps = [
     { id: "step-1", parallel: true },
     { id: "step-2" },
-    { id: "step-3" },
+    { id: "step-3" }
   ];
 
   const result = partitionSteps(readySteps, 3);
@@ -360,11 +350,7 @@ test("partitionSteps fills serial slots after parallel", () => {
 });
 
 test("partitionSteps handles all serial steps", () => {
-  const readySteps = [
-    { id: "step-1" },
-    { id: "step-2" },
-    { id: "step-3" },
-  ];
+  const readySteps = [{ id: "step-1" }, { id: "step-2" }, { id: "step-3" }];
 
   const result = partitionSteps(readySteps, 2);
   assert.equal(result.parallel.length, 0);

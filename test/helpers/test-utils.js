@@ -32,21 +32,20 @@ function cleanupDir(dirPath) {
 function initTempGitRepo() {
   const gitDir = createTempDir("orrery-git-");
   execFileSync("git", ["init"], { cwd: gitDir, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Orrery Test"], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
+  execFileSync("git", ["config", "user.email", "orrery@example.com"], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
   fs.writeFileSync(path.join(gitDir, "README.md"), "test\n");
   execFileSync("git", ["add", "."], { cwd: gitDir, stdio: "ignore" });
-  execFileSync(
-    "git",
-    [
-      "-c",
-      "user.name=Orrery Test",
-      "-c",
-      "user.email=orrery@example.com",
-      "commit",
-      "-m",
-      "init",
-    ],
-    { cwd: gitDir, stdio: "ignore" }
-  );
+  execFileSync("git", ["commit", "-m", "init"], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
   return gitDir;
 }
 
@@ -83,7 +82,7 @@ function createMockPlan(steps = [], metadata = {}) {
 
     isSuccessful() {
       return this.steps.every((s) => s.status === "complete");
-    },
+    }
   };
 }
 
@@ -110,11 +109,11 @@ function createMinimalPlan(overrides = {}) {
   return {
     metadata: {
       name: "test-plan",
-      ...overrides.metadata,
+      ...overrides.metadata
     },
     steps: overrides.steps || [
-      { id: "step-1", description: "First step", status: "pending" },
-    ],
+      { id: "step-1", description: "First step", status: "pending" }
+    ]
   };
 }
 
@@ -164,5 +163,5 @@ module.exports = {
   writeTempPlan,
   createMinimalPlan,
   sleep,
-  captureConsole,
+  captureConsole
 };

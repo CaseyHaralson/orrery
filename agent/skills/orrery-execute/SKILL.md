@@ -12,10 +12,12 @@ user-invocable: false
 Use this skill to **implement code changes** defined in a plan step.
 
 **Triggers:**
+
 - You are invoked by the Orchestrator to work on specific `stepIds`.
 - A plan exists with pending steps.
 
 **Prerequisites:**
+
 - Plan exists with clear step descriptions.
 - You understand what needs to be built.
 
@@ -26,6 +28,7 @@ Use this skill to **implement code changes** defined in a plan step.
 ### Step 1: Read the Plan
 
 Read the plan file provided in your instructions.
+
 - Identify the steps you are assigned to (via `stepIds`).
 - Read the `description`, `criteria`, `files`, and `risk_notes` for those steps.
 - **Do not edit the plan file.**
@@ -33,6 +36,7 @@ Read the plan file provided in your instructions.
 ### Step 2: Implement the Change
 
 Write the code:
+
 - Follow project conventions and patterns.
 - Keep changes focused on the step's scope.
 - Write clean, readable code.
@@ -41,6 +45,7 @@ Write the code:
 ### Step 3: Initial Check
 
 Before handing off:
+
 - **Compile/Build:** Ensure no syntax errors.
 - **Smoke Test:** Does it run?
 
@@ -55,6 +60,7 @@ Once implementation is complete, invoke the `orrery-verify` skill using the Skil
 ## Example
 
 **Plan Step:**
+
 ```yaml
 - id: "2"
   description: "Implement backend API endpoint for CSV upload"
@@ -72,11 +78,14 @@ Once implementation is complete, invoke the `orrery-verify` skill using the Skil
 ## Error Handling
 
 ### When Code Doesn't Work
+
 1. **Read error messages.**
 2. **Fix specific issues.**
 3. **If stuck:** You may mark the step as blocked by invoking the `orrery-report` skill directly using the Skill tool with a "Blocked" status (see Report skill for details).
 
 ### Rollback Strategy
+
 If a change breaks things badly and you cannot fix it:
+
 1. `git stash` or `git checkout` to revert.
 2. Invoke the `orrery-report` skill using the Skill tool to report the blockage.

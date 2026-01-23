@@ -10,7 +10,8 @@ metadata:
     - Every PR is automatically validated via GitHub Actions CI
     - Publishing workflow is streamlined with proper safety checks
     - Security practices are transparent and documented
-    - Coding agents can work effectively with clear instructions and automated workflows
+    - Coding agents can work effectively with clear instructions and automated
+      workflows
   notes: |
     This project uses Node.js with CommonJS modules.
     - Run tests: npm test (uses node --test)
@@ -20,6 +21,10 @@ metadata:
 
     The project is already published to npm as @caseyharalson/orrery.
     Current version: 0.5.0
+  source_branch: main
+  work_branch: plan/open-source-npm-readiness
+  completed_at: 2026-01-23T04:18:49.414Z
+  outcome: success
 
 steps:
   # ============================================================================
@@ -28,7 +33,7 @@ steps:
 
   - id: "1.1"
     description: "Create CONTRIBUTING.md with contribution guidelines"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -61,10 +66,11 @@ steps:
     context_files:
       - README.md
       - package.json
+    agent: codex
 
   - id: "1.2"
     description: "Create CODE_OF_CONDUCT.md using Contributor Covenant"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -81,10 +87,11 @@ steps:
       - Contact information is appropriate for the project
     files:
       - CODE_OF_CONDUCT.md
+    agent: codex
 
   - id: "1.3"
     description: "Create GitHub issue and PR templates"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -109,6 +116,7 @@ steps:
       - .github/ISSUE_TEMPLATE/bug_report.md
       - .github/ISSUE_TEMPLATE/feature_request.md
       - .github/PULL_REQUEST_TEMPLATE.md
+    agent: codex
 
   # ============================================================================
   # Feature 2: Version Tracking
@@ -116,7 +124,7 @@ steps:
 
   - id: "2.1"
     description: "Create CHANGELOG.md following Keep a Changelog format"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -143,6 +151,7 @@ steps:
     context_files:
       - package.json
       - README.md
+    agent: codex
 
   # ============================================================================
   # Feature 3: Code Quality Tooling (ESLint + Prettier)
@@ -150,7 +159,7 @@ steps:
 
   - id: "3.1"
     description: "Install and configure ESLint for JavaScript linting"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -193,10 +202,11 @@ steps:
       in existing code that will be fixed in step 3.4. If npm run lint fails
       initially due to lint errors in the code, that is expected - config errors
       (like "Cannot find module") indicate a setup problem.
+    agent: codex
 
   - id: "3.2"
     description: "Install and configure Prettier for code formatting"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
     parallel: false
@@ -229,10 +239,11 @@ steps:
     risk_notes: |
       Prettier may reformat all files on first run. This is expected and will be
       committed as part of step 3.4. Do not commit formatting changes in this step.
+    agent: codex
 
   - id: "3.3"
     description: "Configure ESLint and Prettier to work together"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
       - "3.2"
@@ -259,10 +270,11 @@ steps:
     risk_notes: |
       The eslint-config-prettier package must be imported AFTER other ESLint configs
       in eslint.config.js to properly override conflicting rules.
+    agent: codex
 
   - id: "3.4"
     description: "Fix any existing linting issues in codebase"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.3"
     parallel: false
@@ -282,9 +294,9 @@ steps:
       - npm run format:check passes (no unformatted files)
       - npm test passes (no regressions)
     files:
-      - "lib/**/*.js"
-      - "bin/**/*.js"
-      - "test/**/*.js"
+      - lib/**/*.js
+      - bin/**/*.js
+      - test/**/*.js
     context_files:
       - lib/
       - bin/
@@ -299,6 +311,7 @@ steps:
       before. Review changes carefully - formatting should not alter behavior, but
       verify tests pass. If lint --fix introduces unexpected changes, review
       each rule violation manually.
+    agent: codex
 
   # ============================================================================
   # Feature 4: GitHub Actions CI Pipeline
@@ -306,7 +319,7 @@ steps:
 
   - id: "4.1"
     description: "Create GitHub Actions workflow for testing and linting"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.4"
     parallel: false
@@ -334,6 +347,7 @@ steps:
       Matrix strategy for Node versions should use quoted strings for versions
       (e.g., "18" not 18) to avoid YAML interpretation issues. Test the workflow
       by pushing to a branch before merging to main.
+    agent: codex
 
   # ============================================================================
   # Feature 5: Publishing Safety
@@ -341,7 +355,7 @@ steps:
 
   - id: "5.1"
     description: "Add prepublishOnly script and verify package.json metadata"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.4"
     parallel: false
@@ -362,14 +376,16 @@ steps:
         published (or verify .npmignore is sufficient)
     criteria:
       - prepublishOnly script exists in package.json
-      - "npm publish --dry-run includes: lib/, bin/, package.json, README.md, LICENSE"
+      - "npm publish --dry-run includes: lib/, bin/, package.json, README.md,
+        LICENSE"
       - "npm publish --dry-run excludes: test/, .agent-work/, node_modules/"
-      - "package.json has all required fields: name, version, description, license,
-        author, repository, homepage, bugs, keywords, engines"
+      - "package.json has all required fields: name, version, description,
+        license, author, repository, homepage, bugs, keywords, engines"
     files:
       - package.json
     commands:
       - npm publish --dry-run
+    agent: codex
 
   # ============================================================================
   # Feature 6: Security Documentation
@@ -377,7 +393,7 @@ steps:
 
   - id: "6.1"
     description: "Create SECURITY.md with vulnerability disclosure policy"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -396,10 +412,11 @@ steps:
       - Specifies supported versions
     files:
       - SECURITY.md
+    agent: codex
 
   - id: "6.2"
     description: "Add npm audit to CI pipeline"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.1"
     parallel: false
@@ -419,33 +436,35 @@ steps:
       - Audit step is named clearly (e.g., "Security audit")
     files:
       - .github/workflows/ci.yml
+    agent: codex
 
   # ============================================================================                                                                                                                  
   # Feature 7: Agent Workflow Support                                                                                                                                                             
   # ============================================================================                                                                                                                  
-                                                                                                                                                                                                  
-  - id: "7.1"                                                                                                                                                                                     
-    description: "Add validate/fix npm scripts for streamlined workflow"                                                                                                                          
-    status: "pending"                                                                                                                                                                             
-    deps:                                                                                                                                                                                         
-      - "3.4"                                                                                                                                                                                     
-    parallel: false                                                                                                                                                                               
-    context: |                                                                                                                                                                                    
+
+  - id: "7.1"
+    description: "Add validate/fix npm scripts for streamlined workflow"
+    status: "complete"
+    deps:
+      - "3.4"
+    parallel: false
+    context: |
       A single command to validate everything makes it easier for both humans                                                                                                                     
       and coding agents to verify changes before committing. A companion "fix"                                                                                                                    
       script auto-corrects what it can.                                                                                                                                                           
-    requirements:                                                                                                                                                                                 
-      - "Add 'validate' script: npm run format:check && npm run lint && npm test"                                                                                                                 
-      - "Add 'fix' script: npm run format && npm run lint -- --fix"                                                                                                                               
-    criteria:                                                                                                                                                                                     
-      - npm run validate runs format:check, lint, and test in sequence                                                                                                                            
-      - npm run fix runs format and lint --fix in sequence                                                                                                                                        
-    files:                                                                                                                                                                                        
-      - package.json                                                                                                                                                                              
-                                                                                                                                                                                                  
+    requirements:
+      - "Add 'validate' script: npm run format:check && npm run lint && npm test"
+      - "Add 'fix' script: npm run format && npm run lint -- --fix"
+    criteria:
+      - npm run validate runs format:check, lint, and test in sequence
+      - npm run fix runs format and lint --fix in sequence
+    files:
+      - package.json
+    agent: codex
+
   - id: "7.2"
     description: "Create CLAUDE.md with agent workflow instructions"
-    status: "pending"
+    status: "complete"
     deps:
       - "7.1"
     parallel: false
@@ -470,7 +489,8 @@ steps:
       - "Clarify what doesn't need changelog entries: test-only changes,
         documentation updates, refactoring with no behavior change, CI/tooling"
       - Keep it concise - agents work better with brief, clear instructions
-      - Reference CONTRIBUTING.md for commit message conventions and PR guidelines
+      - Reference CONTRIBUTING.md for commit message conventions and PR
+        guidelines
     criteria:
       - CLAUDE.md exists in repository root
       - Contains clear "before committing" instructions
@@ -484,11 +504,12 @@ steps:
     context_files:
       - package.json
       - README.md
-      - CHANGELOG.md  
-  
+      - CHANGELOG.md
+    agent: codex
+
   - id: "7.3"
     description: "Create release preparation script and agent-driven release workflow"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.1"
       - "7.1"
@@ -508,24 +529,24 @@ steps:
       release notes for the maintainer to copy-paste into GitHub's release UI.
     requirements:
       - Create scripts/prepare-release.js that:
-        - Reads CHANGELOG.md and extracts [Unreleased] section content
-        - Exits with message if [Unreleased] is empty or has no entries
-        - Analyzes entries to suggest version type (Added/Changed→minor,
-          Fixed→patch, anything marked BREAKING→major)
-        - Reads repository URL from package.json
-        - Outputs the raw entries and suggested version type
-        - Outputs instructions for the agent to complete the release
+          - Reads CHANGELOG.md and extracts [Unreleased] section content
+          - Exits with message if [Unreleased] is empty or has no entries
+          - Analyzes entries to suggest version type (Added/Changed→minor,
+            Fixed→patch, anything marked BREAKING→major)
+          - Reads repository URL from package.json
+          - Outputs the raw entries and suggested version type
+          - Outputs instructions for the agent to complete the release
       - Add 'release:prepare' script to package.json that runs the script
       - Document in CLAUDE.md the agent's release workflow steps:
-        - Confirm or adjust the suggested version type
-        - Summarize raw entries into polished release notes
-        - Update CHANGELOG.md (replace [Unreleased] with [x.y.z] - date, add
-          empty [Unreleased] section at top)
-        - Run npm version <type> (bumps package.json, creates git tag)
-        - Run git push && git push --tags
-        - Output GitHub release link (repo URL + /releases/new?tag=vX.Y.Z)
-        - Output formatted release notes ready to copy
-        - Remind maintainer to create GitHub release and run npm publish
+          - Confirm or adjust the suggested version type
+          - Summarize raw entries into polished release notes
+          - Update CHANGELOG.md (replace [Unreleased] with [x.y.z] - date, add
+            empty [Unreleased] section at top)
+          - Run npm version <type> (bumps package.json, creates git tag)
+          - Run git push && git push --tags
+          - Output GitHub release link (repo URL + /releases/new?tag=vX.Y.Z)
+          - Output formatted release notes ready to copy
+          - Remind maintainer to create GitHub release and run npm publish
     criteria:
       - scripts/prepare-release.js exists
       - npm run release:prepare executes successfully
@@ -545,10 +566,11 @@ steps:
       should verify the suggestion makes sense (e.g., a "Fixed" entry that changes
       behavior might warrant minor, not patch). Maintainer has final say before
       npm publish.
+    agent: codex
 
   - id: "7.4"
     description: "Document release process in CONTRIBUTING.md"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
       - "7.3"
@@ -563,13 +585,11 @@ steps:
       - Add "Release Process" section to CONTRIBUTING.md
       - "Document contributor expectations: add brief entries to [Unreleased]
         after user-facing changes"
-      - "Document maintainer workflow:
-        1. Open Claude Code in the repository
-        2. Run npm run release:prepare
-        3. Agent analyzes, summarizes, updates changelog, bumps version, pushes
-        4. Agent outputs GitHub release link and formatted notes
-        5. Maintainer creates GitHub release (click link, paste notes)
-        6. Maintainer runs npm publish"
+      - "Document maintainer workflow: 1. Open Claude Code in the repository 2.
+        Run npm run release:prepare 3. Agent analyzes, summarizes, updates
+        changelog, bumps version, pushes 4. Agent outputs GitHub release link
+        and formatted notes 5. Maintainer creates GitHub release (click link,
+        paste notes) 6. Maintainer runs npm publish"
       - Mention that only maintainers can publish to npm
       - Note that no gh CLI or tokens are required
     criteria:
@@ -583,4 +603,5 @@ steps:
     context_files:
       - CONTRIBUTING.md
       - scripts/prepare-release.js
-      - CLAUDE.md   
+      - CLAUDE.md
+    agent: codex
