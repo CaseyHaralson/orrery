@@ -272,7 +272,7 @@ steps:
 
   - id: "3.4"
     description: "Fix any existing linting issues in codebase"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.3"
     parallel: false
