@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `orrery orchestrate` no longer requires `gh` CLI for PR creation; outputs a clickable URL and PR info instead.
+- Discovery skill now outputs next step options (refine-plan, simulate-plan, orrery exec) after plan creation.
 
 ## [0.5.0]
 

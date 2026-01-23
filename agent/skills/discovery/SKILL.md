@@ -400,7 +400,20 @@ Discovery is complete when:
 - [ ] The plan file passes schema validation
 - [ ] User has approved the plan
 
-The plan is now **orchestrator-ready** and can be placed in `.agent-work/plans/` for execution.
+### Final Output
+
+When the plan is complete and validated, output the plan file path and present the user with their next options:
+
+```
+Plan created: .agent-work/plans/<date>-<plan-name>.yaml
+
+Next steps:
+- /refine-plan .agent-work/plans/<plan-file> — Analyze and improve the plan before execution
+- /simulate-plan .agent-work/plans/<plan-file> — Explore the plan through dialogue, ask "what if" questions
+- orrery exec — (Command run from the terminal) Execute the plan with the orrery orchestrator
+```
+
+This ensures the user knows exactly what they can do next and has the full path to reference the plan.
 
 ---
 
