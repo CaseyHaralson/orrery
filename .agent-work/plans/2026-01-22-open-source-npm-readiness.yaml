@@ -122,7 +122,7 @@ steps:
 
   - id: "2.1"
     description: "Create CHANGELOG.md following Keep a Changelog format"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -149,6 +149,7 @@ steps:
     context_files:
       - package.json
       - README.md
+    agent: codex
 
   # ============================================================================
   # Feature 3: Code Quality Tooling (ESLint + Prettier)
