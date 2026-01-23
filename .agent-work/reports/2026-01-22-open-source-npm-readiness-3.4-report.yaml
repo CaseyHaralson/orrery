@@ -1,0 +1,11 @@
+step_id: "3.4"
+agent: codex
+outcome: failure
+details: Ran `npm run format` (no changes reported) and `npm run lint -- --fix`,
+  then stopped when unexpected workspace changes were detected.
+timestamp: 2026-01-23T02:05:16.935Z
+artifacts: []
+blocked_reason: "Observed unexpected git changes before proceeding: modified
+  `.agent-work/plans/2026-01-22-open-source-npm-readiness.yaml` and untracked
+  `.agent-work/temp/`. Per instructions, I need guidance on how to proceed."
+test_results: null
