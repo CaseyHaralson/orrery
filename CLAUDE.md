@@ -18,6 +18,8 @@
 
 - After making changes, run `npm run fix`.
 - Before committing, run `npm run validate`.
+- Before committing, check if changes touch `lib/`, `bin/`, `agent/skills/`, or
+  `.devcontainer.example/` — if so, update CHANGELOG.md (see Changelog Rules).
 - Follow commit message and PR guidance in `CONTRIBUTING.md`.
 
 ## Changelog Rules
