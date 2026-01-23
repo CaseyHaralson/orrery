@@ -442,7 +442,7 @@ steps:
 
   - id: "7.1"
     description: "Add validate/fix npm scripts for streamlined workflow"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.4"
     parallel: false
@@ -458,6 +458,7 @@ steps:
       - npm run fix runs format and lint --fix in sequence
     files:
       - package.json
+    agent: codex
 
   - id: "7.2"
     description: "Create CLAUDE.md with agent workflow instructions"
