@@ -414,7 +414,7 @@ steps:
 
   - id: "6.2"
     description: "Add npm audit to CI pipeline"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.1"
     parallel: false
@@ -434,6 +434,7 @@ steps:
       - Audit step is named clearly (e.g., "Security audit")
     files:
       - .github/workflows/ci.yml
+    agent: codex
 
   # ============================================================================                                                                                                                  
   # Feature 7: Agent Workflow Support                                                                                                                                                             
