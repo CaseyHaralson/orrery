@@ -3,7 +3,7 @@ const test = require("node:test");
 
 const {
   parseAgentResults,
-  createDefaultResult,
+  createDefaultResult
 } = require("../../lib/orchestration/agent-invoker");
 
 // ============================================================================
@@ -11,7 +11,8 @@ const {
 // ============================================================================
 
 test("parseAgentResults parses single JSON object", () => {
-  const stdout = '{"stepId": "step-1", "status": "complete", "summary": "Done"}';
+  const stdout =
+    '{"stepId": "step-1", "status": "complete", "summary": "Done"}';
   const results = parseAgentResults(stdout);
 
   assert.equal(results.length, 1);
@@ -31,7 +32,8 @@ test("parseAgentResults parses multiple JSON objects", () => {
 });
 
 test("parseAgentResults parses JSON array", () => {
-  const stdout = '[{"stepId": "step-1", "status": "complete"}, {"stepId": "step-2", "status": "complete"}]';
+  const stdout =
+    '[{"stepId": "step-1", "status": "complete"}, {"stepId": "step-2", "status": "complete"}]';
   const results = parseAgentResults(stdout);
 
   assert.equal(results.length, 2);
@@ -84,7 +86,8 @@ Some text
 // ============================================================================
 
 test("parseAgentResults extracts JSON with surrounding text", () => {
-  const stdout = 'Some preamble {"stepId": "step-1", "status": "complete"} and more text';
+  const stdout =
+    'Some preamble {"stepId": "step-1", "status": "complete"} and more text';
   const results = parseAgentResults(stdout);
 
   assert.equal(results.length, 1);
@@ -92,7 +95,8 @@ test("parseAgentResults extracts JSON with surrounding text", () => {
 });
 
 test("parseAgentResults handles nested JSON objects", () => {
-  const stdout = '{"stepId": "step-1", "status": "complete", "data": {"nested": true}}';
+  const stdout =
+    '{"stepId": "step-1", "status": "complete", "data": {"nested": true}}';
   const results = parseAgentResults(stdout);
 
   assert.equal(results.length, 1);
@@ -100,7 +104,8 @@ test("parseAgentResults handles nested JSON objects", () => {
 });
 
 test("parseAgentResults handles JSON with escaped characters", () => {
-  const stdout = '{"stepId": "step-1", "status": "complete", "summary": "Message with \\"quotes\\""}';
+  const stdout =
+    '{"stepId": "step-1", "status": "complete", "summary": "Message with \\"quotes\\""}';
   const results = parseAgentResults(stdout);
 
   assert.equal(results.length, 1);
@@ -108,7 +113,8 @@ test("parseAgentResults handles JSON with escaped characters", () => {
 });
 
 test("parseAgentResults handles JSON with braces in strings", () => {
-  const stdout = '{"stepId": "step-1", "status": "complete", "summary": "Has { braces }"}';
+  const stdout =
+    '{"stepId": "step-1", "status": "complete", "summary": "Has { braces }"}';
   const results = parseAgentResults(stdout);
 
   assert.equal(results.length, 1);
@@ -227,7 +233,8 @@ test("parseAgentResults normalizes output with defaults", () => {
 });
 
 test("parseAgentResults handles blocked status with required blockedReason", () => {
-  const stdout = '{"stepId": "step-1", "status": "blocked", "blockedReason": "API down"}';
+  const stdout =
+    '{"stepId": "step-1", "status": "blocked", "blockedReason": "API down"}';
   const results = parseAgentResults(stdout);
 
   assert.equal(results.length, 1);

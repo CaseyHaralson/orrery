@@ -4,7 +4,11 @@ const path = require("node:path");
 const test = require("node:test");
 
 const { copySkills } = require("../../lib/utils/skill-copier");
-const { createTempDir, cleanupDir, captureConsole } = require("../helpers/test-utils");
+const {
+  createTempDir,
+  cleanupDir,
+  captureConsole
+} = require("../helpers/test-utils");
 
 // ============================================================================
 // copySkills - basic functionality tests
@@ -38,7 +42,10 @@ test("copySkills copies subdirectories recursively", (t) => {
   t.after(() => cleanupDir(tempDir));
 
   fs.writeFileSync(path.join(sourceDir, "root.txt"), "root content");
-  fs.writeFileSync(path.join(sourceDir, "subdir", "nested.txt"), "nested content");
+  fs.writeFileSync(
+    path.join(sourceDir, "subdir", "nested.txt"),
+    "nested content"
+  );
 
   const copied = copySkills(sourceDir, targetDir);
 

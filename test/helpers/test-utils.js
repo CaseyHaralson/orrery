@@ -43,7 +43,7 @@ function initTempGitRepo() {
       "user.email=orrery@example.com",
       "commit",
       "-m",
-      "init",
+      "init"
     ],
     { cwd: gitDir, stdio: "ignore" }
   );
@@ -83,7 +83,7 @@ function createMockPlan(steps = [], metadata = {}) {
 
     isSuccessful() {
       return this.steps.every((s) => s.status === "complete");
-    },
+    }
   };
 }
 
@@ -110,11 +110,11 @@ function createMinimalPlan(overrides = {}) {
   return {
     metadata: {
       name: "test-plan",
-      ...overrides.metadata,
+      ...overrides.metadata
     },
     steps: overrides.steps || [
-      { id: "step-1", description: "First step", status: "pending" },
-    ],
+      { id: "step-1", description: "First step", status: "pending" }
+    ]
   };
 }
 
@@ -164,5 +164,5 @@ module.exports = {
   writeTempPlan,
   createMinimalPlan,
   sleep,
-  captureConsole,
+  captureConsole
 };

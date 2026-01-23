@@ -13,6 +13,7 @@ description: >
 Use this skill when you have a plan and want to **think through it** before executing. Simulate is a thinking partner that helps you interrogate the plan, explore implications, and build confidence in your approach.
 
 **Triggers:**
+
 - "Let's think through this plan before we start"
 - "What if..." questions about the plan
 - Uncertainty about whether the plan is right
@@ -20,6 +21,7 @@ Use this skill when you have a plan and want to **think through it** before exec
 - "Walk me through this plan"
 
 **Skip if:**
+
 - No plan exists yet (use Discovery first)
 - Ready to execute and confident in the approach
 - Need to actually modify the plan (use Discovery skill instead)
@@ -31,12 +33,14 @@ Use this skill when you have a plan and want to **think through it** before exec
 ### Step 1: Load the Plan
 
 Read and internalize the plan structure:
+
 - Parse the YAML to understand steps, dependencies, criteria
 - Note the outcomes (what success looks like)
 - Identify risks and constraints mentioned in `risk_notes`
 - Map the dependency graph (what blocks what)
 
 Announce what you've loaded:
+
 ```
 I've loaded the [plan name]. It has [N] steps delivering [outcomes].
 The critical path runs through [key steps]. What would you like to explore?
@@ -47,6 +51,7 @@ The critical path runs through [key steps]. What would you like to explore?
 Answer questions conversationally. Don't wait for specific commands—respond to natural questions about the plan.
 
 For each question:
+
 1. Identify which part of the plan is relevant
 2. Trace implications through the dependency graph
 3. Reference specific steps, criteria, or requirements
@@ -55,6 +60,7 @@ For each question:
 ### Step 3: Stay Read-Only
 
 Never modify the plan file. If the user wants to make changes based on the simulation:
+
 - Summarize the proposed changes
 - Suggest exiting simulate and using the Discovery skill to revise
 - Offer to continue exploring other aspects first
@@ -126,6 +132,7 @@ Don't produce formal reports. Think out loud with the user.
 Walk through cause and effect chains.
 
 **Example:**
+
 > "If you skip the caching step, the trends endpoint will still work, but you won't meet the 200ms response time criterion. That affects the 'responsive dashboard' requirement in step 4. The risk note mentions 'API response time under load'—without caching, that risk is higher."
 
 ### Ask Follow-Up Questions
@@ -133,6 +140,7 @@ Walk through cause and effect chains.
 Understand the user's underlying concern.
 
 **Example:**
+
 > "Are you asking because you're worried about scope, or because you're not sure caching is the right approach?"
 
 ### Reference the Plan
@@ -140,6 +148,7 @@ Understand the user's underlying concern.
 Quote specific steps, criteria, and requirements. Don't make up constraints.
 
 **Example:**
+
 > "Step 2 specifies 'Cache responses for 1 hour' in requirement 3. That's what we'd be cutting."
 
 ### Stay Grounded
@@ -147,6 +156,7 @@ Quote specific steps, criteria, and requirements. Don't make up constraints.
 Only discuss what's in the plan. If asked about implementation details not covered, acknowledge the gap.
 
 **Example:**
+
 > "The plan doesn't specify which caching library to use—that's an implementation detail for the Execute phase."
 
 ---

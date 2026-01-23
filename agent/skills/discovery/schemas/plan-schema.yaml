@@ -41,7 +41,7 @@ properties:
     type: array
     description: Array of plan steps defining the work to be done
     items:
-      $ref: '#/definitions/Step'
+      $ref: "#/definitions/Step"
 
 required:
   - metadata

@@ -4,7 +4,7 @@ const test = require("node:test");
 const {
   REPORT_FIELDS,
   validateAgentOutput,
-  getFormatInstructions,
+  getFormatInstructions
 } = require("../../lib/orchestration/report-format");
 
 // ============================================================================
@@ -18,7 +18,7 @@ test("validateAgentOutput accepts valid complete report", () => {
     summary: "Did the thing",
     artifacts: ["src/file.js"],
     testResults: "5/5 passed",
-    commitMessage: "feat: add feature",
+    commitMessage: "feat: add feature"
   };
 
   const result = validateAgentOutput(data);
@@ -35,7 +35,7 @@ test("validateAgentOutput accepts valid blocked report", () => {
     stepId: "step-2",
     status: "blocked",
     blockedReason: "API is down",
-    summary: "Could not verify",
+    summary: "Could not verify"
   };
 
   const result = validateAgentOutput(data);
@@ -48,7 +48,7 @@ test("validateAgentOutput accepts valid blocked report", () => {
 test("validateAgentOutput accepts minimal complete report", () => {
   const data = {
     stepId: "step-1",
-    status: "complete",
+    status: "complete"
   };
 
   const result = validateAgentOutput(data);
@@ -65,7 +65,7 @@ test("validateAgentOutput accepts minimal blocked report", () => {
   const data = {
     stepId: "step-1",
     status: "blocked",
-    blockedReason: "Something failed",
+    blockedReason: "Something failed"
   };
 
   const result = validateAgentOutput(data);
@@ -94,7 +94,7 @@ test("validateAgentOutput throws on non-object input", () => {
 
 test("validateAgentOutput throws on missing stepId", () => {
   const data = {
-    status: "complete",
+    status: "complete"
   };
 
   assert.throws(
@@ -106,7 +106,7 @@ test("validateAgentOutput throws on missing stepId", () => {
 test("validateAgentOutput throws on non-string stepId", () => {
   const data = {
     stepId: 123,
-    status: "complete",
+    status: "complete"
   };
 
   assert.throws(
@@ -117,31 +117,25 @@ test("validateAgentOutput throws on non-string stepId", () => {
 
 test("validateAgentOutput throws on missing status", () => {
   const data = {
-    stepId: "step-1",
+    stepId: "step-1"
   };
 
-  assert.throws(
-    () => validateAgentOutput(data),
-    /Invalid status/
-  );
+  assert.throws(() => validateAgentOutput(data), /Invalid status/);
 });
 
 test("validateAgentOutput throws on invalid status value", () => {
   const data = {
     stepId: "step-1",
-    status: "pending",
+    status: "pending"
   };
 
-  assert.throws(
-    () => validateAgentOutput(data),
-    /Invalid status: pending/
-  );
+  assert.throws(() => validateAgentOutput(data), /Invalid status: pending/);
 });
 
 test("validateAgentOutput throws on blocked without blockedReason", () => {
   const data = {
     stepId: "step-1",
-    status: "blocked",
+    status: "blocked"
   };
 
   assert.throws(
@@ -158,7 +152,7 @@ test("validateAgentOutput normalizes non-array artifacts to empty array", () => 
   const data = {
     stepId: "step-1",
     status: "complete",
-    artifacts: "not-an-array",
+    artifacts: "not-an-array"
   };
 
   const result = validateAgentOutput(data);
@@ -168,7 +162,7 @@ test("validateAgentOutput normalizes non-array artifacts to empty array", () => 
 test("validateAgentOutput normalizes undefined artifacts to empty array", () => {
   const data = {
     stepId: "step-1",
-    status: "complete",
+    status: "complete"
   };
 
   const result = validateAgentOutput(data);
@@ -179,7 +173,7 @@ test("validateAgentOutput preserves valid artifacts array", () => {
   const data = {
     stepId: "step-1",
     status: "complete",
-    artifacts: ["file1.js", "file2.js"],
+    artifacts: ["file1.js", "file2.js"]
   };
 
   const result = validateAgentOutput(data);
@@ -189,7 +183,7 @@ test("validateAgentOutput preserves valid artifacts array", () => {
 test("validateAgentOutput generates default commit message for complete", () => {
   const data = {
     stepId: "my-step",
-    status: "complete",
+    status: "complete"
   };
 
   const result = validateAgentOutput(data);
@@ -244,7 +238,10 @@ test("REPORT_FIELDS contains expected fields", () => {
 
 test("REPORT_FIELDS values are descriptive strings", () => {
   for (const [key, value] of Object.entries(REPORT_FIELDS)) {
-    assert.ok(typeof value === "string", `${key} should have string description`);
+    assert.ok(
+      typeof value === "string",
+      `${key} should have string description`
+    );
     assert.ok(value.length > 0, `${key} should have non-empty description`);
   }
 });

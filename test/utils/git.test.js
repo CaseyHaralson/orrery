@@ -13,7 +13,7 @@ const {
   checkoutBranch,
   commit,
   stash,
-  stashPop,
+  stashPop
 } = require("../../lib/utils/git");
 const { initTempGitRepo, cleanupDir } = require("../helpers/test-utils");
 
@@ -75,7 +75,7 @@ test("getCurrentBranch returns new branch after checkout", (t) => {
 
   execFileSync("git", ["checkout", "-b", "test-branch"], {
     cwd: gitDir,
-    stdio: "ignore",
+    stdio: "ignore"
   });
 
   const branch = getCurrentBranch(gitDir);
@@ -92,7 +92,7 @@ test("branchExists returns true for existing local branch", (t) => {
 
   execFileSync("git", ["checkout", "-b", "existing-branch"], {
     cwd: gitDir,
-    stdio: "ignore",
+    stdio: "ignore"
   });
   execFileSync("git", ["checkout", "-"], { cwd: gitDir, stdio: "ignore" });
 
@@ -135,7 +135,10 @@ test("hasUncommittedChanges returns true with staged changes", (t) => {
   t.after(() => cleanupDir(gitDir));
 
   fs.writeFileSync(path.join(gitDir, "new-file.txt"), "content");
-  execFileSync("git", ["add", "new-file.txt"], { cwd: gitDir, stdio: "ignore" });
+  execFileSync("git", ["add", "new-file.txt"], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
 
   const hasChanges = hasUncommittedChanges(gitDir);
   assert.equal(hasChanges, true);
@@ -166,7 +169,7 @@ test("checkoutBranch switches to existing branch", (t) => {
   const originalBranch = getCurrentBranch(gitDir);
   execFileSync("git", ["checkout", "-b", "other-branch"], {
     cwd: gitDir,
-    stdio: "ignore",
+    stdio: "ignore"
   });
 
   checkoutBranch(originalBranch, gitDir);
@@ -205,7 +208,7 @@ test("commit stages specific files when provided", (t) => {
   // file2.txt should still be untracked
   const status = execFileSync("git", ["status", "--porcelain"], {
     cwd: gitDir,
-    encoding: "utf8",
+    encoding: "utf8"
   });
   assert.ok(status.includes("file2.txt"));
 });

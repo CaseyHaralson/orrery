@@ -14,6 +14,7 @@ user-invocable: false
 Use this skill **after verification** to finalize your work on a step and communicate the result to the Orchestrator.
 
 **Triggers:**
+
 - Execution and Verification phases are complete.
 - You have been handed off from the **Verify** skill.
 - Or, you need to report a **Blocked** status.
@@ -25,6 +26,7 @@ Use this skill **after verification** to finalize your work on a step and commun
 The Orchestrator expects a **single JSON object** printed to `stdout`. This is how you "report" your status.
 
 **Success JSON:**
+
 ```json
 {
   "stepId": "<id>",
@@ -37,6 +39,7 @@ The Orchestrator expects a **single JSON object** printed to `stdout`. This is h
 ```
 
 **Blocked JSON:**
+
 ```json
 {
   "stepId": "<id>",
@@ -47,7 +50,8 @@ The Orchestrator expects a **single JSON object** printed to `stdout`. This is h
 ```
 
 **Rules:**
-1. **NO Markdown:** Do not wrap the JSON in ```json ... ``` blocks.
+
+1. **NO Markdown:** Do not wrap the JSON in `json ... ` blocks.
 2. **Clean Output:** Ensure the JSON is valid and on its own line.
 3. **One Object Per Step:** If you are working on multiple steps, you may output multiple JSON objects (one per line).
 
@@ -58,6 +62,7 @@ The Orchestrator expects a **single JSON object** printed to `stdout`. This is h
 ### Step 1: Gather Information
 
 Collect from your execution and verification:
+
 - **Status:** Did it pass verification? (`complete` vs `blocked`)
 - **Artifacts:** List of files created or modified.
 - **Summary:** A concise sentence describing the implementation.
@@ -67,11 +72,11 @@ Collect from your execution and verification:
 
 Map your gathered info to the JSON fields.
 
-*   `stepId`: The ID from the plan you are working on.
-*   `status`: "complete" (if verified) or "blocked".
-*   `summary`: Human-readable explanation.
-*   `artifacts`: Array of file paths.
-*   `commitMessage`: A conventional commit message (e.g., "feat: add login", "fix: resolve null check").
+- `stepId`: The ID from the plan you are working on.
+- `status`: "complete" (if verified) or "blocked".
+- `summary`: Human-readable explanation.
+- `artifacts`: Array of file paths.
+- `commitMessage`: A conventional commit message (e.g., "feat: add login", "fix: resolve null check").
 
 ### Step 3: Output to Stdout
 
@@ -85,15 +90,24 @@ Print the JSON string. **This is your final action.**
 
 **1. Handoff:** You came from `verify` where 2/2 tests passed.
 **2. Constructing Report:**
-   - ID: "3"
-   - Status: "complete"
-   - Summary: "Implemented login logic."
-   - Artifacts: ["src/auth/login.ts"]
-   - Test Results: "2/2 passed"
+
+- ID: "3"
+- Status: "complete"
+- Summary: "Implemented login logic."
+- Artifacts: ["src/auth/login.ts"]
+- Test Results: "2/2 passed"
 
 **3. Action:**
+
 ```json
-{"stepId": "3", "status": "complete", "summary": "Implemented login logic and verified with unit tests", "artifacts": ["src/auth/login.ts"], "testResults": "2/2 passed", "commitMessage": "feat: add login endpoint with session handling"}
+{
+  "stepId": "3",
+  "status": "complete",
+  "summary": "Implemented login logic and verified with unit tests",
+  "artifacts": ["src/auth/login.ts"],
+  "testResults": "2/2 passed",
+  "commitMessage": "feat: add login endpoint with session handling"
+}
 ```
 
 ---
@@ -101,5 +115,5 @@ Print the JSON string. **This is your final action.**
 ## Common Pitfalls
 
 - **Outputting Text:** "I have finished the step." (The Orchestrator cannot read this).
-- **Markdown Blocks:** ```json { ... } ``` (This breaks the parser).
+- **Markdown Blocks:** `json { ... } ` (This breaks the parser).
 - **Invalid JSON:** Ensure the JSON is properly formatted and all strings are quoted.

@@ -11,6 +11,7 @@ For isolated, reproducible development environments, Orrery provides a devcontai
 ### Full Devcontainer Workflow
 
 1. **Install the devcontainer** (or add Orrery to an existing one):
+
    ```bash
    orrery install-devcontainer
    ```
@@ -18,10 +19,10 @@ For isolated, reproducible development environments, Orrery provides a devcontai
 2. **Configure the devcontainer** (`.devcontainer/devcontainer.json`):
    - Set your agent priority if you use multiple or edit to your prefered agent via environment variable (`ORRERY_AGENT_PRIORITY`)
    - Add firewall to start if needed:
-      ```json
-      "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
-      "waitFor": "postStartCommand"
-      ```
+     ```json
+     "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+     "waitFor": "postStartCommand"
+     ```
 
 3. **Open your project in the devcontainer**
 
@@ -29,6 +30,7 @@ For isolated, reproducible development environments, Orrery provides a devcontai
    - The devcontainer uses shared volumes between containers, so you only need to authenticate once
 
 5. **Initialize Orrery**:
+
    ```bash
    orrery init
    ```
@@ -40,6 +42,7 @@ For isolated, reproducible development environments, Orrery provides a devcontai
 ## External Plan Creation
 
 Plans can be created outside of an agent using the `ingest-plan` command. This is useful when:
+
 - You have an existing planning workflow
 - You want to use a different LLM for planning
 - You're migrating plans from another system
@@ -49,6 +52,7 @@ Plans can be created outside of an agent using the `ingest-plan` command. This i
 1. **Create a plan file** following the schema in [externally-building-a-plan-reference.md](./externally-building-a-plan-reference.md)
 
 2. **Validate and import the plan**:
+
    ```bash
    orrery ingest-plan path/to/your-plan.yaml
    ```
@@ -56,6 +60,7 @@ Plans can be created outside of an agent using the `ingest-plan` command. This i
    This validates the plan against the schema and copies it to `.agent-work/plans/`.
 
 3. **Simulate the plan** (optional but recommended):
+
    ```bash
    # Using an agent with the simulate-plan skill
    /simulate-plan .agent-work/plans/your-plan.yaml
@@ -87,6 +92,7 @@ The `refine-plan` skill analyzes existing plans and implements improvements dire
 ### Workflow
 
 1. **Run the refine-plan skill**:
+
    ```bash
    # Using an agent with the refine-plan skill
    /refine-plan .agent-work/plans/your-plan.yaml
@@ -100,14 +106,14 @@ The `refine-plan` skill analyzes existing plans and implements improvements dire
 
 ### What It Checks
 
-| Category | Examples |
-| :--- | :--- |
-| **Structural issues** | Missing required fields, malformed step IDs |
+| Category              | Examples                                         |
+| :-------------------- | :----------------------------------------------- |
+| **Structural issues** | Missing required fields, malformed step IDs      |
 | **Dependency issues** | Missing install step deps, circular dependencies |
-| **Context quality** | Thin context, missing context_files |
-| **Criteria quality** | Vague or untestable acceptance criteria |
-| **Risk coverage** | Complex steps without risk_notes |
-| **Schema compliance** | Invalid field types, missing required fields |
+| **Context quality**   | Thin context, missing context_files              |
+| **Criteria quality**  | Vague or untestable acceptance criteria          |
+| **Risk coverage**     | Complex steps without risk_notes                 |
+| **Schema compliance** | Invalid field types, missing required fields     |
 
 ### Example
 
@@ -139,6 +145,7 @@ orrery status
 ```
 
 Output:
+
 ```
 (detected plan for branch: plan/add-feature)
 
@@ -154,6 +161,7 @@ blocked add-feature.yaml
 1. **Fix the underlying issue**: Address the problem (e.g., restore the API, install the missing dependency)
 
 2. **Unblock and resume** with a single command:
+
    ```bash
    orrery resume
    ```
@@ -165,11 +173,13 @@ blocked add-feature.yaml
    - Resumes orchestration
 
    You can also unblock a specific step:
+
    ```bash
    orrery resume --step step-2
    ```
 
    Or preview what would be unblocked:
+
    ```bash
    orrery resume --dry-run
    ```
@@ -178,20 +188,20 @@ blocked add-feature.yaml
 
 ## Command Reference
 
-| Command | Description |
-| :--- | :--- |
-| `orrery` | Command reference. |
-| `orrery ingest-plan` | Validates an externally generated plan and imports it into your project's plans directory. |
-| `orrery init` | Initialize Orrery: install skills to detected agents. |
-| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project. |
-| `orrery install-skills` | Installs/Updates agent skills to your global agent configuration directories. |
-| `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
-| `orrery resume` | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes. |
-| `orrery status` | Shows the progress of current plans. Auto-detects plan when on a work branch. |
+| Command                       | Description                                                                                                           |
+| :---------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `orrery`                      | Command reference.                                                                                                    |
+| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                            |
+| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                 |
+| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                      |
+| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                         |
+| `orrery orchestrate`          | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
+| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.                      |
+| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                         |
 
 ## Environment Variables
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
+| Variable                | Description                                          | Default               |
+| :---------------------- | :--------------------------------------------------- | :-------------------- |
 | `ORRERY_AGENT_PRIORITY` | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
-| `ORRERY_WORK_DIR` | Override the work directory path | `.agent-work` |
+| `ORRERY_WORK_DIR`       | Override the work directory path                     | `.agent-work`         |

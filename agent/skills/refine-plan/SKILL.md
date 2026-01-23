@@ -19,6 +19,7 @@ hooks:
 Use this skill when you have an existing plan and want to **improve it** before execution. Unlike Simulate (which is read-only), Refine analyzes the plan and implements improvements directly.
 
 **Triggers:**
+
 - "This plan needs work"
 - "Can you improve this plan?"
 - "Check if this plan is ready for execution"
@@ -27,6 +28,7 @@ Use this skill when you have an existing plan and want to **improve it** before 
 - Plan validation failed and you need to fix issues
 
 **Skip if:**
+
 - No plan exists yet (use Discovery first)
 - You want to explore the plan interactively (use Simulate instead)
 - You need to fundamentally restructure the plan or change outcomes (use Discovery)
@@ -39,12 +41,14 @@ Use this skill when you have an existing plan and want to **improve it** before 
 ### Step 1: Load and Parse the Plan
 
 Read the plan file and understand its structure:
+
 - Parse the YAML to identify all steps, dependencies, and metadata
 - Note the outcomes (what success looks like)
 - Map the dependency graph
 - Identify which steps have context_files, risk_notes, and other optional fields
 
 Announce what you've loaded:
+
 ```
 I've loaded [plan name]. It has [N] steps with [X] outcomes.
 Let me analyze it for improvements.
@@ -55,6 +59,7 @@ Let me analyze it for improvements.
 Check each improvement category systematically. Build a list of findings.
 
 For each issue found, note:
+
 - What the problem is
 - Which step(s) it affects
 - What the fix should be
@@ -62,14 +67,17 @@ For each issue found, note:
 ### Step 3: Report Findings or Exit Clean
 
 **If no improvements found:**
+
 ```
 The plan looks good. No structural issues, dependencies are correct,
 context is sufficient for autonomous execution, and acceptance criteria
 are testable. Ready for execution.
 ```
+
 Exit cleanly without modifying the file.
 
 **If improvements found:**
+
 ```
 Found [N] improvements:
 - [Category]: [Brief description] (steps X, Y)
@@ -83,6 +91,7 @@ Implementing these changes now.
 Write the updated plan directly to the file. The PostToolUse hook will automatically validate the plan after writing.
 
 Make changes in order of impact:
+
 1. Schema compliance issues first (required fields)
 2. Structural issues (malformed steps)
 3. Dependency issues (missing deps, cycles)
@@ -91,6 +100,7 @@ Make changes in order of impact:
 ### Step 5: Summarize Changes
 
 After writing:
+
 ```
 Updated the plan with [N] changes:
 - Added missing deps to steps 2.1, 2.3 (they now depend on install step 0.1)
@@ -148,6 +158,7 @@ Criteria must be **specific** and **testable**. Check for:
 **Fix approach:** Rewrite vague criteria with specific, observable conditions. Add missing criteria based on requirements.
 
 **Examples:**
+
 - Bad: "Error handling works"
 - Good: "Returns 400 status with error message when input validation fails"
 
@@ -177,11 +188,13 @@ Validate against `../discovery/schemas/plan-schema.yaml`:
 ## Reference Schema
 
 The plan schema is defined at:
+
 ```
 agent/skills/discovery/schemas/plan-schema.yaml
 ```
 
 Key required fields:
+
 - **metadata**: `created_at`, `created_by`, `outcomes`
 - **steps[].required**: `id`, `description`, `context`, `requirements`, `criteria`
 - **steps[].optional**: `status`, `deps`, `parallel`, `files`, `context_files`, `commands`, `risk_notes`
@@ -191,6 +204,7 @@ Key required fields:
 ## Exit Conditions
 
 Exit **without changes** when:
+
 - All required fields are present
 - Dependencies are correct (no cycles, install steps properly referenced)
 - Context is sufficient for autonomous execution
@@ -198,6 +212,7 @@ Exit **without changes** when:
 - No schema violations
 
 In this case, report:
+
 ```
 Plan analysis complete. No improvements needed.
 

@@ -204,7 +204,7 @@ steps:
 
   - id: "3.2"
     description: "Install and configure Prettier for code formatting"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
     parallel: false
@@ -237,6 +237,7 @@ steps:
     risk_notes: |
       Prettier may reformat all files on first run. This is expected and will be
       committed as part of step 3.4. Do not commit formatting changes in this step.
+    agent: codex
 
   - id: "3.3"
     description: "Configure ESLint and Prettier to work together"

@@ -19,12 +19,14 @@ hooks:
 Use this skill for **all planning requests**, regardless of size. Discovery transforms ideas into concrete, executable plans.
 
 **Triggers:**
+
 - "Build a [system/platform/module]"
 - Request spans multiple features or domains
 - Unclear what "done" looks like
 - Requires architectural decisions before implementation
 
 **Also use Discovery when:**
+
 - Request is a single, scoped feature
 - Outcomes and scope are already clear
 - You can articulate the task in 1-3 sentences
@@ -57,6 +59,7 @@ The final output is an **orchestrator-ready plan** with implementation steps.
 ### Step 1: Capture the Idea
 
 Get the raw vision from the user. Don't judge scope yet.
+
 - What problem are we solving?
 - Who is this for?
 - What sparked this idea?
@@ -66,6 +69,7 @@ Get the raw vision from the user. Don't judge scope yet.
 Outcomes are **user-visible results**, not technical deliverables.
 
 Ask:
+
 - "What will users be able to do that they can't today?"
 - "How will we know this succeeded?"
 - "What does 'done' look like from the user's perspective?"
@@ -73,6 +77,7 @@ Ask:
 **Output:** 2-5 concrete outcome statements.
 
 Example:
+
 - "Implement caching" (technical, not outcome)
 - "Dashboard loads in under 2 seconds" (user-visible result)
 
@@ -81,12 +86,14 @@ Example:
 Capabilities are **system abilities** that enable outcomes.
 
 For each outcome, ask:
+
 - "What must the system be able to do to deliver this?"
 - "What new behaviors or services are needed?"
 
 **Output:** Capabilities grouped by outcome.
 
 Example:
+
 - Outcome: "Dashboard loads in under 2 seconds"
   - Capability: Query result caching
   - Capability: Incremental data loading
@@ -97,6 +104,7 @@ Example:
 Features are **implementable units of work** that deliver capabilities.
 
 For each capability, ask:
+
 - "What specific features implement this?"
 - "Can this be shipped independently?"
 - "What's the minimum viable version?"
@@ -118,21 +126,25 @@ This is critical for "fire and forget" plans. For each feature:
 Each feature becomes 2-5 concrete implementation steps. This is what makes the plan orchestrator-ready.
 
 For each feature, ask:
+
 - "What are the individual pieces of work?"
 - "What order must they happen in?"
 - "Can any run in parallel?"
 
 **Step characteristics:**
+
 - **Scoped** - completable in a single focused session
 - **Specific files** - lists exactly which files to create/modify
 - **Testable** - has clear acceptance criteria
 - **Self-contained** - an agent can execute without asking questions
 
 **Naming convention:**
+
 - Use `{feature-number}.{step-number}` format: `1.1`, `1.2`, `2.1`, etc.
 - Group related steps by feature for readability
 
 **Example decomposition:**
+
 ```
 Feature: "Line chart component"
   → Step 1.1: Create TrendChart.tsx with basic Chart.js setup
@@ -150,6 +162,7 @@ If a plan requires installing dependencies, handle them explicitly:
 - **Include test dependencies if acceptance criteria involve testing** - use `npm install --include=dev`, `pip install -e ".[test]"`, or the equivalent for the project's package manager
 
 Example:
+
 ```
 Step 0.1: Install project dependencies (including test frameworks)
   → deps: []
@@ -162,6 +175,7 @@ Step 1.2: Add unit tests for TrendChart
 ### Step 7: Validate with User
 
 Before producing the plan:
+
 - Present the step breakdown (not just features)
 - Confirm priorities and ordering
 - Resolve any remaining ambiguities
@@ -176,6 +190,7 @@ it without asking questions.
 Use the schema defined in `./schemas/plan-schema.yaml`.
 
 **Output Location:**
+
 - Directory: `.agent-work/plans/`
 - Filename: `<date>-<plan-name>.yaml`
 - Date format: YYYY-MM-DD (e.g., `2026-01-11`)
@@ -186,6 +201,7 @@ Use the schema defined in `./schemas/plan-schema.yaml`.
 Use the `notes` field in metadata to capture project-specific context that agents need throughout execution. This is critical because when plans are broken into substeps, agents executing individual steps might not know project conventions.
 
 Include in notes:
+
 - **Testing commands**: How to run tests (e.g., `uv run pytest`, `npm test`, `make test`) (check the README, pyproject.toml, package.json, etc. if applicable to understand: project manager, how to run tests, project conventions)
 - **Build commands**: How to build the project (e.g., `uv run build`, `npm run build`)
 - **Linting/formatting**: How to check code quality (e.g., `uv run ruff check .`)
@@ -375,6 +391,7 @@ steps:
 ## When Discovery is Complete
 
 Discovery is complete when:
+
 - [ ] All outcomes are defined and user-validated
 - [ ] Each outcome maps to concrete capabilities
 - [ ] Each capability has implementable features

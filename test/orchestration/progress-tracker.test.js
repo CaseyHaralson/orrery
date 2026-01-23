@@ -2,7 +2,11 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const { ProgressTracker } = require("../../lib/orchestration/progress-tracker");
-const { createMockPlan, captureConsole, sleep } = require("../helpers/test-utils");
+const {
+  createMockPlan,
+  captureConsole,
+  sleep
+} = require("../helpers/test-utils");
 
 // ============================================================================
 // Constructor tests
@@ -29,7 +33,7 @@ test("initializeFromPlan counts completed steps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "complete" },
-    { id: "step-3", status: "pending" },
+    { id: "step-3", status: "pending" }
   ]);
 
   tracker.initializeFromPlan(plan);
@@ -41,7 +45,7 @@ test("initializeFromPlan counts blocked steps", () => {
   const tracker = new ProgressTracker(5, "test.yaml");
   const plan = createMockPlan([
     { id: "step-1", status: "blocked" },
-    { id: "step-2", status: "pending" },
+    { id: "step-2", status: "pending" }
   ]);
 
   tracker.initializeFromPlan(plan);
@@ -55,7 +59,7 @@ test("initializeFromPlan counts mixed statuses", () => {
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "blocked" },
     { id: "step-3", status: "in_progress" },
-    { id: "step-4", status: "pending" },
+    { id: "step-4", status: "pending" }
   ]);
 
   tracker.initializeFromPlan(plan);
@@ -258,7 +262,9 @@ test("logStart outputs progress message", async () => {
     tracker.logStart();
   });
 
-  assert.ok(stdout.some((line) => line.includes("Starting plan: test-plan.yaml")));
+  assert.ok(
+    stdout.some((line) => line.includes("Starting plan: test-plan.yaml"))
+  );
   assert.ok(stdout.some((line) => line.includes("Total steps: 5")));
 });
 

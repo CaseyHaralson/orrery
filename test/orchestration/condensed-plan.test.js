@@ -8,9 +8,14 @@ const {
   getCompletedDependencies,
   generateCondensedPlan,
   writeCondensedPlan,
-  deleteCondensedPlan,
+  deleteCondensedPlan
 } = require("../../lib/orchestration/condensed-plan");
-const { createMockPlan, createTempDir, cleanupDir, captureConsole } = require("../helpers/test-utils");
+const {
+  createMockPlan,
+  createTempDir,
+  cleanupDir,
+  captureConsole
+} = require("../helpers/test-utils");
 
 // ============================================================================
 // getCompletedDependencies tests
@@ -20,7 +25,7 @@ test("getCompletedDependencies returns direct completed deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "complete" },
-    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] },
+    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] }
   ]);
 
   const deps = getCompletedDependencies(plan, ["step-3"]);
@@ -34,7 +39,7 @@ test("getCompletedDependencies returns transitive completed deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "complete", deps: ["step-1"] },
-    { id: "step-3", status: "pending", deps: ["step-2"] },
+    { id: "step-3", status: "pending", deps: ["step-2"] }
   ]);
 
   const deps = getCompletedDependencies(plan, ["step-3"]);
@@ -48,7 +53,7 @@ test("getCompletedDependencies excludes non-complete deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "pending" },
-    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] },
+    { id: "step-3", status: "pending", deps: ["step-1", "step-2"] }
   ]);
 
   const deps = getCompletedDependencies(plan, ["step-3"]);
@@ -58,9 +63,7 @@ test("getCompletedDependencies excludes non-complete deps", () => {
 });
 
 test("getCompletedDependencies handles step with no deps", () => {
-  const plan = createMockPlan([
-    { id: "step-1", status: "pending" },
-  ]);
+  const plan = createMockPlan([{ id: "step-1", status: "pending" }]);
 
   const deps = getCompletedDependencies(plan, ["step-1"]);
   assert.deepEqual(deps, []);
@@ -71,7 +74,7 @@ test("getCompletedDependencies handles multiple step IDs", () => {
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "complete" },
     { id: "step-3", status: "pending", deps: ["step-1"] },
-    { id: "step-4", status: "pending", deps: ["step-2"] },
+    { id: "step-4", status: "pending", deps: ["step-2"] }
   ]);
 
   const deps = getCompletedDependencies(plan, ["step-3", "step-4"]);
@@ -85,7 +88,7 @@ test("getCompletedDependencies deduplicates shared deps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
     { id: "step-2", status: "pending", deps: ["step-1"] },
-    { id: "step-3", status: "pending", deps: ["step-1"] },
+    { id: "step-3", status: "pending", deps: ["step-1"] }
   ]);
 
   const deps = getCompletedDependencies(plan, ["step-2", "step-3"]);
@@ -102,7 +105,7 @@ test("generateCondensedPlan includes assigned steps", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "pending" },
     { id: "step-2", status: "pending" },
-    { id: "step-3", status: "pending" },
+    { id: "step-3", status: "pending" }
   ]);
 
   const condensed = generateCondensedPlan(plan, ["step-2"]);
@@ -114,7 +117,7 @@ test("generateCondensedPlan includes assigned steps", () => {
 test("generateCondensedPlan includes completed dependencies", () => {
   const plan = createMockPlan([
     { id: "step-1", status: "complete" },
-    { id: "step-2", status: "pending", deps: ["step-1"] },
+    { id: "step-2", status: "pending", deps: ["step-1"] }
   ]);
 
   const condensed = generateCondensedPlan(plan, ["step-2"]);
@@ -125,10 +128,9 @@ test("generateCondensedPlan includes completed dependencies", () => {
 });
 
 test("generateCondensedPlan adds condensed metadata", () => {
-  const plan = createMockPlan(
-    [{ id: "step-1", status: "pending" }],
-    { name: "original-plan" }
-  );
+  const plan = createMockPlan([{ id: "step-1", status: "pending" }], {
+    name: "original-plan"
+  });
 
   const condensed = generateCondensedPlan(plan, ["step-1"]);
 
@@ -143,7 +145,7 @@ test("generateCondensedPlan sorts steps by id", () => {
   const plan = createMockPlan([
     { id: "step-10", status: "complete" },
     { id: "step-2", status: "complete" },
-    { id: "step-5", status: "pending", deps: ["step-2", "step-10"] },
+    { id: "step-5", status: "pending", deps: ["step-2", "step-10"] }
   ]);
 
   const condensed = generateCondensedPlan(plan, ["step-5"]);
@@ -171,10 +173,12 @@ test("writeCondensedPlan writes YAML file to temp dir", (t) => {
 
   const condensedPlan = {
     metadata: { name: "test" },
-    steps: [{ id: "step-1" }],
+    steps: [{ id: "step-1" }]
   };
 
-  const filePath = writeCondensedPlan(condensedPlan, "/original/plan.yaml", ["step-1"]);
+  const filePath = writeCondensedPlan(condensedPlan, "/original/plan.yaml", [
+    "step-1"
+  ]);
 
   assert.ok(fs.existsSync(filePath));
   assert.ok(filePath.includes("plan-step-1"));
@@ -197,10 +201,13 @@ test("writeCondensedPlan handles multiple step IDs in filename", (t) => {
 
   const condensedPlan = {
     metadata: {},
-    steps: [],
+    steps: []
   };
 
-  const filePath = writeCondensedPlan(condensedPlan, "/original/test.yaml", ["step-1", "step-2"]);
+  const filePath = writeCondensedPlan(condensedPlan, "/original/test.yaml", [
+    "step-1",
+    "step-2"
+  ]);
 
   assert.ok(filePath.includes("step-1-step-2"));
 });
