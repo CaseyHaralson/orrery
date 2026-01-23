@@ -89,7 +89,7 @@ steps:
 
   - id: "1.3"
     description: "Create GitHub issue and PR templates"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -114,6 +114,7 @@ steps:
       - .github/ISSUE_TEMPLATE/bug_report.md
       - .github/ISSUE_TEMPLATE/feature_request.md
       - .github/PULL_REQUEST_TEMPLATE.md
+    agent: codex
 
   # ============================================================================
   # Feature 2: Version Tracking
