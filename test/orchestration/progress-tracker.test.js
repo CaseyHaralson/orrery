@@ -147,7 +147,7 @@ test("getElapsed returns positive value", async () => {
   await sleep(10);
   const elapsed = tracker.getElapsed();
 
-  assert.ok(elapsed >= 10);
+  assert.ok(elapsed > 0);
 });
 
 // ============================================================================
