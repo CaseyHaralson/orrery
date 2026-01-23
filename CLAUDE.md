@@ -25,3 +25,15 @@
   Fixed, Removed, Deprecated, Security.
 - Changelog entries are NOT needed for: test-only changes, documentation
   updates, refactors with no behavior change, or CI/tooling adjustments.
+
+## Release Workflow
+
+- Run `npm run release:prepare` and confirm or adjust the suggested version
+  type.
+- Summarize the raw changelog entries into polished release notes.
+- Update `CHANGELOG.md`: replace `[Unreleased]` with `[X.Y.Z] - YYYY-MM-DD` and
+  add a new empty `[Unreleased]` section at the top.
+- Run `npm version <type>`, then `git push && git push --tags`.
+- Output the GitHub release link (repo URL + `/releases/new?tag=vX.Y.Z`) and the
+  formatted release notes.
+- Remind the maintainer to create the GitHub release and run `npm publish`.

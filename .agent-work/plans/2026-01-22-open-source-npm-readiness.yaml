@@ -507,7 +507,7 @@ steps:
 
   - id: "7.3"
     description: "Create release preparation script and agent-driven release workflow"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.1"
       - "7.1"
@@ -564,6 +564,7 @@ steps:
       should verify the suggestion makes sense (e.g., a "Fixed" entry that changes
       behavior might warrant minor, not patch). Maintainer has final say before
       npm publish.
+    agent: codex
 
   - id: "7.4"
     description: "Document release process in CONTRIBUTING.md"
