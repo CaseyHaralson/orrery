@@ -34,7 +34,7 @@ function normalizeRepoUrl(url) {
 
 function extractUnreleased(changelog) {
   const match = changelog.match(
-    /^## \[Unreleased\][\r\n]+([\s\S]*?)(?=^## \[|\Z)/m
+    /^## \[Unreleased\][\r\n]+([\s\S]*?)(?=^## \[|$)/m
   );
   if (!match) return null;
   return match[1];
@@ -135,8 +135,12 @@ console.log("2) Summarize the raw entries into polished release notes.");
 console.log(
   "3) Update CHANGELOG.md: replace [Unreleased] with [X.Y.Z] - YYYY-MM-DD and add a new empty [Unreleased] section at the top."
 );
-console.log("4) Run: npm version <type> (updates package.json and creates a git tag).");
+console.log(
+  "4) Run: npm version <type> (updates package.json and creates a git tag)."
+);
 console.log("5) Run: git push && git push --tags.");
 console.log(`6) Prepare GitHub release: ${releaseLink}`);
 console.log("7) Output formatted release notes ready to copy-paste.");
-console.log("8) Remind the maintainer to create the GitHub release and run npm publish.");
+console.log(
+  "8) Remind the maintainer to create the GitHub release and run npm publish."
+);
