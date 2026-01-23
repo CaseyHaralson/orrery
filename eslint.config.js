@@ -1,4 +1,5 @@
 const js = require("@eslint/js");
+const eslintConfigPrettier = require("eslint-config-prettier");
 
 module.exports = [
   {
@@ -27,5 +28,6 @@ module.exports = [
         setTimeout: "readonly"
       }
     }
-  }
+  },
+  eslintConfigPrettier
 ];
