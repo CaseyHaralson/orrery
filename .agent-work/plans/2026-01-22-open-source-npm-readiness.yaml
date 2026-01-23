@@ -385,7 +385,7 @@ steps:
 
   - id: "6.1"
     description: "Create SECURITY.md with vulnerability disclosure policy"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -404,6 +404,7 @@ steps:
       - Specifies supported versions
     files:
       - SECURITY.md
+    agent: codex
 
   - id: "6.2"
     description: "Add npm audit to CI pipeline"
