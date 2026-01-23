@@ -1,0 +1,12 @@
+step_id: "5.1"
+agent: codex
+outcome: success
+details: Added prepublishOnly to run lint/format/test, declared publish files
+  list, and normalized bin path; npm publish --dry-run runs checks and shows
+  expected package contents.
+timestamp: 2026-01-23T04:14:22.573Z
+artifacts:
+  - package.json
+blocked_reason: null
+test_results: lint/format:check/test passed; npm publish --dry-run succeeded
+  (login warning only)

@@ -353,7 +353,7 @@ steps:
 
   - id: "5.1"
     description: "Add prepublishOnly script and verify package.json metadata"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.4"
     parallel: false
@@ -383,6 +383,7 @@ steps:
       - package.json
     commands:
       - npm publish --dry-run
+    agent: codex
 
   # ============================================================================
   # Feature 6: Security Documentation
