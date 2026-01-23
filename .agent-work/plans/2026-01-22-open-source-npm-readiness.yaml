@@ -154,6 +154,11 @@ steps:
 
       Use a minimal, sensible configuration that doesn't require major code changes.
       The eslint:recommended ruleset plus node-specific rules is appropriate.
+
+      The project has this structure:
+      - lib/ - Core library code
+      - bin/ - CLI entry point (orrery.js)
+      - test/ - Tests using node --test
     requirements:
       - Install eslint as a devDependency
       - Create eslint.config.js (flat config format, ESLint 9+ style)
@@ -170,6 +175,10 @@ steps:
     files:
       - eslint.config.js
       - package.json
+    context_files:
+      - package.json
+      - lib/
+      - bin/
     commands:
       - npm install --save-dev eslint
       - npm run lint
@@ -330,12 +339,16 @@ steps:
     status: "pending"
     deps:
       - "3.4"
-    parallel: true
+    parallel: false
     context: |
       Before publishing, we should ensure tests and linting pass. The prepublishOnly
       script runs automatically before npm publish.
 
       Also verify all package.json metadata is complete for npm registry display.
+
+      Current package.json already has: name, version, description, license, author,
+      repository, homepage, bugs, keywords, engines. Verify these are still present
+      after adding the prepublishOnly script.
     requirements:
       - Add 'prepublishOnly' script that runs lint, format:check, and test
       - "Verify package.json has: name, version, description, license, author,
@@ -345,7 +358,8 @@ steps:
     criteria:
       - prepublishOnly script exists in package.json
       - Running npm publish --dry-run shows expected files
-      - All metadata fields are present in package.json
+      - "package.json has all required fields: name, version, description, license,
+        author, repository, homepage, bugs, keywords, engines"
     files:
       - package.json
     commands:
