@@ -53,17 +53,23 @@ orrery init
 
 Navigate to your project directory (root of the git repository). Use your AI agent (now equipped with the `discovery` skill) to generate a plan.
 
-- **Prompt your agent:** _"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."_
+- **Prompt your agent:** _"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."_ or _"/discovery I want to [goal]"_
 
-### 3. Simulate the Plan
+### 3. Refine the Plan (Optional)
+
+Use the `refine-plan` skill to analyze and improve the plan. This performs additional thinking to fix oversights, improve context quality, and strengthen acceptance criteria.
+
+- **Prompt your agent:** _"Activate the `refine-plan` skill on [my-plan]."_ or _"/refine-plan .agent-work/plans/my-plan.yaml"_
+
+### 4. Simulate the Plan (Optional)
 
 Use the `simulate-plan` skill to explore the plan through conversational dialogue before execution. This helps you identify risks and verify the approach.
 
 - **Prompt your agent:** _"Activate the `simulate-plan` skill and let's think through [my-plan] before we start."_ or _"/simulate-plan .agent-work/plans/my-plan.yaml"_
 
-### 4. Execute (Orchestrate)
+### 5. Execute
 
-Run the orchestrator to execute the plan steps. Orrery will create a dedicated work branch, manage agent interactions, and automatically create a Pull Request upon completion.
+Run the orchestrator to execute the plan steps. Orrery will create a dedicated work branch and manage agent interactions.
 
 ```bash
 orrery exec
@@ -76,8 +82,6 @@ When you run `orrery exec`, agents execute plan steps **autonomously without ste
 **Built-in safeguards:**
 
 - All work happens on an isolated branch (not your main branch)
-- A Pull Request is created for review before merging
-- Agents cannot push directly to main
 
 **For additional isolation**, run Orrery inside a devcontainer. This provides a sandboxed environment where agent actions are contained. See [Devcontainer Setup](docs/advanced-workflows.md#devcontainer-setup) in Advanced Workflows.
 
@@ -94,6 +98,7 @@ For advanced usage including devcontainer setup, external plan creation, and han
 Skills are modular instruction sets that teach an agent how to perform specific phases of work.
 
 - **Discovery:** Analyze requirements and generate plans.
+- **Refine-Plan:** Analyze and improve an existing plan by fixing oversights, improving context quality, and strengthening acceptance criteria.
 - **Simulate-Plan:** Conversational dialogue to explore plans, identify risks, and verify approaches before execution.
 
 ### Plans
