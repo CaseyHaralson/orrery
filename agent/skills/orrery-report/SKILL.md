@@ -51,7 +51,7 @@ The Orchestrator expects a **single JSON object** printed to `stdout`. This is h
 
 **Rules:**
 
-1. **NO Markdown:** Do not wrap the JSON in `json ... ` blocks.
+1. **NO Markdown:** Do not wrap the JSON in triple-backtick code blocks (e.g., ` ```json ... ``` `).
 2. **Clean Output:** Ensure the JSON is valid and on its own line.
 3. **One Object Per Step:** If you are working on multiple steps, you may output multiple JSON objects (one per line).
 
@@ -115,5 +115,5 @@ Print the JSON string. **This is your final action.**
 ## Common Pitfalls
 
 - **Outputting Text:** "I have finished the step." (The Orchestrator cannot read this).
-- **Markdown Blocks:** `json { ... } ` (This breaks the parser).
+- **Markdown Blocks:** Wrapping JSON in ` ```json ... ``` ` breaks the parser.
 - **Invalid JSON:** Ensure the JSON is properly formatted and all strings are quoted.
