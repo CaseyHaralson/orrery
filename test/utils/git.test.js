@@ -13,7 +13,9 @@ const {
   checkoutBranch,
   commit,
   stash,
-  stashPop
+  stashPop,
+  getGitHubRepoUrl,
+  createPullRequest
 } = require("../../lib/utils/git");
 const { initTempGitRepo, cleanupDir } = require("../helpers/test-utils");
 
@@ -270,4 +272,132 @@ test("stashPop handles empty stash gracefully", (t) => {
 
   // Should not throw
   stashPop(gitDir);
+});
+
+// ============================================================================
+// getGitHubRepoUrl tests
+// ============================================================================
+
+test("getGitHubRepoUrl returns null when no remote", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const url = getGitHubRepoUrl(gitDir);
+  assert.equal(url, null);
+});
+
+test("getGitHubRepoUrl converts SSH URL to HTTPS", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  execFileSync(
+    "git",
+    ["remote", "add", "origin", "git@github.com:user/repo.git"],
+    {
+      cwd: gitDir,
+      stdio: "ignore"
+    }
+  );
+
+  const url = getGitHubRepoUrl(gitDir);
+  assert.equal(url, "https://github.com/user/repo");
+});
+
+test("getGitHubRepoUrl handles HTTPS URL", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  execFileSync(
+    "git",
+    ["remote", "add", "origin", "https://github.com/user/repo.git"],
+    {
+      cwd: gitDir,
+      stdio: "ignore"
+    }
+  );
+
+  const url = getGitHubRepoUrl(gitDir);
+  assert.equal(url, "https://github.com/user/repo");
+});
+
+test("getGitHubRepoUrl removes git+ prefix", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  execFileSync(
+    "git",
+    ["remote", "add", "origin", "git+https://github.com/user/repo.git"],
+    {
+      cwd: gitDir,
+      stdio: "ignore"
+    }
+  );
+
+  const url = getGitHubRepoUrl(gitDir);
+  assert.equal(url, "https://github.com/user/repo");
+});
+
+// ============================================================================
+// createPullRequest tests
+// ============================================================================
+
+test("createPullRequest returns PR info object", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const prInfo = createPullRequest("Test PR", "PR body", "main", gitDir);
+
+  assert.equal(typeof prInfo, "object");
+  assert.equal(prInfo.title, "Test PR");
+  assert.equal(prInfo.body, "PR body");
+  assert.equal(prInfo.baseBranch, "main");
+  assert.ok(prInfo.headBranch); // Current branch
+  assert.equal(prInfo.pushed, false); // No remote configured
+  assert.equal(prInfo.url, ""); // No remote URL
+});
+
+test("createPullRequest generates URL when remote configured", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  execFileSync(
+    "git",
+    ["remote", "add", "origin", "https://github.com/user/repo.git"],
+    {
+      cwd: gitDir,
+      stdio: "ignore"
+    }
+  );
+
+  const prInfo = createPullRequest("Test PR", "PR body", "main", gitDir);
+
+  assert.ok(
+    prInfo.url.startsWith("https://github.com/user/repo/compare/main...")
+  );
+  assert.ok(prInfo.url.includes("title=Test%20PR"));
+  assert.ok(prInfo.url.includes("body=PR%20body"));
+});
+
+test("createPullRequest URL-encodes special characters in title and body", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  execFileSync(
+    "git",
+    ["remote", "add", "origin", "https://github.com/user/repo.git"],
+    {
+      cwd: gitDir,
+      stdio: "ignore"
+    }
+  );
+
+  const prInfo = createPullRequest(
+    "Add & fix",
+    "Line 1\nLine 2",
+    "main",
+    gitDir
+  );
+
+  assert.ok(prInfo.url.includes("title=Add%20%26%20fix"));
+  assert.ok(prInfo.url.includes("body=Line%201%0ALine%202"));
 });
