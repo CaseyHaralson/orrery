@@ -462,7 +462,7 @@ steps:
 
   - id: "7.2"
     description: "Create CLAUDE.md with agent workflow instructions"
-    status: "pending"
+    status: "complete"
     deps:
       - "7.1"
     parallel: false
@@ -503,6 +503,7 @@ steps:
       - package.json
       - README.md
       - CHANGELOG.md
+    agent: codex
 
   - id: "7.3"
     description: "Create release preparation script and agent-driven release workflow"
