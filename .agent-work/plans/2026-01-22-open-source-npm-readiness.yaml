@@ -38,6 +38,10 @@ steps:
 
       This should be welcoming but also set clear expectations about code quality
       and the PR review process.
+
+      Note: When writing about CI checks, use future tense ("will be checked")
+      since the CI workflow is created in a later step. The linting/formatting
+      setup (steps 3.x) and CI workflow (step 4.1) come after this documentation.
     requirements:
       - Create CONTRIBUTING.md in the repository root
       - Include development setup instructions (clone, npm install)
@@ -358,7 +362,8 @@ steps:
         published (or verify .npmignore is sufficient)
     criteria:
       - prepublishOnly script exists in package.json
-      - Running npm publish --dry-run shows expected files
+      - "npm publish --dry-run includes: lib/, bin/, package.json, README.md, LICENSE"
+      - "npm publish --dry-run excludes: test/, .agent-work/, node_modules/"
       - "package.json has all required fields: name, version, description, license,
         author, repository, homepage, bugs, keywords, engines"
     files:
@@ -576,5 +581,6 @@ steps:
     files:
       - CONTRIBUTING.md
     context_files:
+      - CONTRIBUTING.md
       - scripts/prepare-release.js
       - CLAUDE.md   
