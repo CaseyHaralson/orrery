@@ -568,7 +568,7 @@ steps:
 
   - id: "7.4"
     description: "Document release process in CONTRIBUTING.md"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
       - "7.3"
@@ -602,3 +602,4 @@ steps:
       - CONTRIBUTING.md
       - scripts/prepare-release.js
       - CLAUDE.md
+    agent: codex

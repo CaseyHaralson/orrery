@@ -31,6 +31,19 @@ Thanks for your interest in contributing to Orrery! Whether this is your first c
 - Consistency with existing patterns and style.
 - Documentation updates when appropriate.
 
+## Release Process
+
+Contributors should add brief entries to CHANGELOG.md under [Unreleased] after user-facing changes (lib/ or bin/ changes). Use the appropriate category (Added, Changed, Fixed, Removed, Deprecated, Security).
+
+Maintainers use an agent-assisted workflow:
+
+1. Open Claude Code in the repository.
+2. Run `npm run release:prepare`.
+3. The agent analyzes entries, summarizes them into release notes, updates CHANGELOG.md, bumps the version, and pushes tags and commits.
+4. The agent outputs a GitHub release link and formatted release notes.
+5. Create the GitHub release manually by opening the link and pasting the notes (no gh CLI or tokens required).
+6. Run `npm publish` (maintainers only).
+
 ## Commit Messages
 
 Conventional Commits are preferred (for example, `feat: add plan status command`). If you are unsure, keep commit messages short, imperative, and scoped to the change.
