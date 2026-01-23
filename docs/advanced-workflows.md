@@ -72,6 +72,60 @@ See [externally-building-a-plan-reference.md](./externally-building-a-plan-refer
 
 ---
 
+## Plan Refinement
+
+The `refine-plan` skill analyzes existing plans and implements improvements directly. Unlike `simulate-plan` (which is read-only), `refine-plan` writes changes to the plan file.
+
+### When to Use
+
+- Plan validation failed and you need to fix issues
+- Context seems thin for autonomous execution
+- Acceptance criteria are vague or untestable
+- Missing dependency declarations (especially install step dependencies)
+- Want to verify a plan is ready before execution
+
+### Workflow
+
+1. **Run the refine-plan skill**:
+   ```bash
+   # Using an agent with the refine-plan skill
+   /refine-plan .agent-work/plans/your-plan.yaml
+   ```
+
+2. **Review the analysis**: The skill reports what improvements it found (or confirms the plan is ready if none needed)
+
+3. **Changes are applied automatically**: Unlike simulate, refine writes directly to the plan file
+
+4. **Validation runs automatically**: The PostToolUse hook validates the plan after writing
+
+### What It Checks
+
+| Category | Examples |
+| :--- | :--- |
+| **Structural issues** | Missing required fields, malformed step IDs |
+| **Dependency issues** | Missing install step deps, circular dependencies |
+| **Context quality** | Thin context, missing context_files |
+| **Criteria quality** | Vague or untestable acceptance criteria |
+| **Risk coverage** | Complex steps without risk_notes |
+| **Schema compliance** | Invalid field types, missing required fields |
+
+### Example
+
+```bash
+/refine-plan .agent-work/plans/analytics-dashboard.yaml
+
+# Output:
+# Found 3 improvements:
+# - Dependency issues: Steps 1.1, 2.1 don't depend on install step (0.1)
+# - Context quality: Step 1.2 has thin context
+# - Criteria quality: Step 2.3 has vague criteria ("error handling works")
+#
+# Implementing changes...
+# Plan validated successfully.
+```
+
+---
+
 ## Handling Blocked Plans
 
 Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution, staying on the work branch.
