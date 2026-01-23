@@ -1,0 +1,367 @@
+metadata:
+  created_at: "2026-01-22T12:00:00Z"
+  created_by: "Discovery-Agent"
+  version: "1.0"
+  source_idea: "Make Orrery ready for open sourcing and publishing to the public npm repo"
+  outcomes:
+    - Contributors can understand how to participate in the project
+    - Users can track what changed between versions
+    - Code quality is automatically enforced via linting and formatting
+    - Every PR is automatically validated via GitHub Actions CI
+    - Publishing workflow is streamlined with proper safety checks
+    - Security practices are transparent and documented
+  notes: |
+    This project uses Node.js with CommonJS modules.
+    - Run tests: npm test (uses node --test)
+    - No build step required (pure JavaScript)
+    - Package manager: npm
+    - Minimum Node.js version: 18
+
+    The project is already published to npm as @caseyharalson/orrery.
+    Current version: 0.5.0
+
+steps:
+  # ============================================================================
+  # Feature 1: Contributor Documentation
+  # ============================================================================
+
+  - id: "1.1"
+    description: "Create CONTRIBUTING.md with contribution guidelines"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      The project currently lacks contribution guidelines. New contributors need
+      to understand how to set up the development environment, run tests, submit
+      PRs, and follow project conventions.
+
+      This should be welcoming but also set clear expectations about code quality
+      and the PR review process.
+    requirements:
+      - Create CONTRIBUTING.md in the repository root
+      - Include development setup instructions (clone, npm install)
+      - Document how to run tests (npm test)
+      - Explain the PR process and what reviewers look for
+      - Describe commit message conventions (conventional commits style
+        preferred)
+      - Reference the code of conduct
+      - Mention that linting/formatting will be checked in CI
+    criteria:
+      - CONTRIBUTING.md exists in repository root
+      - Document covers setup, testing, and PR process
+      - Tone is welcoming to first-time contributors
+    files:
+      - CONTRIBUTING.md
+    context_files:
+      - README.md
+      - package.json
+
+  - id: "1.2"
+    description: "Create CODE_OF_CONDUCT.md using Contributor Covenant"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      A code of conduct establishes community standards and makes the project
+      more welcoming. The Contributor Covenant is the industry standard and
+      widely recognized.
+    requirements:
+      - Create CODE_OF_CONDUCT.md in the repository root
+      - Use Contributor Covenant v2.1 (standard open source code of conduct)
+      - Update contact method to point to GitHub issues or maintainer email
+    criteria:
+      - CODE_OF_CONDUCT.md exists in repository root
+      - Uses Contributor Covenant 2.1 text
+      - Contact information is appropriate for the project
+    files:
+      - CODE_OF_CONDUCT.md
+
+  - id: "1.3"
+    description: "Create GitHub issue and PR templates"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      Issue and PR templates help contributors provide the right information
+      upfront, reducing back-and-forth and improving issue quality.
+    requirements:
+      - "Create .github/ISSUE_TEMPLATE/bug_report.md with sections for:
+        description, reproduction steps, expected behavior, environment"
+      - "Create .github/ISSUE_TEMPLATE/feature_request.md with sections for:
+        problem statement, proposed solution, alternatives considered"
+      - "Create .github/PULL_REQUEST_TEMPLATE.md with checklist for: description
+        of changes, testing done, related issues"
+    criteria:
+      - Bug report template exists at .github/ISSUE_TEMPLATE/bug_report.md
+      - Feature request template exists at
+        .github/ISSUE_TEMPLATE/feature_request.md
+      - PR template exists at .github/PULL_REQUEST_TEMPLATE.md
+    files:
+      - .github/ISSUE_TEMPLATE/bug_report.md
+      - .github/ISSUE_TEMPLATE/feature_request.md
+      - .github/PULL_REQUEST_TEMPLATE.md
+
+  # ============================================================================
+  # Feature 2: Version Tracking
+  # ============================================================================
+
+  - id: "2.1"
+    description: "Create CHANGELOG.md following Keep a Changelog format"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      Users need to understand what changed between versions. The Keep a Changelog
+      format (https://keepachangelog.com/) is the standard.
+
+      Since the project is at version 0.5.0, we should document this as the
+      starting point and note that previous versions did not maintain a changelog.
+    requirements:
+      - Create CHANGELOG.md in repository root
+      - Follow Keep a Changelog format (https://keepachangelog.com/)
+      - Include [Unreleased] section at top for ongoing changes
+      - Add [0.5.0] section with high-level summary of current state
+      - Note that this changelog starts at 0.5.0; earlier versions are not
+        documented
+      - Include links to GitHub compare/release pages
+    criteria:
+      - CHANGELOG.md exists in repository root
+      - Follows Keep a Changelog format with proper sections
+      - Has [Unreleased] section for future changes
+      - Documents version 0.5.0 as baseline
+    files:
+      - CHANGELOG.md
+    context_files:
+      - package.json
+      - README.md
+
+  # ============================================================================
+  # Feature 3: Code Quality Tooling (ESLint + Prettier)
+  # ============================================================================
+
+  - id: "3.1"
+    description: "Install and configure ESLint for JavaScript linting"
+    status: "pending"
+    deps: []
+    parallel: false
+    context: |
+      ESLint catches code quality issues and enforces consistent patterns.
+      The project uses CommonJS and Node.js 18+.
+
+      Use a minimal, sensible configuration that doesn't require major code changes.
+      The eslint:recommended ruleset plus node-specific rules is appropriate.
+    requirements:
+      - Install eslint as a devDependency
+      - Create eslint.config.js (flat config format, ESLint 9+ style)
+      - Configure for Node.js/CommonJS environment
+      - Use eslint:recommended as base
+      - Add node-specific globals (process, __dirname, etc.)
+      - Ignore node_modules, .agent-work, coverage, dist directories
+      - "Add 'lint' script to package.json: eslint ."
+    criteria:
+      - eslint is in devDependencies
+      - eslint.config.js exists with proper configuration
+      - npm run lint executes without configuration errors
+      - Linting covers lib/, bin/, test/ directories
+    files:
+      - eslint.config.js
+      - package.json
+    commands:
+      - npm install --save-dev eslint
+      - npm run lint
+
+  - id: "3.2"
+    description: "Install and configure Prettier for code formatting"
+    status: "pending"
+    deps: []
+    parallel: false
+    context: |
+      Prettier ensures consistent code formatting. It should be configured to
+      work alongside ESLint without conflicts.
+    requirements:
+      - Install prettier as a devDependency
+      - Create .prettierrc with sensible defaults (2 space indent, no trailing
+        commas, etc.)
+      - Create .prettierignore to skip node_modules, .agent-work, coverage, dist
+      - "Add 'format' script to package.json: prettier --write ."
+      - "Add 'format:check' script for CI: prettier --check ."
+    criteria:
+      - prettier is in devDependencies
+      - .prettierrc exists with configuration
+      - .prettierignore exists
+      - npm run format executes successfully
+      - npm run format:check works for CI
+    files:
+      - .prettierrc
+      - .prettierignore
+      - package.json
+    commands:
+      - npm install --save-dev prettier
+      - npm run format:check
+
+  - id: "3.3"
+    description: "Configure ESLint and Prettier to work together"
+    status: "pending"
+    deps:
+      - "3.1"
+      - "3.2"
+    parallel: false
+    context: |
+      ESLint and Prettier can conflict on formatting rules. The standard solution
+      is to use eslint-config-prettier to disable ESLint rules that conflict with
+      Prettier.
+    requirements:
+      - Install eslint-config-prettier as a devDependency
+      - Update eslint.config.js to include prettier config (disables conflicting
+        rules)
+      - Verify linting and formatting work together without conflicts
+    criteria:
+      - eslint-config-prettier is in devDependencies
+      - eslint.config.js includes prettier configuration
+      - Running eslint after prettier doesn't report formatting issues
+    files:
+      - eslint.config.js
+      - package.json
+    commands:
+      - npm install --save-dev eslint-config-prettier
+      - npm run format && npm run lint
+
+  - id: "3.4"
+    description: "Fix any existing linting issues in codebase"
+    status: "pending"
+    deps:
+      - "3.3"
+    parallel: false
+    context: |
+      After adding linting, there may be existing issues in the codebase.
+      Fix these so the project starts with a clean slate.
+
+      Focus on auto-fixable issues first, then manually address any remaining
+      problems. Avoid changing code behavior - only fix style/lint issues.
+    requirements:
+      - Run npm run lint to identify issues
+      - Run npm run format to fix formatting issues
+      - Manually fix any lint errors that can't be auto-fixed
+      - Ensure all tests still pass after fixes
+    criteria:
+      - npm run lint passes with no errors
+      - npm run format:check passes (no unformatted files)
+      - npm test passes (no regressions)
+    files: []
+    context_files:
+      - lib/
+      - bin/
+      - test/
+    commands:
+      - npm run format
+      - npm run lint -- --fix
+      - npm run lint
+      - npm test
+
+  # ============================================================================
+  # Feature 4: GitHub Actions CI Pipeline
+  # ============================================================================
+
+  - id: "4.1"
+    description: "Create GitHub Actions workflow for testing and linting"
+    status: "pending"
+    deps:
+      - "3.4"
+    parallel: false
+    context: |
+      GitHub Actions should run on every push and PR to ensure code quality.
+      Test across multiple Node.js versions to ensure compatibility.
+    requirements:
+      - Create .github/workflows/ci.yml
+      - Trigger on push to main and on all pull requests
+      - Test on Node.js versions 18.x, 20.x, and 22.x
+      - "Steps: checkout, setup-node, npm ci, npm run lint, npm run
+        format:check, npm test"
+      - Use ubuntu-latest as runner
+    criteria:
+      - .github/workflows/ci.yml exists
+      - Workflow triggers on push to main and PRs
+      - Tests Node.js 18, 20, and 22
+      - Runs lint, format check, and tests
+    files:
+      - .github/workflows/ci.yml
+    context_files:
+      - package.json
+
+  # ============================================================================
+  # Feature 5: Publishing Safety
+  # ============================================================================
+
+  - id: "5.1"
+    description: "Add prepublishOnly script and verify package.json metadata"
+    status: "pending"
+    deps:
+      - "3.4"
+    parallel: true
+    context: |
+      Before publishing, we should ensure tests and linting pass. The prepublishOnly
+      script runs automatically before npm publish.
+
+      Also verify all package.json metadata is complete for npm registry display.
+    requirements:
+      - Add 'prepublishOnly' script that runs lint, format:check, and test
+      - "Verify package.json has: name, version, description, license, author,
+        repository, homepage, bugs, keywords"
+      - Ensure 'files' field is set if we want to be explicit about what's
+        published (or verify .npmignore is sufficient)
+    criteria:
+      - prepublishOnly script exists in package.json
+      - Running npm publish --dry-run shows expected files
+      - All metadata fields are present in package.json
+    files:
+      - package.json
+    commands:
+      - npm publish --dry-run
+
+  # ============================================================================
+  # Feature 6: Security Documentation
+  # ============================================================================
+
+  - id: "6.1"
+    description: "Create SECURITY.md with vulnerability disclosure policy"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      A security policy tells users how to report vulnerabilities responsibly.
+      This is important for any public npm package.
+    requirements:
+      - Create SECURITY.md in repository root
+      - Specify which versions receive security updates (currently only latest)
+      - Provide instructions for reporting vulnerabilities (email or GitHub
+        private advisory)
+      - Set expectations for response time
+      - Thank reporters in advance for responsible disclosure
+    criteria:
+      - SECURITY.md exists in repository root
+      - Contains clear reporting instructions
+      - Specifies supported versions
+    files:
+      - SECURITY.md
+
+  - id: "6.2"
+    description: "Add npm audit to CI pipeline"
+    status: "pending"
+    deps:
+      - "4.1"
+    parallel: false
+    context: |
+      npm audit checks for known vulnerabilities in dependencies. Running this
+      in CI ensures we catch issues early.
+
+      Use 'npm audit --audit-level=high' to fail only on high/critical issues,
+      allowing low/moderate to be addressed at maintainer's discretion.
+    requirements:
+      - Add npm audit step to GitHub Actions workflow
+      - Use --audit-level=high to fail on high/critical vulnerabilities
+      - Run after npm ci to ensure dependencies are installed
+    criteria:
+      - CI workflow includes npm audit step
+      - Audit uses --audit-level=high threshold
+    files:
+      - .github/workflows/ci.yml
