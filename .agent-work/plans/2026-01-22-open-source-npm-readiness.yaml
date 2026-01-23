@@ -49,7 +49,8 @@ steps:
     criteria:
       - CONTRIBUTING.md exists in repository root
       - Document covers setup, testing, and PR process
-      - Tone is welcoming to first-time contributors
+      - Document includes a "Getting Started" section with numbered steps
+      - Document mentions "first contribution" or "new contributors" explicitly
     files:
       - CONTRIBUTING.md
     context_files:
@@ -84,6 +85,9 @@ steps:
     context: |
       Issue and PR templates help contributors provide the right information
       upfront, reducing back-and-forth and improving issue quality.
+
+      Use GitHub's standard template format with YAML frontmatter for issue
+      templates (enables form-based issue creation in GitHub UI).
     requirements:
       - "Create .github/ISSUE_TEMPLATE/bug_report.md with sections for:
         description, reproduction steps, expected behavior, environment"
@@ -169,15 +173,25 @@ steps:
     commands:
       - npm install --save-dev eslint
       - npm run lint
+    risk_notes: |
+      ESLint 9+ uses flat config format which differs from older .eslintrc style.
+      Ensure using eslint.config.js (not .eslintrc.json). May report many issues
+      in existing code that will be fixed in step 3.4. If npm run lint fails
+      initially due to lint errors in the code, that is expected - config errors
+      (like "Cannot find module") indicate a setup problem.
 
   - id: "3.2"
     description: "Install and configure Prettier for code formatting"
     status: "pending"
-    deps: []
+    deps:
+      - "3.1"
     parallel: false
     context: |
       Prettier ensures consistent code formatting. It should be configured to
       work alongside ESLint without conflicts.
+
+      This step depends on 3.1 because both modify package.json - running them
+      sequentially avoids merge conflicts in the scripts section.
     requirements:
       - Install prettier as a devDependency
       - Create .prettierrc with sensible defaults (2 space indent, no trailing
@@ -198,6 +212,9 @@ steps:
     commands:
       - npm install --save-dev prettier
       - npm run format:check
+    risk_notes: |
+      Prettier may reformat all files on first run. This is expected and will be
+      committed as part of step 3.4. Do not commit formatting changes in this step.
 
   - id: "3.3"
     description: "Configure ESLint and Prettier to work together"
@@ -225,6 +242,9 @@ steps:
     commands:
       - npm install --save-dev eslint-config-prettier
       - npm run format && npm run lint
+    risk_notes: |
+      The eslint-config-prettier package must be imported AFTER other ESLint configs
+      in eslint.config.js to properly override conflicting rules.
 
   - id: "3.4"
     description: "Fix any existing linting issues in codebase"
@@ -247,7 +267,10 @@ steps:
       - npm run lint passes with no errors
       - npm run format:check passes (no unformatted files)
       - npm test passes (no regressions)
-    files: []
+    files:
+      - "lib/**/*.js"
+      - "bin/**/*.js"
+      - "test/**/*.js"
     context_files:
       - lib/
       - bin/
@@ -257,6 +280,11 @@ steps:
       - npm run lint -- --fix
       - npm run lint
       - npm test
+    risk_notes: |
+      This step may produce a large diff if the codebase has not been formatted
+      before. Review changes carefully - formatting should not alter behavior, but
+      verify tests pass. If lint --fix introduces unexpected changes, review
+      each rule violation manually.
 
   # ============================================================================
   # Feature 4: GitHub Actions CI Pipeline
@@ -287,6 +315,11 @@ steps:
       - .github/workflows/ci.yml
     context_files:
       - package.json
+    risk_notes: |
+      GitHub Actions workflow syntax is strict - YAML indentation matters.
+      Matrix strategy for Node versions should use quoted strings for versions
+      (e.g., "18" not 18) to avoid YAML interpretation issues. Test the workflow
+      by pushing to a branch before merging to main.
 
   # ============================================================================
   # Feature 5: Publishing Safety
@@ -361,7 +394,8 @@ steps:
       - Use --audit-level=high to fail on high/critical vulnerabilities
       - Run after npm ci to ensure dependencies are installed
     criteria:
-      - CI workflow includes npm audit step
+      - CI workflow includes npm audit step after npm ci
       - Audit uses --audit-level=high threshold
+      - Audit step is named clearly (e.g., "Security audit")
     files:
       - .github/workflows/ci.yml
