@@ -33,7 +33,7 @@ Thanks for your interest in contributing to Orrery! Whether this is your first c
 
 ## Release Process
 
-Contributors should add brief entries to CHANGELOG.md under [Unreleased] after user-facing changes (lib/ or bin/ changes). Use the appropriate category (Added, Changed, Fixed, Removed, Deprecated, Security).
+Contributors should add brief entries to CHANGELOG.md under [Unreleased] after user-facing changes (lib/, bin/, agent/skills/, or .devcontainer.example/ changes). Use the appropriate category (Added, Changed, Fixed, Removed, Deprecated, Security).
 
 Maintainers use an agent-assisted workflow:
 
