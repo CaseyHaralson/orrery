@@ -92,11 +92,17 @@ test("branchExists returns true for existing local branch", (t) => {
   const gitDir = initTempGitRepo();
   t.after(() => cleanupDir(gitDir));
 
+  // Get original branch name before creating test branch
+  const originalBranch = getCurrentBranch(gitDir);
   execFileSync("git", ["checkout", "-b", "existing-branch"], {
     cwd: gitDir,
     stdio: "ignore"
   });
-  execFileSync("git", ["checkout", "-"], { cwd: gitDir, stdio: "ignore" });
+  // Use explicit branch name instead of "checkout -" which depends on reflog state
+  execFileSync("git", ["checkout", originalBranch], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
 
   const exists = branchExists("existing-branch", gitDir);
   assert.equal(exists, true);

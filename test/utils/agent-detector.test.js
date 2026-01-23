@@ -17,15 +17,10 @@ const { createTempDir, cleanupDir } = require("../helpers/test-utils");
 test("detectInstalledAgents returns empty array when no agents installed", (t) => {
   // Create a temp home directory with no agent dirs
   const tempHome = createTempDir("agent-detector-");
-  const originalHomedir = os.homedir;
 
-  // Mock os.homedir
-  os.homedir = () => tempHome;
-
-  t.after(() => {
-    os.homedir = originalHomedir;
-    cleanupDir(tempHome);
-  });
+  // Mock os.homedir using t.mock.method for automatic cleanup
+  t.mock.method(os, "homedir", () => tempHome);
+  t.after(() => cleanupDir(tempHome));
 
   const agents = detectInstalledAgents();
 
@@ -37,13 +32,9 @@ test("detectInstalledAgents detects claude agent", (t) => {
   const tempHome = createTempDir("agent-detector-");
   fs.mkdirSync(path.join(tempHome, ".claude"));
 
-  const originalHomedir = os.homedir;
-  os.homedir = () => tempHome;
-
-  t.after(() => {
-    os.homedir = originalHomedir;
-    cleanupDir(tempHome);
-  });
+  // Mock os.homedir using t.mock.method for automatic cleanup
+  t.mock.method(os, "homedir", () => tempHome);
+  t.after(() => cleanupDir(tempHome));
 
   const agents = detectInstalledAgents();
 
@@ -54,13 +45,9 @@ test("detectInstalledAgents detects codex agent", (t) => {
   const tempHome = createTempDir("agent-detector-");
   fs.mkdirSync(path.join(tempHome, ".codex"));
 
-  const originalHomedir = os.homedir;
-  os.homedir = () => tempHome;
-
-  t.after(() => {
-    os.homedir = originalHomedir;
-    cleanupDir(tempHome);
-  });
+  // Mock os.homedir using t.mock.method for automatic cleanup
+  t.mock.method(os, "homedir", () => tempHome);
+  t.after(() => cleanupDir(tempHome));
 
   const agents = detectInstalledAgents();
 
@@ -71,13 +58,9 @@ test("detectInstalledAgents detects gemini agent", (t) => {
   const tempHome = createTempDir("agent-detector-");
   fs.mkdirSync(path.join(tempHome, ".gemini"));
 
-  const originalHomedir = os.homedir;
-  os.homedir = () => tempHome;
-
-  t.after(() => {
-    os.homedir = originalHomedir;
-    cleanupDir(tempHome);
-  });
+  // Mock os.homedir using t.mock.method for automatic cleanup
+  t.mock.method(os, "homedir", () => tempHome);
+  t.after(() => cleanupDir(tempHome));
 
   const agents = detectInstalledAgents();
 
@@ -90,13 +73,9 @@ test("detectInstalledAgents detects multiple agents", (t) => {
   fs.mkdirSync(path.join(tempHome, ".codex"));
   fs.mkdirSync(path.join(tempHome, ".gemini"));
 
-  const originalHomedir = os.homedir;
-  os.homedir = () => tempHome;
-
-  t.after(() => {
-    os.homedir = originalHomedir;
-    cleanupDir(tempHome);
-  });
+  // Mock os.homedir using t.mock.method for automatic cleanup
+  t.mock.method(os, "homedir", () => tempHome);
+  t.after(() => cleanupDir(tempHome));
 
   const agents = detectInstalledAgents();
 
@@ -111,13 +90,9 @@ test("detectInstalledAgents ignores files (not directories)", (t) => {
   // Create a file instead of directory
   fs.writeFileSync(path.join(tempHome, ".claude"), "not a directory");
 
-  const originalHomedir = os.homedir;
-  os.homedir = () => tempHome;
-
-  t.after(() => {
-    os.homedir = originalHomedir;
-    cleanupDir(tempHome);
-  });
+  // Mock os.homedir using t.mock.method for automatic cleanup
+  t.mock.method(os, "homedir", () => tempHome);
+  t.after(() => cleanupDir(tempHome));
 
   const agents = detectInstalledAgents();
 

@@ -2,11 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const { ProgressTracker } = require("../../lib/orchestration/progress-tracker");
-const {
-  createMockPlan,
-  captureConsole,
-  sleep
-} = require("../helpers/test-utils");
+const { createMockPlan, captureConsole } = require("../helpers/test-utils");
 
 // ============================================================================
 // Constructor tests
@@ -100,14 +96,14 @@ test("recordComplete increments completedCount", () => {
   assert.equal(tracker.completedCount, 1);
 });
 
-test("recordComplete records duration when start time exists", async () => {
+test("recordComplete records duration when start time exists", () => {
   const tracker = new ProgressTracker(5, "test.yaml");
-  tracker.recordStart(["step-1"]);
-  await sleep(10);
+  // Directly set start time 100ms in the past to avoid timing flakiness
+  tracker.stepStartTimes.set("step-1", Date.now() - 100);
   tracker.recordComplete("step-1");
 
   assert.equal(tracker.stepCompletionTimes.length, 1);
-  assert.ok(tracker.stepCompletionTimes[0] >= 10);
+  assert.ok(tracker.stepCompletionTimes[0] >= 100);
   assert.ok(!tracker.stepStartTimes.has("step-1"));
 });
 
@@ -142,12 +138,13 @@ test("recordBlocked removes step from start times", () => {
 // getElapsed tests
 // ============================================================================
 
-test("getElapsed returns positive value", async () => {
+test("getElapsed returns positive value", () => {
   const tracker = new ProgressTracker(5, "test.yaml");
-  await sleep(10);
+  // Directly set startTime 100ms in the past to avoid timing flakiness
+  tracker.startTime = Date.now() - 100;
   const elapsed = tracker.getElapsed();
 
-  assert.ok(elapsed > 0);
+  assert.ok(elapsed >= 100);
 });
 
 // ============================================================================

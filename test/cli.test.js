@@ -11,7 +11,11 @@ const pkg = require(path.join(repoRoot, "package.json"));
 
 function runCli(args, options = {}) {
   return new Promise((resolve) => {
-    const execOptions = { encoding: "utf8", ...options };
+    const execOptions = {
+      encoding: "utf8",
+      timeout: 30000, // 30 second timeout to prevent tests from hanging
+      ...options
+    };
     execFile(
       process.execPath,
       [binPath, ...args],
