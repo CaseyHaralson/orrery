@@ -1,0 +1,460 @@
+# Review/Edit Loop Feature Plan
+# Adds a configurable code review loop to the orchestrator workflow
+
+metadata:
+  created_at: "2026-01-23T12:00:00Z"
+  created_by: "Discovery-Agent"
+  version: "1.0"
+  source_idea: >
+    Add a loop to the execute/orchestrate command that calls a review agent to
+    review code after each step. The orchestrator receives execution results,
+    then loops: calls review agent, gets feedback, calls editor agent to fix.
+    The editor can reuse the original execute agent with review comments
+    injected. The review/edit loop should be configurable (on/off).
+  outcomes:
+    - Orchestrator can optionally invoke a code review phase after each step
+      execution
+    - Review feedback is passed to an editor agent that fixes issues
+    - The review/edit cycle repeats until the reviewer approves or max
+      iterations reached
+    - Review loop is disabled by default and enabled via CLI flag or config
+  notes: |
+    This project uses Node.js 18+ with CommonJS (no build step).
+    - Run tests: npm test (uses Node.js test runner)
+    - Run linting: npm run fix
+    - Run validation: npm run validate
+
+    Key files to understand:
+    - lib/orchestration/index.js: Main orchestration loop
+    - lib/orchestration/agent-invoker.js: Agent spawning and result parsing
+    - lib/orchestration/config.js: Configuration and prompts
+    - agent/skills/orrery-execute/SKILL.md: Execute skill instructions
+    - agent/skills/orrery-verify/SKILL.md: Verify skill instructions
+
+steps:
+  # ============================================================================
+  # Feature 1: Review Agent Skill Definition
+  # ============================================================================
+
+  - id: "1.1"
+    description: "Create orrery-review skill that guides agents to perform code review"
+    status: "pending"
+    deps: []
+    parallel: false
+    context: |
+      The review skill will be invoked by the orchestrator (not the execute agent).
+      It receives the step context, the files modified, and the git diff. The agent
+      should also READ the full files to understand broader context - checking for
+      code duplication, architectural issues, and how changes fit the codebase.
+
+      This skill is NOT user-invocable (like orrery-execute, verify, report).
+      The orchestrator will invoke a fresh agent with this skill's prompt.
+
+      The review should cover everything a modern developer would check:
+      - Correctness: Does the code do what it's supposed to?
+      - Bug risks: Edge cases, null handling, off-by-one errors
+      - Security: Injection, auth issues, data exposure
+      - Performance: Obvious inefficiencies, N+1 queries, memory leaks
+      - Code quality: Readability, naming, complexity
+      - Architecture: Duplication, separation of concerns, patterns
+      - Error handling: Are errors handled gracefully?
+      - Testing: Is the code testable? Are edge cases covered?
+    requirements:
+      - Create agent/skills/orrery-review/SKILL.md
+      - "Set user-invocable: false in frontmatter"
+      - Instruct agent to READ full files for context (not just diff)
+      - Define comprehensive review criteria (see context above)
+      - Specify JSON output format with status (approved/needs_changes) and feedback array
+      - Include guidance on prioritizing feedback (blocking vs. suggestions)
+    criteria:
+      - "SKILL.md exists with proper frontmatter (name, description, user-invocable: false)"
+      - Skill instructs agent to read full file contents for context
+      - Review criteria cover correctness, security, performance, architecture, code quality
+      - Output format clearly specifies approved/needs_changes status
+      - Feedback items include file, line (optional), severity, and comment fields
+    files:
+      - agent/skills/orrery-review/SKILL.md
+    context_files:
+      - agent/skills/orrery-execute/SKILL.md
+      - agent/skills/orrery-verify/SKILL.md
+      - agent/skills/orrery-report/SKILL.md
+    risk_notes: |
+      This skill is foundational - the quality of reviews depends entirely on
+      the instructions here. Key risks:
+      - Overly strict criteria may cause endless review loops
+      - Vague criteria may miss real issues
+      - JSON output format must be unambiguous for parseReviewResults to work
+      Test with sample diffs to ensure reasonable feedback quality.
+
+  # ============================================================================
+  # Feature 2: Configuration for Review Loop
+  # ============================================================================
+
+  - id: "2.1"
+    description: "Add review loop configuration options to orchestrator config"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      The review loop needs to be configurable. Add a new `review` section to
+      the config object in lib/orchestration/config.js with options for:
+      - enabled: boolean (default false)
+      - maxIterations: number (default 3) - prevent infinite loops
+      - The prompt template for the review agent
+
+      The prompt should include placeholders for {stepContext}, {files}, {diff}.
+    requirements:
+      - Add review section to config object
+      - "review.enabled: false by default"
+      - "review.maxIterations: 3 (configurable)"
+      - Create REVIEW_PROMPT constant with structured prompt
+      - Include placeholder for step context, modified files, and diff
+    criteria:
+      - config.review.enabled defaults to false
+      - config.review.maxIterations defaults to 3
+      - REVIEW_PROMPT constant is defined and exported
+      - Prompt includes instructions for JSON output format
+    files:
+      - lib/orchestration/config.js
+    context_files:
+      - lib/orchestration/config.js
+
+  - id: "2.2"
+    description: "Add --review CLI flag to orchestrate command"
+    status: "pending"
+    deps:
+      - "2.1"
+    parallel: false
+    context: |
+      Users need a way to enable the review loop from the command line.
+      Add --review flag to the orchestrate command that overrides config.review.enabled.
+      Also support ORRERY_REVIEW_ENABLED environment variable.
+
+      The CLI is built with Commander.js. The orchestrate command is defined in
+      lib/cli/commands/orchestrate.js using program.command().option() pattern.
+      The options are then passed to the orchestrate() function. The parseArgs()
+      function in lib/orchestration/index.js handles CLI arguments when the
+      orchestrator is run directly (not through the CLI command).
+
+      Both files need updates:
+      - orchestrate.js: Add .option("--review", "description") to the command
+      - index.js: Add --review to parseArgs() for direct invocation support
+    requirements:
+      - Add .option("--review", "Enable code review loop after each step") to orchestrate command in lib/cli/commands/orchestrate.js
+      - Pass options.review to the orchestrate() call
+      - Add --review flag to parseArgs() in lib/orchestration/index.js
+      - Support ORRERY_REVIEW_ENABLED env var (true/false)
+      - CLI flag takes precedence over env var, which takes precedence over
+        config
+    criteria:
+      - orrery exec --review enables review loop
+      - ORRERY_REVIEW_ENABLED=true enables review loop
+      - orrery exec --help shows --review flag with description
+      - Direct invocation (node lib/orchestration/index.js --review) also works
+    files:
+      - lib/orchestration/index.js
+      - lib/cli/commands/orchestrate.js
+    context_files:
+      - lib/orchestration/index.js
+      - lib/cli/commands/orchestrate.js
+    risk_notes: |
+      Precedence chain (CLI > env > config) must be tested carefully. Ensure
+      ORRERY_REVIEW_ENABLED parsing handles various truthy values ("true", "1")
+      and falsy values ("false", "0", undefined).
+
+  # ============================================================================
+  # Feature 3: Review Agent Invocation
+  # ============================================================================
+
+  - id: "3.1"
+    description: "Create review-invoker module for spawning review agents"
+    status: "pending"
+    deps:
+      - "1.1"
+      - "2.1"
+    parallel: false
+    context: |
+      Create a new module that handles invoking the review agent. This is
+      similar to agent-invoker but specialized for review:
+
+      1. Takes step context, modified files, and git diff as input
+      2. Builds the review prompt with those details
+      3. Spawns agent with review skill (agent has full tool access to read files)
+      4. Parses review output (approved/needs_changes + feedback)
+
+      The agent is spawned with normal tool access, so it CAN and SHOULD read
+      the full file contents to understand context beyond just the diff. The
+      diff is provided in the prompt as a starting point, but the agent should
+      explore the codebase to check for duplication, architectural fit, etc.
+
+      The module should reuse the failover logic from agent-invoker. Look at
+      how invokeAgentWithFailover() is called - it takes (config, planFile,
+      stepIds, repoRoot, options). For review, we need a slightly different
+      invocation that passes the review prompt instead of the worker prompt.
+
+      Key pattern from agent-invoker.js:
+      - invokeAgentWithFailover returns a handle with { promise, stepIds, ... }
+      - The promise resolves to { stdout, stderr, exitCode, agentName }
+      - Use this same pattern for the review agent
+    requirements:
+      - Create lib/orchestration/review-invoker.js
+      - Export invokeReviewAgent(config, stepContext, files, diff, repoRoot, options)
+      - Build prompt from config.review.prompt template with substitutions
+      - Replace {stepContext}, {files}, {diff} placeholders in the prompt
+      - Prompt should instruct agent to read full files for context
+      - Reuse invokeAgentWithFailover pattern from agent-invoker (or spawn directly)
+      - Export parseReviewResults(stdout) to extract approval and feedback
+    criteria:
+      - review-invoker.js exports invokeReviewAgent function
+      - Function spawns agent with review prompt (agent has file read access)
+      - invokeReviewAgent returns a promise that resolves to parsed review result
+      - "parseReviewResults extracts {approved: boolean, feedback: array}"
+      - Handles malformed output gracefully, returns object with approved=true and error message
+    files:
+      - lib/orchestration/review-invoker.js
+    context_files:
+      - lib/orchestration/agent-invoker.js
+      - lib/orchestration/config.js
+
+  - id: "3.2"
+    description: "Create edit-invoker module for spawning edit agents with review feedback"
+    status: "pending"
+    deps:
+      - "3.1"
+    parallel: false
+    context: |
+      The edit agent is the same execute agent but with review feedback injected.
+      Create a module that:
+
+      1. Takes original step context + review feedback
+      2. Builds an edit prompt that includes the feedback
+      3. Spawns agent with combined context
+      4. Returns the same result format as regular execution
+
+      The key insight: we reuse the WORKER_PROMPT (defined in lib/orchestration/config.js)
+      but add a section for review feedback that the agent must address.
+
+      The WORKER_PROMPT has placeholders {planFile} and {stepIds}. The edit prompt
+      should:
+      1. Start with WORKER_PROMPT (substituted)
+      2. Add a clear "## Review Feedback" section
+      3. List each feedback item with file, line (if available), severity, and comment
+      4. Instruct agent to address ALL feedback items before reporting complete
+
+      Look at how invokeAgentWithFailover builds the final prompt in agent-invoker.js.
+    requirements:
+      - Create lib/orchestration/edit-invoker.js
+      - Export invokeEditAgent(config, planFile, stepIds, feedback, repoRoot, options)
+      - Build prompt that combines WORKER_PROMPT + review feedback section
+      - Format feedback array as numbered list with file, line, severity, comment
+      - Reuse invokeAgentWithFailover from agent-invoker (or use same spawn pattern)
+      - Use same result parsing as regular execution (parseAgentResults from agent-invoker)
+    criteria:
+      - edit-invoker.js exports invokeEditAgent function
+      - Prompt includes "## Review Feedback" section with all feedback items
+      - Each feedback item shows file, line (if present), severity, and comment
+      - Result format matches standard agent results (parsed via parseAgentResults)
+      - Agent receives both original step requirements AND feedback in single prompt
+    files:
+      - lib/orchestration/edit-invoker.js
+    context_files:
+      - lib/orchestration/agent-invoker.js
+      - lib/orchestration/config.js
+    risk_notes: |
+      The prompt combination must be carefully structured so the agent understands
+      it's fixing issues, not starting fresh. The feedback section should clearly
+      delineate what was reviewed and what needs to change. Test with multi-item
+      feedback to ensure all issues are addressed.
+
+  # ============================================================================
+  # Feature 4: Review Loop Integration
+  # ============================================================================
+
+  - id: "4.1"
+    description: "Add git diff utility function for review context"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      The review agent needs to see what changed. Add a utility function
+      to get the git diff of uncommitted changes, optionally filtered to
+      specific files.
+
+      The git.js module already has a `git(command, cwd)` helper that runs git
+      commands and returns trimmed output (throws on errors with stderr). Also
+      has `hasUncommittedChanges(cwd)` which uses `git diff --quiet`. Follow
+      the same patterns: use the git() helper, same JSDoc style, export from
+      module.exports at the bottom.
+    requirements:
+      - Add getUncommittedDiff(repoRoot, files) to lib/utils/git.js
+      - Use the existing git() helper function for running the command
+      - If files array provided, filter diff to those files only
+      - Return empty string if no changes
+      - Handle errors gracefully (return empty string with try/catch)
+    criteria:
+      - getUncommittedDiff() returns diff string for uncommitted changes
+      - Can filter to specific files via second parameter
+      - Returns empty string when no changes exist
+      - Function is exported in module.exports
+    files:
+      - lib/utils/git.js
+    context_files:
+      - lib/utils/git.js
+
+  - id: "4.2"
+    description: "Integrate review loop into waitForAgentCompletion"
+    status: "pending"
+    deps:
+      - "2.2"
+      - "3.1"
+      - "3.2"
+      - "4.1"
+    parallel: false
+    context: |
+      This is the core integration. After an agent completes successfully
+      (status=complete), if review is enabled:
+
+      1. Get the git diff of changes
+      2. Invoke review agent
+      3. If approved: proceed as normal
+      4. If needs_changes: invoke edit agent with feedback, then re-verify
+      5. Repeat up to maxIterations times
+      6. If max iterations reached without approval: mark as complete anyway
+         but log a warning (don't block progress)
+
+      The loop happens BEFORE the commit, so all iterations work on the same
+      uncommitted changes.
+
+      Integration point: Look for the section in waitForAgentCompletion() where
+      agent status transitions to 'complete'. The review loop should be inserted
+      AFTER success is detected but BEFORE committing changes or updating plan
+      status. The function already handles re-running verify after edits.
+
+      Key code patterns in lib/orchestration/index.js:
+      - Find waitForAgentCompletion() function
+      - Look for where parseAgentResults() is called and extracts step results
+      - Insert review loop AFTER parsedResults is populated but BEFORE building
+        the updates array that feeds into updateStepsStatus()
+      - The commit happens in processPlan() after waitForAgentCompletion returns,
+        not inside it - so the review loop should happen before the function returns
+
+      Pattern to find: After `const parsedResults = parseAgentResults(...)` and
+      before the code that builds updates from parsedResults. If any step has
+      status 'complete', run the review loop for those steps.
+    requirements:
+      - Modify waitForAgentCompletion in lib/orchestration/index.js
+      - Import invokeReviewAgent and invokeEditAgent from new modules
+      - Import getUncommittedDiff from lib/utils/git.js
+      - Add review loop after agent completes with status=complete
+      - Track iteration count and respect config.review.maxIterations
+      - Log review/edit cycle progress
+      - If review fails to parse, treat as approved (don't block)
+      - Pass review feedback to edit agent
+    criteria:
+      - Review loop executes when config.review.enabled is true
+      - Loop terminates when approved or maxIterations reached
+      - Edit agent receives feedback from previous review
+      - Progress is logged for each iteration ("Review iteration 1/3", "Approved" or "Needs changes: N issues")
+      - Malformed JSON from review agent defaults to approved status (logs warning, proceeds)
+    files:
+      - lib/orchestration/index.js
+    context_files:
+      - lib/orchestration/index.js
+      - lib/orchestration/agent-invoker.js
+      - lib/orchestration/review-invoker.js
+      - lib/orchestration/edit-invoker.js
+    risk_notes: |
+      High complexity step - modifying the core orchestration loop. Watch for:
+      - Async coordination between review/edit/verify cycles
+      - State management if edit agent fails mid-iteration
+      - Ensure uncommitted changes are preserved across iterations
+      - Review agent parse failures should default to approved (not block)
+      - Consider adding debug logging for troubleshooting review cycles
+
+  # ============================================================================
+  # Feature 5: Testing and Documentation
+  # ============================================================================
+
+  - id: "5.1"
+    description: "Add unit tests for review-invoker and edit-invoker"
+    status: "pending"
+    deps:
+      - "3.1"
+      - "3.2"
+    parallel: false
+    context: |
+      Add tests for the new invoker modules. Focus on:
+      - Prompt building with correct substitutions
+      - Result parsing for various output formats
+      - Error handling for malformed output
+
+      The test suite uses Node.js test runner (node --test). Look at existing
+      test files for patterns. Tests should be self-contained and not require
+      actual agent invocation - mock the spawn calls and test the parsing logic.
+    requirements:
+      - Create test/orchestration/review-invoker.test.js
+      - Create test/orchestration/edit-invoker.test.js
+      - Test parseReviewResults with valid JSON ({approved: true, feedback: []})
+      - Test parseReviewResults with valid JSON ({approved: false, feedback: [...]})
+      - Test parseReviewResults with invalid/malformed JSON (returns default approved=true per step 3.1 criteria)
+      - Test prompt building with all placeholders substituted
+    criteria:
+      - npm test passes with no failures
+      - Tests cover parseReviewResults returning approved=true when JSON is valid with approved=true
+      - Tests cover parseReviewResults returning approved=false with feedback array when JSON is valid with approved=false
+      - Tests cover parseReviewResults returning approved=true (default) for malformed JSON, consistent with step 3.1 criteria ("approved=true and error message")
+      - Tests verify prompt template substitution for {stepContext}, {files}, {diff}
+    files:
+      - test/orchestration/review-invoker.test.js
+      - test/orchestration/edit-invoker.test.js
+    context_files:
+      - test/orchestration/agent-invoker.test.js
+
+  - id: "5.2"
+    description: "Update CHANGELOG with review loop feature"
+    status: "pending"
+    deps:
+      - "4.2"
+    parallel: true
+    context: |
+      Add entry to CHANGELOG.md documenting the new review loop feature.
+    requirements:
+      - Add entry under [Unreleased] in Added category
+      - Describe the --review flag and review loop behavior
+    criteria:
+      - CHANGELOG.md has entry under [Unreleased] Added section
+      - Entry mentions --review CLI flag
+      - Entry describes the review/edit loop behavior (iterative review until approved)
+    files:
+      - CHANGELOG.md
+    context_files:
+      - CHANGELOG.md
+
+  - id: "5.3"
+    description: "Update advanced-workflows.md with review loop documentation"
+    status: "pending"
+    deps:
+      - "4.2"
+    parallel: true
+    context: |
+      Document the new review loop feature in the advanced workflows guide.
+      This is where users will learn about the feature and how to use it.
+    requirements:
+      - Add new "Review Loop" section to docs/advanced-workflows.md
+      - Explain what the review loop does (iterative code review after each step)
+      - Document enabling via --review flag and ORRERY_REVIEW_ENABLED env var
+      - Explain the review/edit cycle (review agent checks code, edit agent fixes issues)
+      - Mention maxIterations behavior (defaults to 3, proceeds after max reached)
+      - Update Command Reference table entry for `orrery orchestrate` to mention --review flag
+      - Add ORRERY_REVIEW_ENABLED to Environment Variables table
+    criteria:
+      - New "Review Loop" section exists in advanced-workflows.md
+      - Section explains enabling via CLI flag and env var
+      - Section describes the iterative review/edit cycle
+      - Command Reference entry for `orrery orchestrate` mentions --review
+      - Environment Variables table includes ORRERY_REVIEW_ENABLED with description and default (false)
+    files:
+      - docs/advanced-workflows.md
+    context_files:
+      - docs/advanced-workflows.md
+      - lib/orchestration/config.js
