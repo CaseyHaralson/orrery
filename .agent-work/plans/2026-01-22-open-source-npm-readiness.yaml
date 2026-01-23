@@ -31,7 +31,7 @@ steps:
 
   - id: "1.1"
     description: "Create CONTRIBUTING.md with contribution guidelines"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -64,6 +64,7 @@ steps:
     context_files:
       - README.md
       - package.json
+    agent: codex
 
   - id: "1.2"
     description: "Create CODE_OF_CONDUCT.md using Contributor Covenant"
