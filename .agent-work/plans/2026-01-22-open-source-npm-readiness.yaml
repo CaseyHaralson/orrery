@@ -157,7 +157,7 @@ steps:
 
   - id: "3.1"
     description: "Install and configure ESLint for JavaScript linting"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -200,6 +200,7 @@ steps:
       in existing code that will be fixed in step 3.4. If npm run lint fails
       initially due to lint errors in the code, that is expected - config errors
       (like "Cannot find module") indicate a setup problem.
+    agent: codex
 
   - id: "3.2"
     description: "Install and configure Prettier for code formatting"

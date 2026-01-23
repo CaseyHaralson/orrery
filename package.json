@@ -28,10 +28,14 @@
     "orrery": "./bin/orrery.js"
   },
   "scripts": {
+    "lint": "eslint .",
     "test": "node --test"
   },
   "dependencies": {
     "commander": "^11.1.0",
     "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.2"
   }
 }
