@@ -1,0 +1,10 @@
+step_id: "5.3"
+agent: codex
+outcome: success
+details: Documented the review loop in advanced workflows, including enablement
+  options, cycle behavior, and references in command/env tables.
+timestamp: 2026-01-24T00:35:01.107Z
+artifacts:
+  - docs/advanced-workflows.md
+blocked_reason: null
+test_results: 220/220 passed (npm test)

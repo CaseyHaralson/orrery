@@ -465,7 +465,7 @@ steps:
 
   - id: "5.3"
     description: "Update advanced-workflows.md with review loop documentation"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.2"
     parallel: true
@@ -495,3 +495,4 @@ steps:
     context_files:
       - docs/advanced-workflows.md
       - lib/orchestration/config.js
+    agent: codex

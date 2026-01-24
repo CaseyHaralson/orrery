@@ -103,6 +103,37 @@ See [externally-building-a-plan-reference.md](./externally-building-a-plan-refer
 
 ---
 
+## Review Loop
+
+The review loop adds an iterative code review phase after each step finishes. Orrery runs a review agent that inspects the changes and either approves them or requests fixes. When fixes are needed, Orrery invokes an edit agent with the feedback and re-runs verification, repeating the cycle until approval or the maximum number of iterations is reached.
+
+### Enabling the Review Loop
+
+You can enable the loop per run with a CLI flag or via an environment variable:
+
+```bash
+orrery orchestrate --review
+```
+
+Or set the environment variable:
+
+```bash
+export ORRERY_REVIEW_ENABLED=true
+```
+
+### Review/Edit Cycle
+
+When enabled:
+
+1. The review agent inspects the step results and diffs.
+2. If approved, the step proceeds as normal.
+3. If changes are requested, an edit agent applies the fixes and verification runs again.
+4. The loop repeats until approved or the max iteration limit is reached.
+
+By default, the loop runs up to 3 iterations. If the maximum is reached without approval, Orrery logs a warning and proceeds with the step.
+
+---
+
 ## Handling Blocked Plans
 
 Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution, staying on the work branch.
@@ -166,13 +197,14 @@ blocked add-feature.yaml
 | `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                 |
 | `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                      |
 | `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                         |
-| `orrery orchestrate`          | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
+| `orrery orchestrate`          | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Use `--review` to enable the review loop. Alias: `exec`. |
 | `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.                      |
 | `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                         |
 
 ## Environment Variables
 
-| Variable                | Description                                          | Default               |
-| :---------------------- | :--------------------------------------------------- | :-------------------- |
-| `ORRERY_AGENT_PRIORITY` | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
-| `ORRERY_WORK_DIR`       | Override the work directory path                     | `.agent-work`         |
+| Variable                  | Description                                          | Default               |
+| :------------------------ | :--------------------------------------------------- | :-------------------- |
+| `ORRERY_AGENT_PRIORITY`   | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
+| `ORRERY_REVIEW_ENABLED`   | Enable the review loop                               | `false`               |
+| `ORRERY_WORK_DIR`         | Override the work directory path                     | `.agent-work`         |
