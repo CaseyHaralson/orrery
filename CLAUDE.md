@@ -14,6 +14,15 @@
 - `.devcontainer.example/`: devcontainer template for users
 - `test/`: test suite
 
+## Branching and PRs
+
+- Never commit directly to `main`. All changes require a PR.
+- If on `main` when ready to commit, create a descriptive branch first
+  (e.g., `feat/add-widget`, `fix/login-bug`).
+- Push the branch to the remote.
+- Do NOT use `gh` CLI (it is not available). Instead, output the PR title,
+  description, and a GitHub link for the user to open the PR manually.
+
 ## Working Agreement
 
 - After making changes, run `npm run fix`.
