@@ -40,7 +40,7 @@ steps:
 
   - id: "1.1"
     description: "Create orrery-review skill that guides agents to perform code review"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: false
     context: |
@@ -91,6 +91,7 @@ steps:
       - Vague criteria may miss real issues
       - JSON output format must be unambiguous for parseReviewResults to work
       Test with sample diffs to ensure reasonable feedback quality.
+    agent: codex
 
   # ============================================================================
   # Feature 2: Configuration for Review Loop
