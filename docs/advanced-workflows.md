@@ -8,16 +8,11 @@ This document covers advanced Orrery workflows for power users.
 
 Use the `refine-plan` skill to analyze and improve a plan before execution. This performs additional thinking to fix oversights, improve context quality, and strengthen acceptance criteria.
 
-### When to Use
-
-- Complex plans with many dependencies
-- When you want higher confidence before autonomous execution
-
 ### Usage
 
 ```bash
 # Using the skill shorthand
-/refine-plan .agent-work/plans/my-plan.yaml
+/refine-plan my-plan
 
 # Or prompt your agent
 "Activate the refine-plan skill on my-plan"
@@ -31,17 +26,11 @@ The skill analyzes the plan structure, reviews dependencies, checks context qual
 
 Use the `simulate-plan` skill to explore a plan through conversational dialogue before execution. This helps you identify risks, verify the approach, and build intuition about what you're building.
 
-### When to Use
-
-- Before executing plans with significant changes
-- When you want to understand implications of specific steps
-- To trace dependencies and identify potential issues
-
 ### Usage
 
 ```bash
 # Using the skill shorthand
-/simulate-plan .agent-work/plans/my-plan.yaml
+/simulate-plan my-plan
 
 # Or prompt your agent
 "Activate the simulate-plan skill and let's think through my-plan"
@@ -69,8 +58,9 @@ For isolated, reproducible development environments, Orrery provides a devcontai
    ```
 
 2. **Configure the devcontainer** (`.devcontainer/devcontainer.json`):
-   - Set your agent priority if you use multiple or edit to your prefered agent via environment variable (`ORRERY_AGENT_PRIORITY`)
+   - Set your agent priority if you use multiple or edit to your prefered agent via environment variable: `ORRERY_AGENT_PRIORITY`
    - Add firewall to start if needed:
+
      ```json
      "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
      "waitFor": "postStartCommand"
@@ -113,7 +103,7 @@ For isolated, reproducible development environments, Orrery provides a devcontai
    orrery init
    ```
 
-6. **Continue with the standard workflow** (discovery, simulate, execute)
+6. **Continue with the standard workflow** (discovery, refine-plan, simulate-plan, execute)
 
 ---
 
@@ -127,7 +117,7 @@ Plans can be created outside of an agent using the `ingest-plan` command. This i
 
 ### Workflow
 
-1. **Create a plan file** following the schema in [externally-building-a-plan-reference.md](./externally-building-a-plan-reference.md)
+1. **Create a plan file** following the schema and help in [externally-building-a-plan-reference.md](./externally-building-a-plan-reference.md)
 
 2. **Validate and import the plan**:
 
@@ -141,7 +131,7 @@ Plans can be created outside of an agent using the `ingest-plan` command. This i
 
    ```bash
    # Using an agent with the simulate-plan skill
-   /simulate-plan .agent-work/plans/your-plan.yaml
+   /simulate-plan your-plan
    ```
 
 4. **Execute the plan**:
@@ -164,7 +154,7 @@ The review loop adds an iterative code review phase after each step finishes. Or
 You can enable the loop per run with a CLI flag or via an environment variable:
 
 ```bash
-orrery orchestrate --review
+orrery exec --review
 ```
 
 Or set the environment variable:
@@ -242,16 +232,16 @@ blocked add-feature.yaml
 
 ## Command Reference
 
-| Command                       | Description                                                                                                                                                     |
-| :---------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `orrery`                      | Command reference.                                                                                                                                              |
-| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                                                                      |
-| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                                                           |
-| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                                                                |
-| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                                                                   |
-| `orrery orchestrate`          | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Use `--review` to enable the review loop. Alias: `exec`. |
-| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.                                                                |
-| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                                                                   |
+| Command                       | Description                                                                                      |
+| :---------------------------- | :----------------------------------------------------------------------------------------------- |
+| `orrery`                      | Command reference.                                                                               |
+| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.       |
+| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                            |
+| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                 |
+| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                    |
+| `orrery orchestrate`          | Executes the active plan. Use `--review` to enable the review loop. Alias: `exec`.               |
+| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes. |
+| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                    |
 
 ## Environment Variables
 

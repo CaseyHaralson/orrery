@@ -1,6 +1,6 @@
 # Orrery
 
-**Structured Workflow Orchestration for AI Agents**
+**Workflow orchestration CLI for AI agents**
 
 Orrery is a CLI tool designed to transform high-level development goals into executable, traceable, and engineered workflows. It turns high-level goals ("Add a user login system") into executable, step-by-step plans that agents follow autonomously, ensuring consistent and high-quality results.
 
@@ -51,13 +51,19 @@ orrery init
 
 ### 2. Create a Plan
 
-Navigate to your project directory (root of the git repository). Use your AI agent (now equipped with the `discovery` skill) to generate a plan.
+Navigate to your project directory and use your AI agent (now equipped with the `discovery` skill) to generate a plan.
 
-- **Prompt your agent:** _"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."_ or _"/discovery I want to [goal]"_
+```bash
+# Using the skill shorthand
+/discovery I want to [goal]
+
+# Or prompt your agent
+"I want to [goal]. Please activate the discovery skill and create a plan."
+```
 
 ### 3. Execute
 
-Run the orchestrator to execute the plan steps. Orrery will create a dedicated work branch and manage agent interactions.
+Back in the terminal, run the orrery orchestrator to execute the plan steps. Orrery will create a dedicated work branch and manage agent interactions.
 
 ```bash
 orrery exec
@@ -113,12 +119,12 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 
 ## Command Reference
 
-| Command              | Description                                                                                                           |
-| :------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| `orrery`             | Command reference.                                                                                                    |
-| `orrery init`        | Initialize Orrery: install skills to detected agents.                                                                 |
-| `orrery orchestrate` | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Alias: `exec`. |
-| `orrery status`      | Shows the progress of current plans.                                                                                  |
+| Command              | Description                                                                        |
+| :------------------- | :--------------------------------------------------------------------------------- |
+| `orrery`             | Command reference.                                                                 |
+| `orrery init`        | Initialize Orrery: install skills to detected agents.                              |
+| `orrery orchestrate` | Executes the active plan. Use `--review` to enable the review loop. Alias: `exec`. |
+| `orrery status`      | Shows the progress of current plans.                                               |
 
 ## Directory Structure
 

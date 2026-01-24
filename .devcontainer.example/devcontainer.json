@@ -53,7 +53,8 @@
     "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
     "CODEX_HOME": "/home/vscode/.codex",
     "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
-    "ORRERY_AGENT_PRIORITY": "codex,gemini,claude"
+    "ORRERY_AGENT_PRIORITY": "codex,gemini,claude",
+    "ORRERY_REVIEW_ENABLED": "true"
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace"
