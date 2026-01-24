@@ -443,7 +443,7 @@ steps:
 
   - id: "5.2"
     description: "Update CHANGELOG with review loop feature"
-    status: "pending"
+    status: "complete"
     deps:
       - "4.2"
     parallel: true
@@ -461,6 +461,7 @@ steps:
       - CHANGELOG.md
     context_files:
       - CHANGELOG.md
+    agent: codex
 
   - id: "5.3"
     description: "Update advanced-workflows.md with review loop documentation"
