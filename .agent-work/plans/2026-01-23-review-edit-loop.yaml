@@ -129,7 +129,7 @@ steps:
 
   - id: "2.2"
     description: "Add --review CLI flag to orchestrate command"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.1"
     parallel: false
@@ -170,6 +170,7 @@ steps:
       Precedence chain (CLI > env > config) must be tested carefully. Ensure
       ORRERY_REVIEW_ENABLED parsing handles various truthy values ("true", "1")
       and falsy values ("false", "0", undefined).
+    agent: codex
 
   # ============================================================================
   # Feature 3: Review Agent Invocation
