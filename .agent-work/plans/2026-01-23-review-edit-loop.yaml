@@ -324,7 +324,7 @@ steps:
 
   - id: "4.2"
     description: "Integrate review loop into waitForAgentCompletion"
-    status: "pending"
+    status: "complete"
     deps:
       - "2.2"
       - "3.1"
@@ -392,6 +392,7 @@ steps:
       - Ensure uncommitted changes are preserved across iterations
       - Review agent parse failures should default to approved (not block)
       - Consider adding debug logging for troubleshooting review cycles
+    agent: codex
 
   # ============================================================================
   # Feature 5: Testing and Documentation
