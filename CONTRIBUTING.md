@@ -47,7 +47,3 @@ Maintainers use an agent-assisted workflow:
 ## Commit Messages
 
 Conventional Commits are preferred (for example, `feat: add plan status command`). If you are unsure, keep commit messages short, imperative, and scoped to the change.
-
-## Code of Conduct
-
-Please read and follow our Code of Conduct in `CODE_OF_CONDUCT.md`.
