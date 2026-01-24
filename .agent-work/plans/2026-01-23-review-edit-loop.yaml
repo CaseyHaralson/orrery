@@ -288,7 +288,7 @@ steps:
 
   - id: "4.1"
     description: "Add git diff utility function for review context"
-    status: "pending"
+    status: "complete"
     deps: []
     parallel: true
     context: |
@@ -316,6 +316,7 @@ steps:
       - lib/utils/git.js
     context_files:
       - lib/utils/git.js
+    agent: codex
 
   - id: "4.2"
     description: "Integrate review loop into waitForAgentCompletion"
