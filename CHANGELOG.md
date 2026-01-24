@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- orrery-execute and orrery-verify skills now reference project guideline files (CLAUDE.md, AGENTS.md, etc.) and plan metadata.notes for project-specific guidelines
+
 ## [0.6.0] - 2026-01-23
 
 ### Added

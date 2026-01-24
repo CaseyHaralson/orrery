@@ -25,6 +25,18 @@ Use this skill to **implement code changes** defined in a plan step.
 
 ## How to Do It
 
+### Repository Guidelines
+
+Before implementing, check for project-specific guidelines:
+
+1. **Check for guideline files** - Look for project guideline files at the repo root (e.g., `CLAUDE.md`, `AGENTS.md`, `COPILOT.md`, or similar). Read and follow their working agreements (formatting commands, validation steps, changelog requirements, etc.)
+
+2. **Check Plan Notes** - Read the plan's `metadata.notes` field for project-specific commands and conventions (testing commands, build commands, tool-specific notes).
+
+3. **Check CONTRIBUTING.md** - If present, follow commit message conventions and coding standards.
+
+These guidelines override generic examples in this skill. For example, if a guideline file says "run `npm run fix` after changes", do that instead of generic lint commands.
+
 ### Git State
 
 The orchestrator modifies `.agent-work/` files before you start (marking steps `in_progress`, creating temp files). This is expected. **Ignore changes in `.agent-work/`** when checking git status - these are orchestrator bookkeeping files, not unexpected changes.

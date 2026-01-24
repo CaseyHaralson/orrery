@@ -24,6 +24,16 @@ Use this skill **after execution** to validate that changes work correctly and m
 
 ## How to Do It
 
+### Step 0: Check Repository Guidelines
+
+Before running generic commands, check for project-specific instructions:
+
+1. **Plan metadata.notes** - Use testing/linting commands specified here
+2. **Project guideline files** - Check for files like `CLAUDE.md`, `AGENTS.md`, `COPILOT.md`, or similar at the repo root. Follow their validation steps (e.g., `npm run fix`, `npm run validate`)
+3. **CONTRIBUTING.md** - Check for any validation requirements
+
+Use project-specific commands instead of generic ones when available.
+
 ### Step 1: Run the Test Suite
 
 Execute the project's tests:
@@ -36,15 +46,22 @@ go test ./...
 cargo test
 ```
 
-### Step 2: Run Linters
+### Step 2: Run Formatting and Linting
 
-If the project has them configured:
+If the project has formatting/linting configured:
 
-```bash
-# Examples
-npm run lint
-eslint .
-```
+1. **Run formatters first** (e.g., `npm run fix`, `prettier --write`)
+2. **Then run linters** (e.g., `npm run lint`, `eslint .`)
+
+Check project guideline files and plan notes for the exact commands.
+
+### Step 2.5: Update CHANGELOG (if required)
+
+If project guideline files require CHANGELOG updates:
+
+1. Check if changes touch user-facing code (lib/, bin/, etc.)
+2. If yes, add an entry under `[Unreleased]` with appropriate category
+3. Use the correct category: Added, Changed, Fixed, Removed, Deprecated, Security
 
 ### Step 3: Check Acceptance Criteria
 
