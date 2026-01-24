@@ -33,11 +33,15 @@ function normalizeRepoUrl(url) {
 }
 
 function extractUnreleased(changelog) {
-  const match = changelog.match(
-    /^## \[Unreleased\][\r\n]+([\s\S]*?)(?=^## \[|$)/m
-  );
-  if (!match) return null;
-  return match[1];
+  const startMarker = "## [Unreleased]";
+  const startIdx = changelog.indexOf(startMarker);
+  if (startIdx === -1) return null;
+
+  const afterStart = changelog.slice(startIdx + startMarker.length);
+  const nextSectionMatch = afterStart.match(/\n## \[/);
+  const endIdx = nextSectionMatch ? nextSectionMatch.index : afterStart.length;
+
+  return afterStart.slice(0, endIdx).trim();
 }
 
 function findEntryLines(unreleasedBody) {
