@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `--review` flag to enable iterative review/edit loops after each step until approved (or max iterations).
+
 ### Fixed
 
 - Agents no longer block on expected `.agent-work/` changes made by orchestrator before execution.
