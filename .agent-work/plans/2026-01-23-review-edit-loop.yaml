@@ -232,7 +232,7 @@ steps:
 
   - id: "3.2"
     description: "Create edit-invoker module for spawning edit agents with review feedback"
-    status: "pending"
+    status: "complete"
     deps:
       - "3.1"
     parallel: false
@@ -284,6 +284,7 @@ steps:
       it's fixing issues, not starting fresh. The feedback section should clearly
       delineate what was reviewed and what needs to change. Test with multi-item
       feedback to ensure all issues are addressed.
+    agent: codex
 
   # ============================================================================
   # Feature 4: Review Loop Integration
