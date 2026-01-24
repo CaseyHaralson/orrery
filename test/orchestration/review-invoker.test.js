@@ -2,12 +2,10 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 function loadReviewInvoker(t, stubbed = {}) {
-  const agentInvokerPath = require.resolve(
-    "../../lib/orchestration/agent-invoker"
-  );
-  const reviewInvokerPath = require.resolve(
-    "../../lib/orchestration/review-invoker"
-  );
+  const agentInvokerPath =
+    require.resolve("../../lib/orchestration/agent-invoker");
+  const reviewInvokerPath =
+    require.resolve("../../lib/orchestration/review-invoker");
 
   const originalAgentInvoker = require.cache[agentInvokerPath];
   const originalReviewInvoker = require.cache[reviewInvokerPath];

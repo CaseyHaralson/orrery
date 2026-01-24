@@ -190,21 +190,21 @@ blocked add-feature.yaml
 
 ## Command Reference
 
-| Command                       | Description                                                                                                           |
-| :---------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| `orrery`                      | Command reference.                                                                                                    |
-| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                            |
-| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                 |
-| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                      |
-| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                         |
+| Command                       | Description                                                                                                                                                     |
+| :---------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `orrery`                      | Command reference.                                                                                                                                              |
+| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                                                                      |
+| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                                                           |
+| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                                                                |
+| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                                                                   |
 | `orrery orchestrate`          | Executes the active plan. Use `--resume` to continue a partially completed plan on the current branch. Use `--review` to enable the review loop. Alias: `exec`. |
-| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.                      |
-| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                         |
+| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.                                                                |
+| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                                                                   |
 
 ## Environment Variables
 
-| Variable                  | Description                                          | Default               |
-| :------------------------ | :--------------------------------------------------- | :-------------------- |
-| `ORRERY_AGENT_PRIORITY`   | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
-| `ORRERY_REVIEW_ENABLED`   | Enable the review loop                               | `false`               |
-| `ORRERY_WORK_DIR`         | Override the work directory path                     | `.agent-work`         |
+| Variable                | Description                                          | Default               |
+| :---------------------- | :--------------------------------------------------- | :-------------------- |
+| `ORRERY_AGENT_PRIORITY` | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
+| `ORRERY_REVIEW_ENABLED` | Enable the review loop                               | `false`               |
+| `ORRERY_WORK_DIR`       | Override the work directory path                     | `.agent-work`         |
