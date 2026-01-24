@@ -55,19 +55,7 @@ Navigate to your project directory (root of the git repository). Use your AI age
 
 - **Prompt your agent:** _"I want to [goal]. Please activate the `discovery` skill and create a comprehensive plan."_ or _"/discovery I want to [goal]"_
 
-### 3. Refine the Plan (Optional)
-
-Use the `refine-plan` skill to analyze and improve the plan autonomously. This performs additional thinking to fix oversights, improve context quality, and strengthen acceptance criteria.
-
-- **Prompt your agent:** _"Activate the `refine-plan` skill on [my-plan]."_ or _"/refine-plan .agent-work/plans/my-plan.yaml"_
-
-### 4. Simulate the Plan (Optional)
-
-Use the `simulate-plan` skill to explore the plan through conversational dialogue before execution. This helps you identify risks and verify the approach.
-
-- **Prompt your agent:** _"Activate the `simulate-plan` skill and let's think through [my-plan] before we start."_ or _"/simulate-plan .agent-work/plans/my-plan.yaml"_
-
-### 5. Execute
+### 3. Execute
 
 Run the orchestrator to execute the plan steps. Orrery will create a dedicated work branch and manage agent interactions.
 
@@ -87,7 +75,15 @@ When you run `orrery exec`, agents execute plan steps **autonomously without ste
 
 ## Advanced Workflows
 
-For advanced usage including devcontainer setup, external plan creation, and handling blocked plans, see [Advanced Workflows](docs/advanced-workflows.md).
+For power users, Orrery offers additional capabilities:
+
+- **Plan Refinement & Simulation** - Analyze, improve, and explore plans before execution
+- **Devcontainer Setup** - Isolated, reproducible development environments
+- **External Plan Creation** - Import plans from other tools or LLMs
+- **Review Loop** - Iterative code review after each step with automatic fixes
+- **Handling Blocked Plans** - Recovery workflows when steps cannot complete
+
+See [Advanced Workflows](docs/advanced-workflows.md) for details.
 
 ---
 

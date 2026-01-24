@@ -4,6 +4,58 @@ This document covers advanced Orrery workflows for power users.
 
 ---
 
+## Plan Refinement
+
+Use the `refine-plan` skill to analyze and improve a plan before execution. This performs additional thinking to fix oversights, improve context quality, and strengthen acceptance criteria.
+
+### When to Use
+
+- Complex plans with many dependencies
+- When you want higher confidence before autonomous execution
+
+### Usage
+
+```bash
+# Using the skill shorthand
+/refine-plan .agent-work/plans/my-plan.yaml
+
+# Or prompt your agent
+"Activate the refine-plan skill on my-plan"
+```
+
+The skill analyzes the plan structure, reviews dependencies, checks context quality, and implements improvements directly to the plan file.
+
+---
+
+## Plan Simulation
+
+Use the `simulate-plan` skill to explore a plan through conversational dialogue before execution. This helps you identify risks, verify the approach, and build intuition about what you're building.
+
+### When to Use
+
+- Before executing plans with significant changes
+- When you want to understand implications of specific steps
+- To trace dependencies and identify potential issues
+
+### Usage
+
+```bash
+# Using the skill shorthand
+/simulate-plan .agent-work/plans/my-plan.yaml
+
+# Or prompt your agent
+"Activate the simulate-plan skill and let's think through my-plan"
+```
+
+During simulation, you can:
+
+- Ask "what if" questions about the plan
+- Trace dependencies between steps
+- Explore alternative approaches
+- Identify risks before committing to execution
+
+---
+
 ## Devcontainer Setup
 
 For isolated, reproducible development environments, Orrery provides a devcontainer workflow.
