@@ -245,8 +245,9 @@ blocked add-feature.yaml
 
 ## Environment Variables
 
-| Variable                | Description                                          | Default               |
-| :---------------------- | :--------------------------------------------------- | :-------------------- |
-| `ORRERY_AGENT_PRIORITY` | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
-| `ORRERY_REVIEW_ENABLED` | Enable the review loop                               | `false`               |
-| `ORRERY_WORK_DIR`       | Override the work directory path                     | `.agent-work`         |
+| Variable                       | Description                                          | Default               |
+| :----------------------------- | :--------------------------------------------------- | :-------------------- |
+| `ORRERY_AGENT_PRIORITY`        | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
+| `ORRERY_REVIEW_ENABLED`        | Enable the review loop                               | `false`               |
+| `ORRERY_REVIEW_MAX_ITERATIONS` | Maximum review-edit loop iterations                  | `3`                   |
+| `ORRERY_WORK_DIR`              | Override the work directory path                     | `.agent-work`         |

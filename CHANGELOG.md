@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `--review` flag to enable iterative review/edit loops after each step until approved (or max iterations).
 - Added `ORRERY_REVIEW_ENABLED` environment variable to devcontainer template.
+- Added `ORRERY_REVIEW_MAX_ITERATIONS` environment variable to control review-edit loop iterations.
 
 ### Fixed
 
