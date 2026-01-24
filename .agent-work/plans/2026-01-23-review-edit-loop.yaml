@@ -30,6 +30,8 @@ metadata:
     - lib/orchestration/config.js: Configuration and prompts
     - agent/skills/orrery-execute/SKILL.md: Execute skill instructions
     - agent/skills/orrery-verify/SKILL.md: Verify skill instructions
+  source_branch: main
+  work_branch: plan/review-edit-loop
 
 steps:
   # ============================================================================
