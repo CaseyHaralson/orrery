@@ -38,11 +38,12 @@ Contributors should add brief entries to CHANGELOG.md under [Unreleased] after u
 Maintainers use an agent-assisted workflow:
 
 1. Open Claude Code in the repository.
-2. Run `npm run release:prepare`.
-3. The agent analyzes entries, summarizes them into release notes, updates CHANGELOG.md, bumps the version, and pushes tags and commits.
-4. The agent outputs a GitHub release link and formatted release notes.
-5. Create the GitHub release manually by opening the link and pasting the notes (no gh CLI or tokens required).
-6. Run `npm publish` (maintainers only).
+2. Run `npm run release:prepare` and follow the steps it outputs.
+3. The agent creates a release branch, updates CHANGELOG.md and package.json, and opens a PR.
+4. After the PR merges, the agent creates and pushes the version tag.
+5. The agent outputs a GitHub release link and formatted release notes.
+6. Create the GitHub release manually by opening the link and pasting the notes.
+7. Run `npm publish` (maintainers only).
 
 ## Commit Messages
 

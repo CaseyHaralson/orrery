@@ -135,16 +135,19 @@ console.log(`- Type: ${suggestedType}`);
 console.log(`- Reason: ${reason}`);
 console.log("\nNext steps for the release agent:");
 console.log("1) Confirm or adjust the suggested version type.");
-console.log("2) Summarize the raw entries into polished release notes.");
+console.log("2) Create a release branch: git checkout -b release/X.Y.Z");
 console.log(
-  "3) Update CHANGELOG.md: replace [Unreleased] with [X.Y.Z] - YYYY-MM-DD and add a new empty [Unreleased] section at the top."
+  "3) Update CHANGELOG.md: add empty [Unreleased] section, change old [Unreleased] to [X.Y.Z] - YYYY-MM-DD, update comparison links."
 );
 console.log(
-  "4) Run: npm version <type> (updates package.json and creates a git tag)."
+  "4) Update package.json version field manually (do NOT use npm version)."
 );
-console.log("5) Run: git push && git push --tags.");
-console.log(`6) Prepare GitHub release: ${releaseLink}`);
-console.log("7) Output formatted release notes ready to copy-paste.");
+console.log("5) Commit: git commit -am 'X.Y.Z'");
+console.log("6) Push branch and merge via PR.");
+console.log("7) After merge: git checkout main && git pull");
+console.log("8) Create and push tag: git tag vX.Y.Z && git push --tags");
+console.log(`9) Prepare GitHub release: ${releaseLink}`);
+console.log("10) Output formatted release notes ready to copy-paste.");
 console.log(
-  "8) Remind the maintainer to create the GitHub release and run npm publish."
+  "11) Remind the maintainer to create the GitHub release and run npm publish."
 );
