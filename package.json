@@ -38,6 +38,8 @@
     "validate": "npm run format:check && npm run lint && npm test"
   },
   "files": [
+    ".devcontainer.example",
+    "agent",
     "bin",
     "lib",
     "LICENSE",
