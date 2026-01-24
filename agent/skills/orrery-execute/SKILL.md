@@ -25,6 +25,10 @@ Use this skill to **implement code changes** defined in a plan step.
 
 ## How to Do It
 
+### Git State
+
+The orchestrator modifies `.agent-work/` files before you start (marking steps `in_progress`, creating temp files). This is expected. **Ignore changes in `.agent-work/`** when checking git status - these are orchestrator bookkeeping files, not unexpected changes.
+
 ### Step 1: Read the Plan
 
 Read the plan file provided in your instructions.

@@ -1,3 +1,4 @@
 node_modules
 *orrery*.tgz
 .claude
+.agent-work/temp/
