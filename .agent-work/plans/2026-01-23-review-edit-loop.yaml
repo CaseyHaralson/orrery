@@ -64,14 +64,18 @@ steps:
       - "Set user-invocable: false in frontmatter"
       - Instruct agent to READ full files for context (not just diff)
       - Define comprehensive review criteria (see context above)
-      - Specify JSON output format with status (approved/needs_changes) and feedback array
+      - Specify JSON output format with status (approved/needs_changes) and
+        feedback array
       - Include guidance on prioritizing feedback (blocking vs. suggestions)
     criteria:
-      - "SKILL.md exists with proper frontmatter (name, description, user-invocable: false)"
+      - "SKILL.md exists with proper frontmatter (name, description,
+        user-invocable: false)"
       - Skill instructs agent to read full file contents for context
-      - Review criteria cover correctness, security, performance, architecture, code quality
+      - Review criteria cover correctness, security, performance, architecture,
+        code quality
       - Output format clearly specifies approved/needs_changes status
-      - Feedback items include file, line (optional), severity, and comment fields
+      - Feedback items include file, line (optional), severity, and comment
+        fields
     files:
       - agent/skills/orrery-review/SKILL.md
     context_files:
@@ -140,7 +144,8 @@ steps:
       - orchestrate.js: Add .option("--review", "description") to the command
       - index.js: Add --review to parseArgs() for direct invocation support
     requirements:
-      - Add .option("--review", "Enable code review loop after each step") to orchestrate command in lib/cli/commands/orchestrate.js
+      - Add .option("--review", "Enable code review loop after each step") to
+        orchestrate command in lib/cli/commands/orchestrate.js
       - Pass options.review to the orchestrate() call
       - Add --review flag to parseArgs() in lib/orchestration/index.js
       - Support ORRERY_REVIEW_ENABLED env var (true/false)
@@ -198,18 +203,21 @@ steps:
       - Use this same pattern for the review agent
     requirements:
       - Create lib/orchestration/review-invoker.js
-      - Export invokeReviewAgent(config, stepContext, files, diff, repoRoot, options)
+      - Export invokeReviewAgent(config, stepContext, files, diff, repoRoot,
+        options)
       - Build prompt from config.review.prompt template with substitutions
       - Replace {stepContext}, {files}, {diff} placeholders in the prompt
       - Prompt should instruct agent to read full files for context
-      - Reuse invokeAgentWithFailover pattern from agent-invoker (or spawn directly)
+      - Reuse invokeAgentWithFailover pattern from agent-invoker (or spawn
+        directly)
       - Export parseReviewResults(stdout) to extract approval and feedback
     criteria:
       - review-invoker.js exports invokeReviewAgent function
       - Function spawns agent with review prompt (agent has file read access)
       - invokeReviewAgent returns a promise that resolves to parsed review result
       - "parseReviewResults extracts {approved: boolean, feedback: array}"
-      - Handles malformed output gracefully, returns object with approved=true and error message
+      - Handles malformed output gracefully, returns object with approved=true
+        and error message
     files:
       - lib/orchestration/review-invoker.js
     context_files:
@@ -244,17 +252,22 @@ steps:
       Look at how invokeAgentWithFailover builds the final prompt in agent-invoker.js.
     requirements:
       - Create lib/orchestration/edit-invoker.js
-      - Export invokeEditAgent(config, planFile, stepIds, feedback, repoRoot, options)
+      - Export invokeEditAgent(config, planFile, stepIds, feedback, repoRoot,
+        options)
       - Build prompt that combines WORKER_PROMPT + review feedback section
       - Format feedback array as numbered list with file, line, severity, comment
-      - Reuse invokeAgentWithFailover from agent-invoker (or use same spawn pattern)
-      - Use same result parsing as regular execution (parseAgentResults from agent-invoker)
+      - Reuse invokeAgentWithFailover from agent-invoker (or use same spawn
+        pattern)
+      - Use same result parsing as regular execution (parseAgentResults from
+        agent-invoker)
     criteria:
       - edit-invoker.js exports invokeEditAgent function
       - Prompt includes "## Review Feedback" section with all feedback items
       - Each feedback item shows file, line (if present), severity, and comment
-      - Result format matches standard agent results (parsed via parseAgentResults)
-      - Agent receives both original step requirements AND feedback in single prompt
+      - Result format matches standard agent results (parsed via
+        parseAgentResults)
+      - Agent receives both original step requirements AND feedback in single
+        prompt
     files:
       - lib/orchestration/edit-invoker.js
     context_files:
@@ -355,7 +368,8 @@ steps:
       - Loop terminates when approved or maxIterations reached
       - Edit agent receives feedback from previous review
       - Progress is logged for each iteration ("Review iteration 1/3", "Approved" or "Needs changes: N issues")
-      - Malformed JSON from review agent defaults to approved status (logs warning, proceeds)
+      - Malformed JSON from review agent defaults to approved status (logs
+        warning, proceeds)
     files:
       - lib/orchestration/index.js
     context_files:
@@ -394,16 +408,24 @@ steps:
     requirements:
       - Create test/orchestration/review-invoker.test.js
       - Create test/orchestration/edit-invoker.test.js
-      - Test parseReviewResults with valid JSON ({approved: true, feedback: []})
-      - Test parseReviewResults with valid JSON ({approved: false, feedback: [...]})
-      - Test parseReviewResults with invalid/malformed JSON (returns default approved=true per step 3.1 criteria)
+      - "Test parseReviewResults with valid JSON ({approved: true, feedback:
+        []})"
+      - "Test parseReviewResults with valid JSON ({approved: false, feedback:
+        [...]})"
+      - Test parseReviewResults with invalid/malformed JSON (returns default
+        approved=true per step 3.1 criteria)
       - Test prompt building with all placeholders substituted
     criteria:
       - npm test passes with no failures
-      - Tests cover parseReviewResults returning approved=true when JSON is valid with approved=true
-      - Tests cover parseReviewResults returning approved=false with feedback array when JSON is valid with approved=false
-      - Tests cover parseReviewResults returning approved=true (default) for malformed JSON, consistent with step 3.1 criteria ("approved=true and error message")
-      - Tests verify prompt template substitution for {stepContext}, {files}, {diff}
+      - Tests cover parseReviewResults returning approved=true when JSON is
+        valid with approved=true
+      - Tests cover parseReviewResults returning approved=false with feedback
+        array when JSON is valid with approved=false
+      - Tests cover parseReviewResults returning approved=true (default) for
+        malformed JSON, consistent with step 3.1 criteria ("approved=true and
+        error message")
+      - Tests verify prompt template substitution for {stepContext}, {files},
+        {diff}
     files:
       - test/orchestration/review-invoker.test.js
       - test/orchestration/edit-invoker.test.js
@@ -424,7 +446,8 @@ steps:
     criteria:
       - CHANGELOG.md has entry under [Unreleased] Added section
       - Entry mentions --review CLI flag
-      - Entry describes the review/edit loop behavior (iterative review until approved)
+      - Entry describes the review/edit loop behavior (iterative review until
+        approved)
     files:
       - CHANGELOG.md
     context_files:
@@ -443,16 +466,20 @@ steps:
       - Add new "Review Loop" section to docs/advanced-workflows.md
       - Explain what the review loop does (iterative code review after each step)
       - Document enabling via --review flag and ORRERY_REVIEW_ENABLED env var
-      - Explain the review/edit cycle (review agent checks code, edit agent fixes issues)
-      - Mention maxIterations behavior (defaults to 3, proceeds after max reached)
-      - Update Command Reference table entry for `orrery orchestrate` to mention --review flag
+      - Explain the review/edit cycle (review agent checks code, edit agent
+        fixes issues)
+      - Mention maxIterations behavior (defaults to 3, proceeds after max
+        reached)
+      - Update Command Reference table entry for `orrery orchestrate` to mention
+        --review flag
       - Add ORRERY_REVIEW_ENABLED to Environment Variables table
     criteria:
       - New "Review Loop" section exists in advanced-workflows.md
       - Section explains enabling via CLI flag and env var
       - Section describes the iterative review/edit cycle
       - Command Reference entry for `orrery orchestrate` mentions --review
-      - Environment Variables table includes ORRERY_REVIEW_ENABLED with description and default (false)
+      - Environment Variables table includes ORRERY_REVIEW_ENABLED with
+        description and default (false)
     files:
       - docs/advanced-workflows.md
     context_files:
