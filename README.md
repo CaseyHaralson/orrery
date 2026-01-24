@@ -1,6 +1,6 @@
 # Orrery
 
-**Workflow orchestration CLI for AI agents**
+**Workflow planning and orchestration CLI for AI agents**
 
 Orrery is a CLI tool designed to transform high-level development goals into executable, traceable, and engineered workflows. It turns high-level goals ("Add a user login system") into executable, step-by-step plans that agents follow autonomously, ensuring consistent and high-quality results.
 

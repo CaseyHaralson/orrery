@@ -1,7 +1,7 @@
 {
   "name": "@caseyharalson/orrery",
   "version": "0.5.0",
-  "description": "Workflow orchestration CLI for AI agents",
+  "description": "Workflow planning and orchestration CLI for AI agents",
   "license": "MIT",
   "author": "Casey Haralson",
   "repository": {
