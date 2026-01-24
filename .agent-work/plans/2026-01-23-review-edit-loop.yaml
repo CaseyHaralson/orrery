@@ -178,7 +178,7 @@ steps:
 
   - id: "3.1"
     description: "Create review-invoker module for spawning review agents"
-    status: "pending"
+    status: "complete"
     deps:
       - "1.1"
       - "2.1"
@@ -228,6 +228,7 @@ steps:
     context_files:
       - lib/orchestration/agent-invoker.js
       - lib/orchestration/config.js
+    agent: codex
 
   - id: "3.2"
     description: "Create edit-invoker module for spawning edit agents with review feedback"
