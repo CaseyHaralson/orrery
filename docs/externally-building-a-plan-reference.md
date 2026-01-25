@@ -1,7 +1,24 @@
 <!--
-this comes from agent/skills/discovery
-- keep this up-to-date with that documentation
-- remove step 8 "Output Location" and "Validate the Plan" sections
+MAINTENANCE INSTRUCTIONS
+========================
+This file is a reference for external users building plans manually.
+To update, sync from these two source files:
+
+SOURCE 1: agent/skills/discovery/schemas/plan-schema.yaml
+  - Copy the full schema into the "Plan Schema Reference" code block
+
+SOURCE 2: agent/skills/discovery/SKILL.md
+  - Copy content starting from "## The Decomposition Ladder"
+  - EXCLUDE these environment-specific sections:
+    - The frontmatter (YAML block at top with name, description, hooks)
+    - "## When to Use" (references internal skill triggers)
+    - "Output Location" subsection under "Step 8: Output the Plan"
+    - "Validate the Plan" subsection under "Step 8: Output the Plan"
+    - "### Final Output" subsection under "When Discovery is Complete"
+    - "### Project Structure Analysis" under "Dependency and Parallelization Guidelines"
+
+WHY EXCLUDE: These sections reference the orrery CLI, .agent-work/plans/,
+validation hooks, and other internal tooling that external users won't have.
 -->
 
 # Plan Schema Reference
@@ -513,3 +530,67 @@ The plan is now **orchestrator-ready** and can be placed in `.agent-work/plans/`
 - **Premature detail:** Don't write implementation code during Discovery. Just define what to build.
 - **Missing dependency step dependencies:** If step "0.1" installs dependencies, all steps that use those dependencies must include "0.1" in their deps array. Otherwise, parallel execution or out-of-order execution will fail.
 - **Forgetting test dependencies:** If acceptance criteria include running tests, ensure the dependency installation step includes dev/test dependencies (e.g., `npm install --include=dev`, `pip install -e ".[test]"`).
+
+---
+
+## Dependency and Parallelization Guidelines
+
+### Dependency Detection Rules
+
+When determining `deps` for each step, apply these rules:
+
+1. **Installation/Setup First**: Any step that creates files depends on the
+   step that installs dependencies or sets up the project structure.
+
+2. **File Creation Before Use**: If step B reads or modifies files created by
+   step A, then B depends on A. Check the `files` field.
+
+3. **Import Dependencies**: If step B's code will import from modules created
+   in step A, then B depends on A.
+
+4. **Test Infrastructure**: Steps that include tests depend on the step that
+   sets up test infrastructure (fixtures, mocks, config).
+
+5. **API Before Consumers**: Backend API endpoints must exist before frontend
+   components that call them. Frontend steps depend on relevant backend steps.
+
+6. **Schema Before Implementation**: Database schema/migrations must exist
+   before repository code. Model definitions before API routes.
+
+**Example analysis:**
+
+- Step "Create REST endpoints" lists files: `routes/items.py`
+- Step "Create Items Browser UI" will call these endpoints
+- Therefore: UI step depends on REST endpoints step
+
+### Parallelization Rules
+
+Mark a step as `parallel: true` ONLY when ALL of these are true:
+
+1. **No file overlap**: The step's `files` do not overlap with any other
+   parallel-eligible step at the same dependency level.
+
+2. **No logical dependency**: The step does not use outputs, types, or
+   patterns established by a peer step.
+
+3. **Independent domain**: The step works in a different area of the codebase
+   (e.g., frontend vs backend, different features).
+
+**Common parallel-safe patterns:**
+
+- Backend setup + Frontend setup (different directories)
+- Independent feature implementations (no shared files)
+- Documentation + Docker config (no code dependencies)
+
+**Common parallel-unsafe patterns:**
+
+- Two steps modifying the same configuration file
+- API routes that share model definitions
+- Components that import from each other
+
+**Default to `parallel: false`** when uncertain. Sequential execution is
+always safe; incorrect parallelization causes merge conflicts and bugs.
+
+**Plan ordering matters:** Even with `parallel: true`, steps respect plan
+order. A serial step earlier in the plan acts as an implicit barrier for
+later steps. Place foundational work early in the plan.
