@@ -176,6 +176,49 @@ By default, the loop runs up to 3 iterations. If the maximum is reached without 
 
 ---
 
+## Parallel Execution
+
+By default, Orrery executes steps serially. Enable parallel execution to run multiple independent steps simultaneously using git worktrees for isolation.
+
+### Enabling Parallel Execution
+
+Use the `--parallel` flag:
+
+```bash
+orrery exec --parallel
+```
+
+Or set the environment variable:
+
+```bash
+export ORRERY_PARALLEL_ENABLED=true
+```
+
+### How It Works
+
+1. Steps marked `parallel: true` with no blocking dependencies run concurrently
+2. Each parallel agent gets its own git worktree (isolated workspace)
+3. Agents commit normally in their worktrees
+4. After all parallel agents complete, commits are cherry-picked back to the main branch
+
+### Configuration
+
+Control the maximum concurrent agents with `ORRERY_PARALLEL_MAX` (default: 3).
+
+### When to Use
+
+- Steps that modify different files
+- Independent implementation tasks
+- When you want faster plan execution
+
+### Limitations
+
+- Cherry-pick conflicts may occur if parallel steps modify overlapping files
+- If conflicts occur, manual resolution may be required
+- Best suited for steps with clearly separated file scopes
+
+---
+
 ## Handling Blocked Plans
 
 Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution, staying on the work branch.
@@ -232,16 +275,16 @@ blocked add-feature.yaml
 
 ## Command Reference
 
-| Command                       | Description                                                                                      |
-| :---------------------------- | :----------------------------------------------------------------------------------------------- |
-| `orrery`                      | Command reference.                                                                               |
-| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.       |
-| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                            |
-| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                 |
-| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                    |
-| `orrery orchestrate`          | Executes the active plan. Use `--review` to enable the review loop. Alias: `exec`.               |
-| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes. |
-| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                    |
+| Command                       | Description                                                                                                   |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| `orrery`                      | Command reference.                                                                                            |
+| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                    |
+| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                         |
+| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                              |
+| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                 |
+| `orrery orchestrate`          | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution. Alias: `exec`. |
+| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.              |
+| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                 |
 
 ## Environment Variables
 
@@ -249,6 +292,8 @@ blocked add-feature.yaml
 | :----------------------------- | :--------------------------------------------------- | :-------------------- |
 | `ORRERY_AGENT_PRIORITY`        | Comma-separated list of agents for failover priority | `codex,gemini,claude` |
 | `ORRERY_AGENT_TIMEOUT`         | Agent failover timeout in milliseconds               | `900000` (15 min)     |
+| `ORRERY_PARALLEL_ENABLED`      | Enable parallel execution with git worktrees         | `false`               |
+| `ORRERY_PARALLEL_MAX`          | Maximum concurrent parallel agents                   | `3`                   |
 | `ORRERY_REVIEW_ENABLED`        | Enable the review loop                               | `false`               |
 | `ORRERY_REVIEW_MAX_ITERATIONS` | Maximum review-edit loop iterations                  | `3`                   |
 | `ORRERY_WORK_DIR`              | Override the work directory path                     | `.agent-work`         |

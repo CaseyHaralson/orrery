@@ -15,7 +15,14 @@ const {
   stash,
   stashPop,
   getGitHubRepoUrl,
-  createPullRequest
+  createPullRequest,
+  addWorktree,
+  removeWorktree,
+  listWorktrees,
+  getCommitRange,
+  cherryPick,
+  cherryPickAbort,
+  deleteBranch
 } = require("../../lib/utils/git");
 const { initTempGitRepo, cleanupDir } = require("../helpers/test-utils");
 
@@ -406,4 +413,218 @@ test("createPullRequest URL-encodes special characters in title and body", (t) =
 
   assert.ok(prInfo.url.includes("title=Add%20%26%20fix"));
   assert.ok(prInfo.url.includes("body=Line%201%0ALine%202"));
+});
+
+// ============================================================================
+// addWorktree tests
+// ============================================================================
+
+test("addWorktree creates worktree at specified path", (t) => {
+  const gitDir = initTempGitRepo();
+  const worktreePath = path.join(path.dirname(gitDir), "worktree-test");
+  t.after(() => {
+    cleanupDir(worktreePath);
+    cleanupDir(gitDir);
+  });
+
+  addWorktree(worktreePath, "worktree-branch", "HEAD", gitDir);
+
+  assert.ok(fs.existsSync(worktreePath));
+  assert.ok(fs.existsSync(path.join(worktreePath, ".git")));
+});
+
+test("addWorktree creates branch in worktree", (t) => {
+  const gitDir = initTempGitRepo();
+  const worktreePath = path.join(path.dirname(gitDir), "worktree-test");
+  t.after(() => {
+    cleanupDir(worktreePath);
+    cleanupDir(gitDir);
+  });
+
+  addWorktree(worktreePath, "worktree-branch", "HEAD", gitDir);
+
+  const branch = getCurrentBranch(worktreePath);
+  assert.equal(branch, "worktree-branch");
+});
+
+// ============================================================================
+// removeWorktree tests
+// ============================================================================
+
+test("removeWorktree removes existing worktree", (t) => {
+  const gitDir = initTempGitRepo();
+  const worktreePath = path.join(path.dirname(gitDir), "worktree-test");
+  t.after(() => cleanupDir(gitDir));
+
+  addWorktree(worktreePath, "worktree-branch", "HEAD", gitDir);
+  assert.ok(fs.existsSync(worktreePath));
+
+  removeWorktree(worktreePath, gitDir);
+
+  assert.ok(!fs.existsSync(worktreePath));
+});
+
+test("removeWorktree handles non-existent worktree gracefully", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const nonExistentPath = path.join(path.dirname(gitDir), "non-existent");
+
+  // Should not throw
+  removeWorktree(nonExistentPath, gitDir);
+});
+
+// ============================================================================
+// listWorktrees tests
+// ============================================================================
+
+test("listWorktrees returns main worktree", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const worktrees = listWorktrees(gitDir);
+
+  assert.ok(worktrees.length >= 1);
+  assert.ok(worktrees[0].worktree);
+});
+
+test("listWorktrees includes added worktrees", (t) => {
+  const gitDir = initTempGitRepo();
+  const worktreePath = path.join(path.dirname(gitDir), "worktree-test");
+  t.after(() => {
+    cleanupDir(worktreePath);
+    cleanupDir(gitDir);
+  });
+
+  addWorktree(worktreePath, "worktree-branch", "HEAD", gitDir);
+
+  const worktrees = listWorktrees(gitDir);
+
+  assert.equal(worktrees.length, 2);
+  const worktreePaths = worktrees.map((w) => w.worktree);
+  assert.ok(worktreePaths.includes(worktreePath));
+});
+
+// ============================================================================
+// getCommitRange tests
+// ============================================================================
+
+test("getCommitRange returns empty array for same ref", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const commits = getCommitRange("HEAD", "HEAD", gitDir);
+
+  assert.deepEqual(commits, []);
+});
+
+test("getCommitRange returns commits between refs", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const originalBranch = getCurrentBranch(gitDir);
+
+  // Create a new branch with commits
+  createBranch("feature-branch", gitDir);
+  fs.writeFileSync(path.join(gitDir, "file1.txt"), "content1");
+  commit("First commit", [], gitDir);
+  fs.writeFileSync(path.join(gitDir, "file2.txt"), "content2");
+  commit("Second commit", [], gitDir);
+
+  const commits = getCommitRange(originalBranch, "feature-branch", gitDir);
+
+  assert.equal(commits.length, 2);
+  assert.ok(commits[0].length === 40); // SHA-1 hash
+  assert.ok(commits[1].length === 40);
+});
+
+// ============================================================================
+// cherryPick tests
+// ============================================================================
+
+test("cherryPick applies commit to current branch", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const originalBranch = getCurrentBranch(gitDir);
+
+  // Create a commit on a feature branch
+  createBranch("feature-branch", gitDir);
+  fs.writeFileSync(path.join(gitDir, "new-file.txt"), "content");
+  const commitHash = commit("Add new file", [], gitDir);
+
+  // Go back to original branch and cherry-pick
+  checkoutBranch(originalBranch, gitDir);
+  assert.ok(!fs.existsSync(path.join(gitDir, "new-file.txt")));
+
+  cherryPick(commitHash, gitDir);
+
+  assert.ok(fs.existsSync(path.join(gitDir, "new-file.txt")));
+});
+
+test("cherryPick throws on conflict", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const originalBranch = getCurrentBranch(gitDir);
+
+  // Create conflicting changes on two branches
+  fs.writeFileSync(path.join(gitDir, "conflict.txt"), "original");
+  commit("Original file", [], gitDir);
+
+  createBranch("feature-branch", gitDir);
+  fs.writeFileSync(path.join(gitDir, "conflict.txt"), "feature change");
+  const featureCommit = commit("Feature change", [], gitDir);
+
+  checkoutBranch(originalBranch, gitDir);
+  fs.writeFileSync(path.join(gitDir, "conflict.txt"), "main change");
+  commit("Main change", [], gitDir);
+
+  assert.throws(() => cherryPick(featureCommit, gitDir));
+});
+
+// ============================================================================
+// cherryPickAbort tests
+// ============================================================================
+
+test("cherryPickAbort handles no cherry-pick in progress gracefully", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  // Should not throw
+  cherryPickAbort(gitDir);
+});
+
+// ============================================================================
+// deleteBranch tests
+// ============================================================================
+
+test("deleteBranch removes local branch", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const originalBranch = getCurrentBranch(gitDir);
+  createBranch("to-delete", gitDir);
+  checkoutBranch(originalBranch, gitDir);
+
+  assert.ok(branchExists("to-delete", gitDir));
+
+  deleteBranch("to-delete", gitDir);
+
+  assert.ok(!branchExists("to-delete", gitDir));
+});
+
+test("deleteBranch with force removes unmerged branch", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const originalBranch = getCurrentBranch(gitDir);
+  createBranch("unmerged-branch", gitDir);
+  fs.writeFileSync(path.join(gitDir, "unmerged.txt"), "content");
+  commit("Unmerged commit", [], gitDir);
+  checkoutBranch(originalBranch, gitDir);
+
+  deleteBranch("unmerged-branch", gitDir, true);
+
+  assert.ok(!branchExists("unmerged-branch", gitDir));
 });

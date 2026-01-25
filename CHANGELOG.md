@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Parallel execution mode with git worktree isolation via `--parallel` flag or `ORRERY_PARALLEL_ENABLED=true`
+- `ORRERY_PARALLEL_MAX` environment variable to control maximum concurrent agents (default: 3)
+- Git worktree utilities: `addWorktree`, `removeWorktree`, `listWorktrees`, `getCommitRange`, `cherryPick`, `deleteBranch`
 - Discovery skill now includes dependency detection rules, parallelization safety rules, and project structure guidance
 - Refine-plan skill now includes dependency detection rules and parallelization safety checks
 - Plan validation now warns when parallel steps modify the same files
