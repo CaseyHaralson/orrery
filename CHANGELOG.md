@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ORRERY_AGENT_TIMEOUT` environment variable to configure agent failover timeout (default: 900000ms / 15 minutes)
+
 ### Changed
 
 - Added visual separator between steps in orchestration console output
