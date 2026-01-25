@@ -33,17 +33,19 @@ Thanks for your interest in contributing to Orrery! Whether this is your first c
 
 ## Release Process
 
-Contributors should add brief entries to CHANGELOG.md under [Unreleased] after user-facing changes (lib/, bin/, agent/skills/, or .devcontainer.example/ changes). Use the appropriate category (Added, Changed, Fixed, Removed, Deprecated, Security).
+Contributors should add brief entries to CHANGELOG.md under [Unreleased] after
+user-facing changes (lib/, bin/, agent/skills/, or .devcontainer.example/ changes).
+Use the appropriate category (Added, Changed, Fixed, Removed, Deprecated, Security).
 
 Maintainers use an agent-assisted workflow:
 
 1. Open Claude Code in the repository.
-2. Run `npm run release:prepare` and follow the steps it outputs.
-3. The agent creates a release branch, updates CHANGELOG.md and package.json, and opens a PR.
-4. After the PR merges, the agent creates and pushes the version tag.
-5. The agent outputs a GitHub release link and formatted release notes.
-6. Create the GitHub release manually by opening the link and pasting the notes.
-7. Run `npm publish` (maintainers only).
+2. Say "create release" — the agent validates the changelog, suggests a version,
+   and after confirmation creates a PR with the release changes.
+3. Review and merge the PR.
+4. Say "publish the release" — the agent tags the release and creates the
+   GitHub release.
+5. Run `npm publish` (maintainers only).
 
 ## Commit Messages
 
