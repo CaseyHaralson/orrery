@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Added visual separator between steps in orchestration console output
+
+### Fixed
+
+- Review agent now discovers new/untracked files using `git status --porcelain` instead of only `git diff`
+
 ## [0.8.0] - 2026-01-24
 
 ### Added
