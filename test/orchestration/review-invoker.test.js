@@ -87,7 +87,7 @@ test("invokeReviewAgent substitutes prompt placeholders", async (t) => {
 
   const config = {
     review: {
-      prompt: "Step:{stepContext}\nFiles:\n{files}\nDiff:\n{diff}"
+      prompt: "Plan file: {planFile}\nStep: {stepIds}"
     },
     agents: {
       codex: {
@@ -99,21 +99,13 @@ test("invokeReviewAgent substitutes prompt placeholders", async (t) => {
 
   const result = await invokeReviewAgent(
     config,
-    "Do thing",
-    ["a.js", "b.js"],
-    "diff here",
+    "/path/to/plan.yaml",
+    ["step-1", "step-2"],
     "/repo",
-    { stepId: "5.1" }
+    { stepId: "step-1" }
   );
 
   assert.equal(result.approved, true);
-  assert.ok(capturedPrompt.includes("Step:Do thing"));
-  assert.ok(capturedPrompt.includes("- a.js"));
-  assert.ok(capturedPrompt.includes("- b.js"));
-  assert.ok(capturedPrompt.includes("Diff:\ndiff here"));
-  assert.ok(
-    capturedPrompt.includes(
-      "Read the full contents of each modified file for context"
-    )
-  );
+  assert.ok(capturedPrompt.includes("Plan file: /path/to/plan.yaml"));
+  assert.ok(capturedPrompt.includes("Step: step-1, step-2"));
 });
