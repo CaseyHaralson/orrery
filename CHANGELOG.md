@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-01-25
+
 ### Fixed
 
 - Firewall init script now uses `-exist` flag for ipset commands to prevent errors on re-runs
@@ -93,7 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Baseline release of the Orrery CLI and workflow orchestration tooling.
 - This changelog starts at 0.5.0; earlier versions were not documented.
 
-[Unreleased]: https://github.com/CaseyHaralson/orrery/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/CaseyHaralson/orrery/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/CaseyHaralson/orrery/compare/v0.9.1...v0.10.0
 [0.9.1]: https://github.com/CaseyHaralson/orrery/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/CaseyHaralson/orrery/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/CaseyHaralson/orrery/compare/v0.7.2...v0.8.0
