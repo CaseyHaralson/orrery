@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Firewall init script now uses `-exist` flag for ipset commands to prevent errors on re-runs
+
 ## [0.9.1] - 2026-01-24
 
 ### Fixed
