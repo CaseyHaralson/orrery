@@ -12,9 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Firewall init script now uses `-exist` flag for ipset commands to prevent errors on re-runs
 - Plan step execution now respects plan order: serial steps act as implicit barriers for subsequent steps
 - `partitionSteps()` no longer prioritizes parallel steps over serial steps regardless of plan position
+- Parallel worktrees now created in `.worktrees/` inside repo instead of at filesystem root
+- Parallel step progress now shows batch "(X-Y of Z)" format instead of confusing duplicate counts
 
 ### Added
 
+- Parallel execution mode with git worktree isolation via `--parallel` flag or `ORRERY_PARALLEL_ENABLED=true`
+- `ORRERY_PARALLEL_MAX` environment variable to control maximum concurrent agents (default: 3)
+- Git worktree utilities: `addWorktree`, `removeWorktree`, `listWorktrees`, `getCommitRange`, `cherryPick`, `deleteBranch`
 - Discovery skill now includes dependency detection rules, parallelization safety rules, and project structure guidance
 - Refine-plan skill now includes dependency detection rules and parallelization safety checks
 - Plan validation now warns when parallel steps modify the same files

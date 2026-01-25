@@ -87,6 +87,7 @@ For power users, Orrery offers additional capabilities:
 - **Devcontainer Setup** - Isolated, reproducible development environments
 - **External Plan Creation** - Import plans from other tools or LLMs
 - **Review Loop** - Iterative code review after each step with automatic fixes
+- **Parallel Execution** - Run independent steps concurrently with git worktree isolation
 - **Handling Blocked Plans** - Recovery workflows when steps cannot complete
 
 See [Advanced Workflows](docs/advanced-workflows.md) for details.
@@ -119,12 +120,12 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 
 ## Command Reference
 
-| Command              | Description                                                                        |
-| :------------------- | :--------------------------------------------------------------------------------- |
-| `orrery`             | Command reference.                                                                 |
-| `orrery init`        | Initialize Orrery: install skills to detected agents.                              |
-| `orrery orchestrate` | Executes the active plan. Use `--review` to enable the review loop. Alias: `exec`. |
-| `orrery status`      | Shows the progress of current plans.                                               |
+| Command              | Description                                                                                                   |
+| :------------------- | :------------------------------------------------------------------------------------------------------------ |
+| `orrery`             | Command reference.                                                                                            |
+| `orrery init`        | Initialize Orrery: install skills to detected agents.                                                         |
+| `orrery orchestrate` | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution. Alias: `exec`. |
+| `orrery status`      | Shows the progress of current plans.                                                                          |
 
 ## Directory Structure
 
