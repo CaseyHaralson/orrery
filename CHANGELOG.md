@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-01-24
+
 ### Fixed
 
 - Fixed E2BIG error when reviewing large diffs by removing embedded context from review prompts; review agent now reads plan files and runs git diff directly
@@ -47,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Baseline release of the Orrery CLI and workflow orchestration tooling.
 - This changelog starts at 0.5.0; earlier versions were not documented.
 
-[Unreleased]: https://github.com/CaseyHaralson/orrery/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/CaseyHaralson/orrery/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/CaseyHaralson/orrery/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/CaseyHaralson/orrery/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/CaseyHaralson/orrery/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CaseyHaralson/orrery/compare/v0.5.0...v0.6.0
