@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Firewall init script now uses `-exist` flag for ipset commands to prevent errors on re-runs
 - Plan step execution now respects plan order: serial steps act as implicit barriers for subsequent steps
 - `partitionSteps()` no longer prioritizes parallel steps over serial steps regardless of plan position
+- Parallel worktrees now created in `.worktrees/` inside repo instead of at filesystem root
+- Parallel step progress now shows batch "(X-Y of Z)" format instead of confusing duplicate counts
 
 ### Added
 
