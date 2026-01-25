@@ -133,7 +133,50 @@ Check the plan against these categories:
 - **Missing sequential deps**: Step uses output from another step but doesn't declare the dependency
 - **Unnecessary sequential deps**: Steps that could run in parallel but have artificial dependencies
 
+**Dependency Detection Rules:**
+
+When checking if a step is missing dependencies, apply these rules:
+
+1. **Installation/Setup First**: Any step that creates files depends on the step that installs dependencies or sets up the project structure.
+2. **File Creation Before Use**: If step B reads or modifies files created by step A, then B depends on A. Check the `files` field.
+3. **Import Dependencies**: If step B's code will import from modules created in step A, then B depends on A.
+4. **Test Infrastructure**: Steps that include tests depend on the step that sets up test infrastructure.
+5. **API Before Consumers**: Backend API endpoints must exist before frontend components that call them.
+6. **Schema Before Implementation**: Database schema/migrations must exist before repository code.
+
 **Fix approach:** Add missing deps, remove circular deps, suggest parallelization opportunities.
+
+### Parallelization Issues
+
+- **Unsafe parallel marking**: Steps marked `parallel: true` that share files or have logical dependencies
+- **Over-serialization**: Steps that could safely run in parallel but are all marked serial
+- **Plan order ignored**: Steps relying on plan position instead of explicit dependencies
+
+**Parallelization Safety Rules:**
+
+Mark a step as `parallel: true` ONLY when ALL of these are true:
+
+1. **No file overlap**: The step's `files` do not overlap with any other parallel-eligible step at the same dependency level.
+2. **No logical dependency**: The step does not use outputs, types, or patterns established by a peer step.
+3. **Independent domain**: The step works in a different area of the codebase (e.g., frontend vs backend, different features).
+
+**Common parallel-safe patterns:**
+
+- Backend setup + Frontend setup (different directories)
+- Independent feature implementations (no shared files)
+- Documentation + Docker config (no code dependencies)
+
+**Common parallel-unsafe patterns:**
+
+- Two steps modifying the same configuration file
+- API routes that share model definitions
+- Components that import from each other
+
+**Default to `parallel: false`** when uncertain. Sequential execution is always safe; incorrect parallelization causes merge conflicts and bugs.
+
+**Plan ordering matters:** Serial steps act as implicit barriers for subsequent steps. A serial step earlier in the plan must start before later steps can begin, even without explicit deps. Place foundational work early in the plan.
+
+**Fix approach:** Remove unsafe parallel markings, add `parallel: true` where safe, ensure plan order reflects execution intent.
 
 ### Context Quality
 
