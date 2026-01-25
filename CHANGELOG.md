@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Review feedback now logged to console with severity, file location, and comment details when issues are found
+- Step reports now include `reviews` array with iteration history and feedback for persistence
+
 ## [0.7.2] - 2026-01-24
 
 ### Fixed
