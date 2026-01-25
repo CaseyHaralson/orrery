@@ -1,0 +1,143 @@
+# Test Plan: Implicit Barrier Behavior
+#
+# This test plan validates the fix for dependency resolution ordering.
+# The bug was: parallel steps with no dependencies could jump ahead of
+# serial steps that should run first according to plan order.
+#
+# The fix introduces "implicit barriers" - serial steps act as barriers
+# that must START before subsequent steps can be scheduled.
+
+metadata:
+  created_at: "2026-01-25T00:00:00Z"
+  created_by: "Test-Plan-Generator"
+  version: "1.0"
+  source_idea: "Test implicit barrier behavior in dependency resolution"
+  outcomes:
+    - Verify serial steps run before subsequent parallel steps (bug fix)
+    - Verify consecutive parallel steps batch together correctly
+    - Verify serial steps act as barriers for following steps
+  notes: |
+    Run with: orrery exec .agent-work/test-plans/test-implicit-barriers.yaml
+    Watch console output to verify ordering behavior.
+
+steps:
+  # Scenario 1: Serial step should run before parallel step (the bug fix)
+  - id: "0.1"
+    description: "Setup step (serial, no deps) - must run first"
+    status: "pending"
+    deps: []
+    parallel: false
+    context: |
+      This is a serial step with no dependencies. It MUST run before
+      step 0.2 even though 0.2 also has no dependencies. This tests
+      the core bug fix for implicit barriers.
+    requirements:
+      - Create a marker file to prove execution order
+    criteria:
+      - File test-output/barrier-test/step-0.1.txt exists
+      - This step starts before step 0.2
+    files:
+      - test-output/barrier-test/step-0.1.txt
+
+  - id: "0.2"
+    description: "Parallel step (no deps) - should wait for 0.1 to START"
+    status: "pending"
+    deps: []
+    parallel: true
+    context: |
+      This parallel step has no explicit dependencies, but should wait
+      for the preceding serial step (0.1) to start first due to implicit
+      barrier behavior.
+    requirements:
+      - Create a marker file after 0.1 has started
+    criteria:
+      - File test-output/barrier-test/step-0.2.txt exists
+      - This step only starts after 0.1 has started
+    files:
+      - test-output/barrier-test/step-0.2.txt
+
+  # Scenario 2: Consecutive parallel steps should batch together
+  - id: "1.1"
+    description: "First parallel step in batch"
+    status: "pending"
+    deps:
+      - "0.1"
+      - "0.2"
+    parallel: true
+    context: |
+      This step depends on both 0.1 and 0.2 completing. It should run
+      in parallel with step 1.2 since they share the same dependencies.
+    requirements:
+      - Create marker file after dependencies complete
+    criteria:
+      - File test-output/barrier-test/step-1.1.txt exists
+      - Can run in parallel with step 1.2
+    files:
+      - test-output/barrier-test/step-1.1.txt
+    context_files:
+      - test-output/barrier-test/step-0.1.txt
+      - test-output/barrier-test/step-0.2.txt
+
+  - id: "1.2"
+    description: "Second parallel step in batch"
+    status: "pending"
+    deps:
+      - "0.1"
+      - "0.2"
+    parallel: true
+    context: |
+      This step depends on both 0.1 and 0.2 completing. It should run
+      in parallel with step 1.1 since they share the same dependencies.
+    requirements:
+      - Create marker file after dependencies complete
+    criteria:
+      - File test-output/barrier-test/step-1.2.txt exists
+      - Can run in parallel with step 1.1
+    files:
+      - test-output/barrier-test/step-1.2.txt
+    context_files:
+      - test-output/barrier-test/step-0.1.txt
+      - test-output/barrier-test/step-0.2.txt
+
+  # Scenario 3: Serial step acts as barrier
+  - id: "2.1"
+    description: "Serial barrier step"
+    status: "pending"
+    deps:
+      - "1.1"
+      - "1.2"
+    parallel: false
+    context: |
+      This serial step acts as a barrier. Step 2.2 has the same
+      dependencies but must wait for this step to start first.
+    requirements:
+      - Create marker file to demonstrate barrier behavior
+    criteria:
+      - File test-output/barrier-test/step-2.1.txt exists
+      - Acts as barrier - must start before step 2.2
+    files:
+      - test-output/barrier-test/step-2.1.txt
+    context_files:
+      - test-output/barrier-test/step-1.1.txt
+      - test-output/barrier-test/step-1.2.txt
+
+  - id: "2.2"
+    description: "Parallel step waiting for barrier"
+    status: "pending"
+    deps:
+      - "1.1"
+      - "1.2"
+    parallel: true
+    context: |
+      This step has the same dependencies as 2.1, but should wait for
+      the serial step 2.1 to start first due to implicit barrier behavior.
+    requirements:
+      - Create marker file after barrier step has started
+    criteria:
+      - File test-output/barrier-test/step-2.2.txt exists
+      - Only starts after step 2.1 has started (implicit barrier)
+    files:
+      - test-output/barrier-test/step-2.2.txt
+    context_files:
+      - test-output/barrier-test/step-1.1.txt
+      - test-output/barrier-test/step-1.2.txt
