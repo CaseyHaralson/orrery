@@ -74,6 +74,12 @@ function createMockPlan(steps = [], metadata = {}) {
       );
     },
 
+    getStartedSteps() {
+      return new Set(
+        this.steps.filter((s) => s.status !== "pending").map((s) => s.id)
+      );
+    },
+
     isComplete() {
       return this.steps.every(
         (s) => s.status === "complete" || s.status === "blocked"

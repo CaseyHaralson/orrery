@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Firewall init script now uses `-exist` flag for ipset commands to prevent errors on re-runs
+- Plan step execution now respects plan order: serial steps act as implicit barriers for subsequent steps
+- `partitionSteps()` no longer prioritizes parallel steps over serial steps regardless of plan position
+
+### Added
+
+- Discovery skill now includes dependency detection rules, parallelization safety rules, and project structure guidance
+- Refine-plan skill now includes dependency detection rules and parallelization safety checks
+- Plan validation now warns when parallel steps modify the same files
 
 ## [0.9.1] - 2026-01-24
 
