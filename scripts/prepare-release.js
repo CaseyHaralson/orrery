@@ -6,7 +6,6 @@ const path = require("path");
 
 const repoRoot = path.join(__dirname, "..");
 const changelogPath = path.join(repoRoot, "CHANGELOG.md");
-const packagePath = path.join(repoRoot, "package.json");
 
 function readFileOrExit(filePath, label) {
   try {
@@ -16,20 +15,6 @@ function readFileOrExit(filePath, label) {
     console.error(error.message || error);
     process.exit(1);
   }
-}
-
-function normalizeRepoUrl(url) {
-  if (!url) return "";
-  let normalized = url.trim();
-  normalized = normalized.replace(/^git\+/, "");
-  normalized = normalized.replace(/\.git$/, "");
-  if (normalized.startsWith("git@")) {
-    const match = normalized.match(/^git@([^:]+):(.+)$/);
-    if (match) {
-      normalized = `https://${match[1]}/${match[2]}`;
-    }
-  }
-  return normalized;
 }
 
 function extractUnreleased(changelog) {
@@ -88,8 +73,6 @@ function detectCategories(unreleasedBody) {
 }
 
 const changelog = readFileOrExit(changelogPath, "CHANGELOG.md");
-const packageJson = readFileOrExit(packagePath, "package.json");
-const pkg = JSON.parse(packageJson);
 
 const unreleasedBody = extractUnreleased(changelog);
 if (unreleasedBody === null) {
@@ -120,34 +103,9 @@ if (categories.hasBreaking) {
   reason = "Detected Fixed entries only in [Unreleased].";
 }
 
-const repoUrl = normalizeRepoUrl(
-  typeof pkg.repository === "string" ? pkg.repository : pkg.repository?.url
-);
-const releaseLink = repoUrl
-  ? `${repoUrl}/releases/new?tag=vX.Y.Z`
-  : "<repo-url>/releases/new?tag=vX.Y.Z";
-
 console.log("Release preparation results:\n");
-console.log("Raw [Unreleased] entries:\n");
+console.log("[Unreleased] entries:\n");
 console.log(unreleasedBody.trim());
 console.log("\nSuggested version bump:");
-console.log(`- Type: ${suggestedType}`);
-console.log(`- Reason: ${reason}`);
-console.log("\nNext steps for the release agent:");
-console.log("1) Confirm or adjust the suggested version type.");
-console.log("2) Create a release branch: git checkout -b release/X.Y.Z");
-console.log(
-  "3) Update CHANGELOG.md: add empty [Unreleased] section, change old [Unreleased] to [X.Y.Z] - YYYY-MM-DD, update comparison links."
-);
-console.log(
-  "4) Update package.json version field manually (do NOT use npm version)."
-);
-console.log("5) Commit: git commit -am 'X.Y.Z'");
-console.log("6) Push branch and merge via PR.");
-console.log("7) After merge: git checkout main && git pull");
-console.log("8) Create and push tag: git tag vX.Y.Z && git push --tags");
-console.log(`9) Prepare GitHub release: ${releaseLink}`);
-console.log("10) Output formatted release notes ready to copy-paste.");
-console.log(
-  "11) Remind the maintainer to create the GitHub release and run npm publish."
-);
+console.log(`  Type: ${suggestedType}`);
+console.log(`  Reason: ${reason}`);
