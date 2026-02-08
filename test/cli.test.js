@@ -70,6 +70,12 @@ test("orrery --version shows package version", async () => {
   assert.equal(result.stdout.trim(), pkg.version);
 });
 
+test("orrery manual outputs HELP.md content", async () => {
+  const result = await runCli(["manual"]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Orrery CLI Reference/);
+});
+
 test("orrery install-skills --dry-run lists files", async (t) => {
   const homeDir = createTempDir("orrery-home-");
   fs.mkdirSync(path.join(homeDir, ".codex"), { recursive: true });

@@ -124,6 +124,7 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 | :------------------- | :------------------------------------------------------------------------------------------------------------ |
 | `orrery`             | Command reference.                                                                                            |
 | `orrery init`        | Initialize Orrery: install skills to detected agents.                                                         |
+| `orrery manual`      | Show the full CLI reference manual.                                                                           |
 | `orrery orchestrate` | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution. Alias: `exec`. |
 | `orrery status`      | Shows the progress of current plans.                                                                          |
 
