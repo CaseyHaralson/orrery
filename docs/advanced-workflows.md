@@ -282,6 +282,7 @@ blocked add-feature.yaml
 | `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                         |
 | `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                              |
 | `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                 |
+| `orrery manual`               | Show the full CLI reference manual.                                                                           |
 | `orrery orchestrate`          | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution. Alias: `exec`. |
 | `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.              |
 | `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                 |

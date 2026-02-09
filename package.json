@@ -41,6 +41,7 @@
     ".devcontainer.example",
     "agent",
     "bin",
+    "HELP.md",
     "lib",
     "LICENSE",
     "README.md",
