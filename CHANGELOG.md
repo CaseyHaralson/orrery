@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Project-scoped isolation: `ORRERY_WORK_DIR` now auto-scopes to a `<basename>-<hash>` subdirectory per project, preventing plan conflicts across repos
+- `--background` flag on `orrery exec` to run orchestration as a detached background process with log file
+- `--plan <file>` option on `orrery resume` to resume a specific plan without branch auto-detection
+- Execution locking prevents concurrent `orrery exec`/`orrery resume` runs within a project
+- `orrery status` shows active execution status and detects stale lock files
+- `orrery plans-dir` command prints the resolved plans directory path (respects `ORRERY_WORK_DIR`)
+- Skill files now use `orrery plans-dir` instead of hardcoded `.agent-work/plans/` paths
+
 ## [0.11.0] - 2026-02-08
 
 ### Added

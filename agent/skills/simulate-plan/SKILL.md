@@ -2,7 +2,8 @@
 name: simulate-plan
 description: >
   Explore a plan through conversational dialogue before committing to execution.
-  Requires a plan file argument (e.g., /simulate-plan .agent-work/plans/my-plan.yaml, /simulate-plan my-plan).
+  Requires a plan file argument (e.g., /simulate-plan my-plan.yaml, /simulate-plan my-plan).
+  Run `orrery plans-dir` to find the plans directory.
   Ask "what if" questions, trace dependencies, and build intuition about what you're building.
 ---
 
@@ -164,7 +165,7 @@ Only discuss what's in the plan. If asked about implementation details not cover
 ## Example Dialogue
 
 ```
-User: /simulate .agent-work/plans/analytics-dashboard.yaml
+User: /simulate-plan analytics-dashboard.yaml
 
 Agent: I've loaded the analytics dashboard plan. It has 6 steps delivering
 two outcomes: "Users can see usage trends" and "Admins can export reports."

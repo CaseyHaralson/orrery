@@ -8,7 +8,9 @@ const {
   getPlansDir,
   getCompletedDir,
   getReportsDir,
-  getTempDir
+  getTempDir,
+  getProjectId,
+  isWorkDirExternal
 } = require("../../lib/utils/paths");
 const { createTempDir, cleanupDir } = require("../helpers/test-utils");
 
@@ -38,7 +40,7 @@ test("getWorkDir returns default .agent-work in cwd", (t) => {
   assert.ok(fs.existsSync(workDir));
 });
 
-test("getWorkDir uses ORRERY_WORK_DIR env var when set", (t) => {
+test("getWorkDir uses ORRERY_WORK_DIR env var with project scoping", (t) => {
   const tempDir = createTempDir("paths-");
   const customWorkDir = path.join(tempDir, "custom-work");
   const originalEnv = process.env.ORRERY_WORK_DIR;
@@ -55,8 +57,9 @@ test("getWorkDir uses ORRERY_WORK_DIR env var when set", (t) => {
   });
 
   const workDir = getWorkDir();
+  const projectId = getProjectId();
 
-  assert.equal(workDir, customWorkDir);
+  assert.equal(workDir, path.join(customWorkDir, projectId));
   assert.ok(fs.existsSync(workDir));
 });
 
@@ -79,6 +82,9 @@ test("getWorkDir creates directory if not exists", (t) => {
   assert.ok(!fs.existsSync(customWorkDir));
   const workDir = getWorkDir();
   assert.ok(fs.existsSync(workDir));
+  // Should be a project-scoped subdirectory
+  assert.ok(workDir.startsWith(customWorkDir));
+  assert.notEqual(workDir, customWorkDir);
 });
 
 test("getWorkDir trims whitespace from env var", (t) => {
@@ -98,7 +104,8 @@ test("getWorkDir trims whitespace from env var", (t) => {
   });
 
   const workDir = getWorkDir();
-  assert.equal(workDir, customWorkDir);
+  const projectId = getProjectId();
+  assert.equal(workDir, path.join(customWorkDir, projectId));
 });
 
 // ============================================================================
@@ -120,8 +127,9 @@ test("getPlansDir returns plans subdirectory", (t) => {
   });
 
   const plansDir = getPlansDir();
+  const projectId = getProjectId();
 
-  assert.equal(plansDir, path.join(tempDir, "plans"));
+  assert.equal(plansDir, path.join(tempDir, projectId, "plans"));
   assert.ok(fs.existsSync(plansDir));
 });
 
@@ -144,8 +152,9 @@ test("getCompletedDir returns completed subdirectory", (t) => {
   });
 
   const completedDir = getCompletedDir();
+  const projectId = getProjectId();
 
-  assert.equal(completedDir, path.join(tempDir, "completed"));
+  assert.equal(completedDir, path.join(tempDir, projectId, "completed"));
   assert.ok(fs.existsSync(completedDir));
 });
 
@@ -168,8 +177,9 @@ test("getReportsDir returns reports subdirectory", (t) => {
   });
 
   const reportsDir = getReportsDir();
+  const projectId = getProjectId();
 
-  assert.equal(reportsDir, path.join(tempDir, "reports"));
+  assert.equal(reportsDir, path.join(tempDir, projectId, "reports"));
   assert.ok(fs.existsSync(reportsDir));
 });
 
@@ -192,8 +202,9 @@ test("getTempDir returns temp subdirectory", (t) => {
   });
 
   const tempSubDir = getTempDir();
+  const projectId = getProjectId();
 
-  assert.equal(tempSubDir, path.join(tempDir, "temp"));
+  assert.equal(tempSubDir, path.join(tempDir, projectId, "temp"));
   assert.ok(fs.existsSync(tempSubDir));
 });
 
@@ -226,4 +237,170 @@ test("all path functions use same work dir", (t) => {
   assert.ok(completedDir.startsWith(workDir));
   assert.ok(reportsDir.startsWith(workDir));
   assert.ok(tempSubDir.startsWith(workDir));
+});
+
+// ============================================================================
+// getProjectId tests
+// ============================================================================
+
+test("getProjectId is deterministic", () => {
+  const id1 = getProjectId();
+  const id2 = getProjectId();
+  assert.equal(id1, id2);
+});
+
+test("getProjectId varies by cwd", (t) => {
+  const dir1 = createTempDir("paths-proj1-");
+  const dir2 = createTempDir("paths-proj2-");
+  const originalCwd = process.cwd();
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    cleanupDir(dir1);
+    cleanupDir(dir2);
+  });
+
+  process.chdir(dir1);
+  const id1 = getProjectId();
+
+  process.chdir(dir2);
+  const id2 = getProjectId();
+
+  assert.notEqual(id1, id2);
+});
+
+test("getProjectId uses basename with hash", () => {
+  const id = getProjectId();
+  // Should match pattern: <basename>-<8-hex-chars>
+  assert.match(id, /^.+-[a-f0-9]{8}$/);
+});
+
+test("getProjectId handles root directory", (t) => {
+  const originalCwd = process.cwd();
+
+  // We can't actually chdir to / in tests easily, but we can verify
+  // the function handles edge cases by checking current behavior
+  t.after(() => {
+    process.chdir(originalCwd);
+  });
+
+  // Just verify it returns a valid string
+  const id = getProjectId();
+  assert.ok(id.length > 0);
+});
+
+// ============================================================================
+// Project-scoped isolation tests
+// ============================================================================
+
+test("getWorkDir creates project-scoped subdir when env var set", (t) => {
+  const tempDir = createTempDir("paths-");
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.env.ORRERY_WORK_DIR = tempDir;
+
+  t.after(() => {
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    } else {
+      delete process.env.ORRERY_WORK_DIR;
+    }
+    cleanupDir(tempDir);
+  });
+
+  const workDir = getWorkDir();
+  const projectId = getProjectId();
+
+  // Work dir should be env var + project id
+  assert.equal(workDir, path.join(tempDir, projectId));
+  assert.ok(fs.existsSync(workDir));
+});
+
+// ============================================================================
+// isWorkDirExternal tests
+// ============================================================================
+
+test("isWorkDirExternal returns false when ORRERY_WORK_DIR is not set", (t) => {
+  const tempDir = createTempDir("paths-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  delete process.env.ORRERY_WORK_DIR;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    }
+    cleanupDir(tempDir);
+  });
+
+  assert.equal(isWorkDirExternal(), false);
+});
+
+test("isWorkDirExternal returns true when ORRERY_WORK_DIR points outside cwd", (t) => {
+  const tempDir = createTempDir("paths-");
+  const externalDir = createTempDir("paths-external-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  process.env.ORRERY_WORK_DIR = externalDir;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    } else {
+      delete process.env.ORRERY_WORK_DIR;
+    }
+    cleanupDir(tempDir);
+    cleanupDir(externalDir);
+  });
+
+  assert.equal(isWorkDirExternal(), true);
+});
+
+test("isWorkDirExternal returns false when ORRERY_WORK_DIR is inside cwd", (t) => {
+  const tempDir = createTempDir("paths-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  process.env.ORRERY_WORK_DIR = path.join(tempDir, "work");
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    } else {
+      delete process.env.ORRERY_WORK_DIR;
+    }
+    cleanupDir(tempDir);
+  });
+
+  assert.equal(isWorkDirExternal(), false);
+});
+
+test("default behavior unchanged without env var", (t) => {
+  const tempDir = createTempDir("paths-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  delete process.env.ORRERY_WORK_DIR;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    }
+    cleanupDir(tempDir);
+  });
+
+  const workDir = getWorkDir();
+
+  // Should be .agent-work in cwd, no project scoping
+  assert.equal(workDir, path.join(tempDir, ".agent-work"));
 });

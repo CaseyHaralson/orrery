@@ -219,6 +219,37 @@ Control the maximum concurrent agents with `ORRERY_PARALLEL_MAX` (default: 3).
 
 ---
 
+## Background Execution
+
+Run orchestration as a detached background process so you can close your terminal or continue other work. Orrery uses a lock file to prevent multiple executions from running simultaneously.
+
+### Starting Background Execution
+
+```bash
+orrery exec --background
+orrery exec --plan my-feature.yaml --background
+```
+
+This spawns a detached process and exits immediately. Output is appended to `<work-dir>/exec.log`.
+
+### Monitoring Progress
+
+Use `orrery status` to check on a running execution:
+
+```bash
+orrery status
+```
+
+When an execution is running, status shows the PID and start time. If the process has exited but the lock file remains (e.g., after a crash), status reports a stale lock.
+
+### Execution Locking
+
+A lock file (`exec.lock`) in the work directory prevents concurrent runs of `orrery exec` or `orrery resume` within the same project. If a second execution is attempted while one is running, Orrery exits with an error message.
+
+Stale locks (from crashed processes) are automatically detected and cleared on the next run.
+
+---
+
 ## Handling Blocked Plans
 
 Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution, staying on the work branch.
@@ -275,17 +306,17 @@ blocked add-feature.yaml
 
 ## Command Reference
 
-| Command                       | Description                                                                                                   |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------ |
-| `orrery`                      | Command reference.                                                                                            |
-| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                    |
-| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                         |
-| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                              |
-| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                 |
-| `orrery manual`               | Show the full CLI reference manual.                                                                           |
-| `orrery orchestrate`          | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution. Alias: `exec`. |
-| `orrery resume`               | Unblock steps and resume orchestration. Auto-detects plan, unblocks steps, commits, and resumes.              |
-| `orrery status`               | Shows the progress of current plans. Auto-detects plan when on a work branch.                                 |
+| Command                       | Description                                                                                                                                     |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `orrery`                      | Command reference.                                                                                                                              |
+| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                                                      |
+| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                                           |
+| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                                                |
+| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                                                   |
+| `orrery manual`               | Show the full CLI reference manual.                                                                                                             |
+| `orrery orchestrate`          | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution, `--background` for detached mode. Alias: `exec`. |
+| `orrery resume`               | Unblock steps and resume orchestration. Use `--plan` to target a specific plan file.                                                            |
+| `orrery status`               | Shows the progress of current plans and active execution status. Auto-detects plan when on a work branch.                                       |
 
 ## Environment Variables
 
@@ -297,4 +328,4 @@ blocked add-feature.yaml
 | `ORRERY_PARALLEL_MAX`          | Maximum concurrent parallel agents                   | `3`                   |
 | `ORRERY_REVIEW_ENABLED`        | Enable the review loop                               | `false`               |
 | `ORRERY_REVIEW_MAX_ITERATIONS` | Maximum review-edit loop iterations                  | `3`                   |
-| `ORRERY_WORK_DIR`              | Override the work directory path                     | `.agent-work`         |
+| `ORRERY_WORK_DIR`              | Override the work directory path (project-scoped)    | `.agent-work`         |

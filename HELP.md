@@ -71,13 +71,17 @@ each step.
 
 ```
 Options:
-  --plan <file>  Process only a specific plan file
-  --dry-run      Show what would be executed without running agents
-  --verbose      Show detailed agent output
-  --resume       Resume orchestration on the current work branch
-  --review       Enable code review loop after each step
-  --parallel     Enable parallel execution with git worktrees for isolation
+  --plan <file>   Process only a specific plan file
+  --dry-run       Show what would be executed without running agents
+  --verbose       Show detailed agent output
+  --resume        Resume orchestration on the current work branch
+  --review        Enable code review loop after each step
+  --parallel      Enable parallel execution with git worktrees for isolation
+  --background    Run orchestration as a detached background process
 ```
+
+Only one `exec`/`resume` can run at a time per project. A lock file
+(`exec.lock`) prevents concurrent runs and is automatically cleaned up.
 
 Example:
 
@@ -85,6 +89,7 @@ Example:
 orrery exec
 orrery exec --plan my-feature.yaml --review
 orrery exec --parallel --verbose
+orrery exec --background
 ```
 
 #### `orrery resume`
@@ -94,15 +99,21 @@ work branch, resets blocked steps to pending, commits, and resumes.
 
 ```
 Options:
-  --step <id>  Unblock a specific step before resuming
-  --all        Unblock all blocked steps (default behavior)
-  --dry-run    Preview what would be unblocked without making changes
+  --plan <file>  Resume a specific plan file (skips branch auto-detection)
+  --step <id>    Unblock a specific step before resuming
+  --all          Unblock all blocked steps (default behavior)
+  --dry-run      Preview what would be unblocked without making changes
 ```
+
+When `--plan` is provided, the plan's `work_branch` must match the current
+branch. If the plan hasn't been dispatched yet (no `work_branch`), use
+`orrery exec --plan` first.
 
 Example:
 
 ```bash
 orrery resume
+orrery resume --plan my-feature.yaml
 orrery resume --step step-2
 orrery resume --dry-run
 ```
@@ -112,7 +123,8 @@ orrery resume --dry-run
 #### `orrery status`
 
 Show orchestration status for plans in the current project. Auto-detects the
-plan when on a work branch.
+plan when on a work branch. Also shows whether an orchestration process is
+currently running (via lock file detection) or if a stale lock exists.
 
 ```
 Options:
@@ -250,6 +262,19 @@ The review agent inspects changes after each step. If issues are found, an edit
 agent applies fixes and verification re-runs, repeating until approval or the
 max iteration limit is reached (default: 3).
 
+### Background Execution
+
+Run orchestration as a detached background process:
+
+```bash
+orrery exec --background
+orrery exec --plan my-feature.yaml --background
+```
+
+The process runs detached and logs output to `<work-dir>/exec.log`. Use
+`orrery status` to check progress. A lock file prevents starting a second
+execution while one is already running.
+
 ### Parallel Execution
 
 Run independent steps concurrently using git worktrees for isolation:
@@ -371,7 +396,13 @@ Orrery maintains state in `.agent-work/` (configurable via `ORRERY_WORK_DIR`):
   plans/        Active plan files (new and in-progress)
   reports/      Step-level execution logs and outcomes
   completed/    Successfully executed plans (archived)
+  exec.lock     Lock file when orchestration is running
+  exec.log      Output log for background execution
 ```
+
+When `ORRERY_WORK_DIR` is set, Orrery automatically scopes to a project
+subdirectory (`<project-name>-<hash>`) so multiple projects can share the same
+work directory without plan conflicts.
 
 ---
 
@@ -385,7 +416,7 @@ Orrery maintains state in `.agent-work/` (configurable via `ORRERY_WORK_DIR`):
 | `ORRERY_PARALLEL_MAX`          | Maximum concurrent parallel agents                   | `3`                   |
 | `ORRERY_REVIEW_ENABLED`        | Enable the review loop                               | `false`               |
 | `ORRERY_REVIEW_MAX_ITERATIONS` | Maximum review-edit loop iterations                  | `3`                   |
-| `ORRERY_WORK_DIR`              | Override the work directory path                     | `.agent-work`         |
+| `ORRERY_WORK_DIR`              | Override the work directory path (project-scoped)    | `.agent-work`         |
 
 ---
 
