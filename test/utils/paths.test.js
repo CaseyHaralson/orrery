@@ -9,7 +9,8 @@ const {
   getCompletedDir,
   getReportsDir,
   getTempDir,
-  getProjectId
+  getProjectId,
+  isWorkDirExternal
 } = require("../../lib/utils/paths");
 const { createTempDir, cleanupDir } = require("../helpers/test-utils");
 
@@ -313,6 +314,73 @@ test("getWorkDir creates project-scoped subdir when env var set", (t) => {
   // Work dir should be env var + project id
   assert.equal(workDir, path.join(tempDir, projectId));
   assert.ok(fs.existsSync(workDir));
+});
+
+// ============================================================================
+// isWorkDirExternal tests
+// ============================================================================
+
+test("isWorkDirExternal returns false when ORRERY_WORK_DIR is not set", (t) => {
+  const tempDir = createTempDir("paths-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  delete process.env.ORRERY_WORK_DIR;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    }
+    cleanupDir(tempDir);
+  });
+
+  assert.equal(isWorkDirExternal(), false);
+});
+
+test("isWorkDirExternal returns true when ORRERY_WORK_DIR points outside cwd", (t) => {
+  const tempDir = createTempDir("paths-");
+  const externalDir = createTempDir("paths-external-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  process.env.ORRERY_WORK_DIR = externalDir;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    } else {
+      delete process.env.ORRERY_WORK_DIR;
+    }
+    cleanupDir(tempDir);
+    cleanupDir(externalDir);
+  });
+
+  assert.equal(isWorkDirExternal(), true);
+});
+
+test("isWorkDirExternal returns false when ORRERY_WORK_DIR is inside cwd", (t) => {
+  const tempDir = createTempDir("paths-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  process.env.ORRERY_WORK_DIR = path.join(tempDir, "work");
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalEnv;
+    } else {
+      delete process.env.ORRERY_WORK_DIR;
+    }
+    cleanupDir(tempDir);
+  });
+
+  assert.equal(isWorkDirExternal(), false);
 });
 
 test("default behavior unchanged without env var", (t) => {
