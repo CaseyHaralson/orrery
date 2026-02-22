@@ -345,3 +345,210 @@ steps:
   assert.match(result.stdout, /No blocked steps to unblock/);
   assert.match(result.stdout, /Dry run: would resume orchestration/);
 });
+
+// ============================================================================
+// Background execution tests
+// ============================================================================
+
+test("orrery exec --background --dry-run runs in foreground with note", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const gitRepo = initTempGitRepo();
+  t.after(() => {
+    cleanupDir(projectDir);
+    cleanupDir(gitRepo);
+  });
+
+  const env = {
+    ...process.env,
+    GIT_DIR: path.join(gitRepo, ".git"),
+    GIT_WORK_TREE: gitRepo
+  };
+  const result = await runCli(["exec", "--background", "--dry-run"], {
+    cwd: projectDir,
+    env
+  });
+
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /--background with --dry-run runs in foreground/);
+});
+
+test("orrery exec --background spawns and exits", async (t) => {
+  const gitRepo = initTempGitRepo();
+  t.after(() => {
+    cleanupDir(gitRepo);
+  });
+
+  const result = await runCli(["exec", "--background"], { cwd: gitRepo });
+
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Background execution started/);
+  assert.match(result.stdout, /orrery status/);
+});
+
+// ============================================================================
+// Lock prevents double execution tests
+// ============================================================================
+
+// ============================================================================
+// resume --plan tests
+// ============================================================================
+
+test("orrery resume --plan finds correct plan in dry-run", async (t) => {
+  const planContent = `metadata:
+  name: test-plan
+  work_branch: plan/test-feature
+steps:
+  - id: step-1
+    description: First step
+    status: blocked
+    blocked_reason: Test failure
+`;
+  const { gitDir } = initGitRepoWithPlan("plan/test-feature", planContent);
+  t.after(() => cleanupDir(gitDir));
+
+  const result = await runCli(
+    ["resume", "--plan", "test-plan.yaml", "--dry-run"],
+    { cwd: gitDir }
+  );
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /step-1/);
+  assert.match(result.stdout, /Dry run/);
+});
+
+test("orrery resume --plan errors for nonexistent file", async (t) => {
+  const gitRepo = initTempGitRepo();
+  t.after(() => cleanupDir(gitRepo));
+
+  const result = await runCli(
+    ["resume", "--plan", "nonexistent.yaml", "--dry-run"],
+    { cwd: gitRepo }
+  );
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /Plan not found/);
+});
+
+test("orrery resume --plan errors when on wrong branch", async (t) => {
+  const planContent = `metadata:
+  name: test-plan
+  work_branch: plan/other-branch
+steps:
+  - id: step-1
+    description: First step
+    status: blocked
+    blocked_reason: Error
+`;
+  // Create repo on master/main, not on plan/other-branch
+  const gitDir = createTempDir("orrery-git-");
+  execFileSync("git", ["init"], { cwd: gitDir, stdio: "ignore" });
+  fs.writeFileSync(path.join(gitDir, "README.md"), "test\n");
+  execFileSync("git", ["add", "."], { cwd: gitDir, stdio: "ignore" });
+  execFileSync(
+    "git",
+    [
+      "-c",
+      "user.name=Orrery Test",
+      "-c",
+      "user.email=orrery@example.com",
+      "commit",
+      "-m",
+      "init"
+    ],
+    { cwd: gitDir, stdio: "ignore" }
+  );
+
+  const plansDir = path.join(gitDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+  fs.writeFileSync(path.join(plansDir, "test-plan.yaml"), planContent);
+  t.after(() => cleanupDir(gitDir));
+
+  const result = await runCli(
+    ["resume", "--plan", "test-plan.yaml", "--dry-run"],
+    { cwd: gitDir }
+  );
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /Plan expects branch/);
+});
+
+test("orrery resume --plan errors when plan has no work_branch", async (t) => {
+  const planContent = `metadata:
+  name: test-plan
+steps:
+  - id: step-1
+    description: First step
+    status: pending
+`;
+  const gitRepo = initTempGitRepo();
+  const plansDir = path.join(gitRepo, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+  fs.writeFileSync(path.join(plansDir, "test-plan.yaml"), planContent);
+  t.after(() => cleanupDir(gitRepo));
+
+  const result = await runCli(
+    ["resume", "--plan", "test-plan.yaml", "--dry-run"],
+    { cwd: gitRepo }
+  );
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /hasn't been dispatched/);
+});
+
+test("orrery resume --plan combined with --step works", async (t) => {
+  const planContent = `metadata:
+  name: test-plan
+  work_branch: plan/test-feature
+steps:
+  - id: step-1
+    description: First step
+    status: blocked
+    blocked_reason: Error 1
+  - id: step-2
+    description: Second step
+    status: blocked
+    blocked_reason: Error 2
+`;
+  const { gitDir } = initGitRepoWithPlan("plan/test-feature", planContent);
+  t.after(() => cleanupDir(gitDir));
+
+  const result = await runCli(
+    ["resume", "--plan", "test-plan.yaml", "--step", "step-1", "--dry-run"],
+    { cwd: gitDir }
+  );
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /step-1/);
+  assert.ok(!result.stdout.includes("step-2"));
+});
+
+test("orrery resume not on work branch suggests --plan", async (t) => {
+  const gitRepo = initTempGitRepo();
+  t.after(() => cleanupDir(gitRepo));
+
+  const result = await runCli(["resume"], { cwd: gitRepo });
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /--plan/);
+});
+
+// ============================================================================
+// Lock and status tests
+// ============================================================================
+
+test("orrery status shows stale lock note", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const plansDir = path.join(projectDir, ".agent-work", "plans");
+  fs.mkdirSync(plansDir, { recursive: true });
+
+  // Create a stale lock file
+  const lockData = {
+    pid: 99999999,
+    startedAt: "2024-01-01T00:00:00Z",
+    command: "exec"
+  };
+  fs.writeFileSync(
+    path.join(projectDir, ".agent-work", "exec.lock"),
+    JSON.stringify(lockData)
+  );
+
+  t.after(() => cleanupDir(projectDir));
+
+  const result = await runCli(["status"], { cwd: projectDir });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Stale lock detected/);
+});
