@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-02-22
+
 ### Added
 
 - Project-scoped isolation: `ORRERY_WORK_DIR` now auto-scopes to a `<basename>-<hash>` subdirectory per project, preventing plan conflicts across repos
@@ -111,7 +113,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Baseline release of the Orrery CLI and workflow orchestration tooling.
 - This changelog starts at 0.5.0; earlier versions were not documented.
 
-[Unreleased]: https://github.com/CaseyHaralson/orrery/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/CaseyHaralson/orrery/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/CaseyHaralson/orrery/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/CaseyHaralson/orrery/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/CaseyHaralson/orrery/compare/v0.9.1...v0.10.0
 [0.9.1]: https://github.com/CaseyHaralson/orrery/compare/v0.9.0...v0.9.1
