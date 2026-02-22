@@ -191,7 +191,15 @@ Use the schema defined in `./schemas/plan-schema.yaml`.
 
 **Output Location:**
 
-- Directory: `.agent-work/plans/`
+First, determine the plans directory by running:
+
+```bash
+orrery plans-dir
+```
+
+This prints the resolved plans directory (respects `ORRERY_WORK_DIR` when set).
+
+- Directory: the path returned by `orrery plans-dir`
 - Filename: `<date>-<plan-name>.yaml`
 - Date format: YYYY-MM-DD (e.g., `2026-01-11`)
 - Plan name: kebab-case description of the task (e.g., `fix-clone-agent-skills`)
@@ -215,7 +223,7 @@ Plans are automatically validated via the PostToolUse hook when written.
 For manual validation, run:
 
 ```bash
-orrery validate-plan .agent-work/plans/<plan>.yaml
+orrery validate-plan <plans-dir>/<plan>.yaml
 ```
 
 This catches common YAML issues like unquoted colons and normalizes formatting.
@@ -405,11 +413,11 @@ Discovery is complete when:
 When the plan is complete and validated, output the plan file path and present the user with their next options:
 
 ```
-Plan created: .agent-work/plans/<date>-<plan-name>.yaml
+Plan created: <plans-dir>/<date>-<plan-name>.yaml
 
 Next steps:
-- /refine-plan .agent-work/plans/<plan-file> — Analyze and improve the plan before execution
-- /simulate-plan .agent-work/plans/<plan-file> — Explore the plan through dialogue, ask "what if" questions
+- /refine-plan <plans-dir>/<plan-file> — Analyze and improve the plan before execution
+- /simulate-plan <plans-dir>/<plan-file> — Explore the plan through dialogue, ask "what if" questions
 - orrery exec — (Command run from the terminal) Execute the plan with the orrery orchestrator
 ```
 

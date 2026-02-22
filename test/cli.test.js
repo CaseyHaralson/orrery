@@ -530,6 +530,52 @@ test("orrery resume not on work branch suggests --plan", async (t) => {
 // Lock and status tests
 // ============================================================================
 
+// ============================================================================
+// plans-dir tests
+// ============================================================================
+
+test("orrery plans-dir prints default plans directory", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  t.after(() => cleanupDir(projectDir));
+
+  // Unset ORRERY_WORK_DIR to test default behavior
+  const env = { ...process.env };
+  delete env.ORRERY_WORK_DIR;
+  const result = await runCli(["plans-dir"], { cwd: projectDir, env });
+  assert.equal(result.code, 0);
+  const output = result.stdout.trim();
+  assert.ok(
+    output.endsWith(path.join(".agent-work", "plans")),
+    `Expected path ending with .agent-work/plans, got: ${output}`
+  );
+  assert.ok(
+    output.startsWith(projectDir),
+    `Expected path starting with ${projectDir}, got: ${output}`
+  );
+});
+
+test("orrery plans-dir respects ORRERY_WORK_DIR", async (t) => {
+  const projectDir = createTempDir("orrery-project-");
+  const workDir = createTempDir("orrery-workdir-");
+  t.after(() => {
+    cleanupDir(projectDir);
+    cleanupDir(workDir);
+  });
+
+  const env = { ...process.env, ORRERY_WORK_DIR: workDir };
+  const result = await runCli(["plans-dir"], { cwd: projectDir, env });
+  assert.equal(result.code, 0);
+  const output = result.stdout.trim();
+  assert.ok(
+    output.startsWith(workDir),
+    `Expected path starting with ${workDir}, got: ${output}`
+  );
+  assert.ok(
+    output.endsWith("plans"),
+    `Expected path ending with plans, got: ${output}`
+  );
+});
+
 test("orrery status shows stale lock note", async (t) => {
   const projectDir = createTempDir("orrery-project-");
   const plansDir = path.join(projectDir, ".agent-work", "plans");

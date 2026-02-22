@@ -39,7 +39,7 @@ These guidelines override generic examples in this skill. For example, if a guid
 
 ### Git State
 
-The orchestrator modifies `.agent-work/` files before you start (marking steps `in_progress`, creating temp files). This is expected. **Ignore changes in `.agent-work/`** when checking git status - these are orchestrator bookkeeping files, not unexpected changes.
+The orchestrator modifies plan and work directory files before you start (marking steps `in_progress`, creating temp files). This is expected. **Ignore changes in the orchestrator work directory** (e.g., `.agent-work/` or the path from `orrery plans-dir`) when checking git status - these are orchestrator bookkeeping files, not unexpected changes.
 
 ### Step 1: Read the Plan
 

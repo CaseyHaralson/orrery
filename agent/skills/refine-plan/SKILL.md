@@ -3,7 +3,8 @@ name: refine-plan
 description: >
   Analyze and improve an existing plan file. Reviews plan structure, dependencies,
   context quality, and acceptance criteria, then implements improvements directly.
-  Requires a plan file argument (e.g., /refine-plan .agent-work/plans/my-plan.yaml).
+  Requires a plan file argument (e.g., /refine-plan my-plan.yaml).
+  Run `orrery plans-dir` to find the plans directory.
 hooks:
   PostToolUse:
     - matcher: "Write"
@@ -273,7 +274,7 @@ Ready for execution.
 ## Example Dialogue
 
 ```
-User: /refine-plan .agent-work/plans/analytics-dashboard.yaml
+User: /refine-plan analytics-dashboard.yaml
 
 Agent: I've loaded the analytics dashboard plan. It has 6 steps delivering
 two outcomes. Let me analyze it for improvements.

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--plan <file>` option on `orrery resume` to resume a specific plan without branch auto-detection
 - Execution locking prevents concurrent `orrery exec`/`orrery resume` runs within a project
 - `orrery status` shows active execution status and detects stale lock files
+- `orrery plans-dir` command prints the resolved plans directory path (respects `ORRERY_WORK_DIR`)
+- Skill files now use `orrery plans-dir` instead of hardcoded `.agent-work/plans/` paths
 
 ## [0.11.0] - 2026-02-08
 
