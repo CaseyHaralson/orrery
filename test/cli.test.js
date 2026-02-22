@@ -33,6 +33,13 @@ function createTempDir(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
+// Clean env without ORRERY_WORK_DIR so CLI uses <cwd>/.agent-work
+function cleanEnv(extra = {}) {
+  const env = { ...process.env, ...extra };
+  delete env.ORRERY_WORK_DIR;
+  return env;
+}
+
 function cleanupDir(dirPath) {
   fs.rmSync(dirPath, { recursive: true, force: true });
 }
@@ -185,7 +192,8 @@ steps:
   t.after(() => cleanupDir(projectDir));
 
   const result = await runCli(["status", "--plan", "test-plan.yaml"], {
-    cwd: projectDir
+    cwd: projectDir,
+    env: cleanEnv()
   });
   assert.equal(result.code, 0);
   assert.match(result.stdout, /blocked step-2/);
@@ -262,7 +270,10 @@ steps:
   );
   t.after(() => cleanupDir(gitDir));
 
-  const result = await runCli(["resume", "--dry-run"], { cwd: gitDir });
+  const result = await runCli(["resume", "--dry-run"], {
+    cwd: gitDir,
+    env: cleanEnv()
+  });
   assert.equal(result.code, 0);
   assert.match(result.stdout, /detected plan: test-plan.yaml/);
   assert.match(result.stdout, /Dry run/);
@@ -295,7 +306,8 @@ steps:
   t.after(() => cleanupDir(gitDir));
 
   const result = await runCli(["resume", "--step", "step-1", "--dry-run"], {
-    cwd: gitDir
+    cwd: gitDir,
+    env: cleanEnv()
   });
   assert.equal(result.code, 0);
   assert.match(result.stdout, /Dry run/);
@@ -322,7 +334,8 @@ steps:
   t.after(() => cleanupDir(gitDir));
 
   const result = await runCli(["resume", "--step", "non-existent"], {
-    cwd: gitDir
+    cwd: gitDir,
+    env: cleanEnv()
   });
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Step "non-existent" is not blocked/);
@@ -340,7 +353,10 @@ steps:
   const { gitDir } = initGitRepoWithPlan("plan/test-feature", planContent);
   t.after(() => cleanupDir(gitDir));
 
-  const result = await runCli(["resume", "--dry-run"], { cwd: gitDir });
+  const result = await runCli(["resume", "--dry-run"], {
+    cwd: gitDir,
+    env: cleanEnv()
+  });
   assert.equal(result.code, 0);
   assert.match(result.stdout, /No blocked steps to unblock/);
   assert.match(result.stdout, /Dry run: would resume orchestration/);
@@ -408,7 +424,7 @@ steps:
 
   const result = await runCli(
     ["resume", "--plan", "test-plan.yaml", "--dry-run"],
-    { cwd: gitDir }
+    { cwd: gitDir, env: cleanEnv() }
   );
   assert.equal(result.code, 0);
   assert.match(result.stdout, /step-1/);
@@ -421,7 +437,7 @@ test("orrery resume --plan errors for nonexistent file", async (t) => {
 
   const result = await runCli(
     ["resume", "--plan", "nonexistent.yaml", "--dry-run"],
-    { cwd: gitRepo }
+    { cwd: gitRepo, env: cleanEnv() }
   );
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Plan not found/);
@@ -463,7 +479,7 @@ steps:
 
   const result = await runCli(
     ["resume", "--plan", "test-plan.yaml", "--dry-run"],
-    { cwd: gitDir }
+    { cwd: gitDir, env: cleanEnv() }
   );
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Plan expects branch/);
@@ -485,7 +501,7 @@ steps:
 
   const result = await runCli(
     ["resume", "--plan", "test-plan.yaml", "--dry-run"],
-    { cwd: gitRepo }
+    { cwd: gitRepo, env: cleanEnv() }
   );
   assert.equal(result.code, 1);
   assert.match(result.stderr, /hasn't been dispatched/);
@@ -510,7 +526,7 @@ steps:
 
   const result = await runCli(
     ["resume", "--plan", "test-plan.yaml", "--step", "step-1", "--dry-run"],
-    { cwd: gitDir }
+    { cwd: gitDir, env: cleanEnv() }
   );
   assert.equal(result.code, 0);
   assert.match(result.stdout, /step-1/);
@@ -521,7 +537,7 @@ test("orrery resume not on work branch suggests --plan", async (t) => {
   const gitRepo = initTempGitRepo();
   t.after(() => cleanupDir(gitRepo));
 
-  const result = await runCli(["resume"], { cwd: gitRepo });
+  const result = await runCli(["resume"], { cwd: gitRepo, env: cleanEnv() });
   assert.equal(result.code, 1);
   assert.match(result.stdout, /--plan/);
 });
@@ -539,9 +555,10 @@ test("orrery plans-dir prints default plans directory", async (t) => {
   t.after(() => cleanupDir(projectDir));
 
   // Unset ORRERY_WORK_DIR to test default behavior
-  const env = { ...process.env };
-  delete env.ORRERY_WORK_DIR;
-  const result = await runCli(["plans-dir"], { cwd: projectDir, env });
+  const result = await runCli(["plans-dir"], {
+    cwd: projectDir,
+    env: cleanEnv()
+  });
   assert.equal(result.code, 0);
   const output = result.stdout.trim();
   assert.ok(
@@ -594,7 +611,7 @@ test("orrery status shows stale lock note", async (t) => {
 
   t.after(() => cleanupDir(projectDir));
 
-  const result = await runCli(["status"], { cwd: projectDir });
+  const result = await runCli(["status"], { cwd: projectDir, env: cleanEnv() });
   assert.equal(result.code, 0);
   assert.match(result.stdout, /Stale lock detected/);
 });
