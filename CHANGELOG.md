@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Concurrent plan execution via git worktrees: `orrery exec --plan <file>` now runs each plan in an isolated worktree with a per-plan lock, allowing multiple plans to execute simultaneously
+- Per-plan locks (`exec-<planId>.lock`) enable concurrent `--plan` executions without interference
+- `orrery status` shows active per-plan executions with PID, start time, and worktree path
+- `orrery resume --plan <file>` automatically detects and resumes inside existing plan worktrees
+- `ORRERY_REPO_ROOT` env var ensures `.agent-work/` is found correctly from inside worktrees
+
 ## [0.12.0] - 2026-02-22
 
 ### Added
