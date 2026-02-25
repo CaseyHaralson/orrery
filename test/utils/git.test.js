@@ -6,6 +6,7 @@ const { execFileSync } = require("node:child_process");
 
 const {
   deriveBranchName,
+  derivePlanId,
   getCurrentBranch,
   branchExists,
   hasUncommittedChanges,
@@ -17,8 +18,10 @@ const {
   getGitHubRepoUrl,
   createPullRequest,
   addWorktree,
+  addWorktreeExistingBranch,
   removeWorktree,
   listWorktrees,
+  getMainRepoRoot,
   getCommitRange,
   cherryPick,
   cherryPickAbort,
@@ -627,4 +630,98 @@ test("deleteBranch with force removes unmerged branch", (t) => {
   deleteBranch("unmerged-branch", gitDir, true);
 
   assert.ok(!branchExists("unmerged-branch", gitDir));
+});
+
+// ============================================================================
+// derivePlanId tests (pure function, no git repo needed)
+// ============================================================================
+
+test("derivePlanId strips date prefix and extension", () => {
+  const result = derivePlanId("2026-01-15-add-feature.yaml");
+  assert.equal(result, "add-feature");
+});
+
+test("derivePlanId strips extension only", () => {
+  const result = derivePlanId("my-feature.yaml");
+  assert.equal(result, "my-feature");
+});
+
+test("derivePlanId handles .yml extension", () => {
+  const result = derivePlanId("my-feature.yml");
+  assert.equal(result, "my-feature");
+});
+
+test("derivePlanId sanitizes special characters", () => {
+  const result = derivePlanId("add_feature@v2.yaml");
+  assert.equal(result, "add-feature-v2");
+});
+
+test("derivePlanId converts to lowercase", () => {
+  const result = derivePlanId("My-Feature.yaml");
+  assert.equal(result, "my-feature");
+});
+
+test("derivePlanId collapses multiple dashes", () => {
+  const result = derivePlanId("add---multiple---dashes.yaml");
+  assert.equal(result, "add-multiple-dashes");
+});
+
+// ============================================================================
+// getMainRepoRoot tests
+// ============================================================================
+
+test("getMainRepoRoot returns main worktree path", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  const root = getMainRepoRoot(gitDir);
+  assert.equal(root, gitDir);
+});
+
+test("getMainRepoRoot returns main repo from linked worktree", (t) => {
+  const gitDir = initTempGitRepo();
+  const worktreePath = path.join(path.dirname(gitDir), "wt-main-root");
+  t.after(() => {
+    cleanupDir(worktreePath);
+    cleanupDir(gitDir);
+  });
+
+  addWorktree(worktreePath, "wt-branch", "HEAD", gitDir);
+
+  const root = getMainRepoRoot(worktreePath);
+  assert.equal(root, gitDir);
+});
+
+// ============================================================================
+// addWorktreeExistingBranch tests
+// ============================================================================
+
+test("addWorktreeExistingBranch checks out existing branch", (t) => {
+  const gitDir = initTempGitRepo();
+  const worktreePath = path.join(path.dirname(gitDir), "wt-existing");
+  t.after(() => {
+    cleanupDir(worktreePath);
+    cleanupDir(gitDir);
+  });
+
+  // Create a branch first
+  const originalBranch = getCurrentBranch(gitDir);
+  createBranch("existing-branch", gitDir);
+  checkoutBranch(originalBranch, gitDir);
+
+  addWorktreeExistingBranch(worktreePath, "existing-branch", gitDir);
+
+  assert.ok(fs.existsSync(worktreePath));
+  const branch = getCurrentBranch(worktreePath);
+  assert.equal(branch, "existing-branch");
+});
+
+test("addWorktreeExistingBranch throws for non-existent branch", (t) => {
+  const gitDir = initTempGitRepo();
+  const worktreePath = path.join(path.dirname(gitDir), "wt-noexist");
+  t.after(() => cleanupDir(gitDir));
+
+  assert.throws(() => {
+    addWorktreeExistingBranch(worktreePath, "no-such-branch", gitDir);
+  });
 });
