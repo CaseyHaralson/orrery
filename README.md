@@ -89,6 +89,7 @@ For power users, Orrery offers additional capabilities:
 - **Review Loop** - Iterative code review after each step with automatic fixes
 - **Parallel Execution** - Run independent steps concurrently with git worktree isolation
 - **Background Execution** - Run orchestration as a detached process and poll status
+- **Completion Hook** - Run a command when orchestration finishes
 - **Handling Blocked Plans** - Recovery workflows when steps cannot complete
 
 See [Advanced Workflows](docs/advanced-workflows.md) for details.
@@ -121,14 +122,14 @@ The Orchestrator (`orrery exec`) is the engine that drives the process. It loads
 
 ## Command Reference
 
-| Command              | Description                                                                                                                                     |
-| :------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `orrery`             | Command reference.                                                                                                                              |
-| `orrery init`        | Initialize Orrery: install skills to detected agents.                                                                                           |
-| `orrery manual`      | Show the full CLI reference manual.                                                                                                             |
-| `orrery orchestrate` | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution, `--background` for detached mode. Alias: `exec`. |
-| `orrery resume`      | Unblock steps and resume orchestration. Use `--plan` to target a specific plan, `--background` for detached mode.                               |
-| `orrery status`      | Shows the progress of current plans and active execution status.                                                                                |
+| Command              | Description                                                                                                                                                                            |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `orrery`             | Command reference.                                                                                                                                                                     |
+| `orrery init`        | Initialize Orrery: install skills to detected agents.                                                                                                                                  |
+| `orrery manual`      | Show the full CLI reference manual.                                                                                                                                                    |
+| `orrery orchestrate` | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution, `--background` for detached mode, `--on-complete` for a completion hook. Alias: `exec`. |
+| `orrery resume`      | Unblock steps and resume orchestration. Use `--plan` to target a specific plan, `--background` for detached mode.                                                                      |
+| `orrery status`      | Shows the progress of current plans and active execution status.                                                                                                                       |
 
 ## Directory Structure
 

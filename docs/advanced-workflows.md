@@ -250,6 +250,43 @@ Stale locks (from crashed processes) are automatically detected and cleared on t
 
 ---
 
+## Completion Hook
+
+Run a shell command when the orchestrator finishes using the `--on-complete` flag. This is useful for triggering notifications, downstream processes, or CI integrations.
+
+### Usage
+
+```bash
+orrery exec --on-complete "notify-send 'Plan finished'"
+orrery exec --plan my-feature.yaml --on-complete "./scripts/on-done.sh"
+orrery resume --plan my-feature.yaml --on-complete "curl -X POST https://ci.example.com/trigger"
+```
+
+### Environment Variables
+
+The hook command receives plan context through environment variables:
+
+| Variable                 | Description                                    | Example                                                |
+| :----------------------- | :--------------------------------------------- | :----------------------------------------------------- |
+| `ORRERY_PLAN_NAME`       | Plan file name                                 | `my-feature.yaml`                                      |
+| `ORRERY_PLAN_FILE`       | Absolute path to the plan file                 | `/home/user/project/.agent-work/plans/my-feature.yaml` |
+| `ORRERY_PLAN_OUTCOME`    | Outcome: `success`, `partial`, or `incomplete` | `success`                                              |
+| `ORRERY_WORK_BRANCH`     | Work branch name                               | `plan/my-feature`                                      |
+| `ORRERY_SOURCE_BRANCH`   | Source branch name                             | `main`                                                 |
+| `ORRERY_PR_URL`          | PR URL (empty if not created)                  | `https://github.com/user/repo/pull/42`                 |
+| `ORRERY_STEPS_TOTAL`     | Total number of steps                          | `5`                                                    |
+| `ORRERY_STEPS_COMPLETED` | Number of completed steps                      | `4`                                                    |
+| `ORRERY_STEPS_BLOCKED`   | Number of blocked steps                        | `1`                                                    |
+
+### Behavior Notes
+
+- Works with all execution modes: standard, worktree, resume, and background
+- When used with `--background`, hook output goes to the log file
+- Hook failures are logged but do not fail the orchestrator
+- The hook has a 60-second timeout
+
+---
+
 ## Handling Blocked Plans
 
 Sometimes a plan step cannot be completed due to external issues (e.g., an API is unavailable, a dependency is missing). When this happens, the agent marks the step as "blocked" and the orchestrator pauses execution, staying on the work branch.
@@ -306,17 +343,17 @@ blocked add-feature.yaml
 
 ## Command Reference
 
-| Command                       | Description                                                                                                                                     |
-| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `orrery`                      | Command reference.                                                                                                                              |
-| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                                                      |
-| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                                           |
-| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                                                |
-| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                                                   |
-| `orrery manual`               | Show the full CLI reference manual.                                                                                                             |
-| `orrery orchestrate`          | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution, `--background` for detached mode. Alias: `exec`. |
-| `orrery resume`               | Unblock steps and resume orchestration. Use `--plan` to target a specific plan file.                                                            |
-| `orrery status`               | Shows the progress of current plans and active execution status. Auto-detects plan when on a work branch.                                       |
+| Command                       | Description                                                                                                                                                                            |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `orrery`                      | Command reference.                                                                                                                                                                     |
+| `orrery ingest-plan`          | Validates an externally generated plan and imports it into your project's plans directory.                                                                                             |
+| `orrery init`                 | Initialize Orrery: install skills to detected agents.                                                                                                                                  |
+| `orrery install-devcontainer` | Installs/Updates a devcontainer in your project.                                                                                                                                       |
+| `orrery install-skills`       | Installs/Updates agent skills to your global agent configuration directories.                                                                                                          |
+| `orrery manual`               | Show the full CLI reference manual.                                                                                                                                                    |
+| `orrery orchestrate`          | Executes the active plan. Use `--review` for review loop, `--parallel` for parallel execution, `--background` for detached mode, `--on-complete` for a completion hook. Alias: `exec`. |
+| `orrery resume`               | Unblock steps and resume orchestration. Use `--plan` to target a specific plan file.                                                                                                   |
+| `orrery status`               | Shows the progress of current plans and active execution status. Auto-detects plan when on a work branch.                                                                              |
 
 ## Environment Variables
 

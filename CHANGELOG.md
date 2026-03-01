@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `--on-complete <command>` option for `exec` and `resume` commands to run a shell command when the orchestrator finishes, with plan context passed as `ORRERY_*` environment variables
 - `--background` flag on `orrery resume` to run resume as a detached background process with per-plan log file
 - Concurrent plan execution via git worktrees: `orrery exec --plan <file>` now runs each plan in an isolated worktree with a per-plan lock, allowing multiple plans to execute simultaneously
 - `orrery status --plan <name>` now finds completed plans in the completed directory
