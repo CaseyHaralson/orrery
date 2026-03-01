@@ -103,17 +103,20 @@ Options:
   --step <id>    Unblock a specific step before resuming
   --all          Unblock all blocked steps (default behavior)
   --dry-run      Preview what would be unblocked without making changes
+  --background   Run resume as a detached background process
 ```
 
-When `--plan` is provided, the plan's `work_branch` must match the current
-branch. If the plan hasn't been dispatched yet (no `work_branch`), use
-`orrery exec --plan` first.
+When `--plan` is provided and a worktree exists for the plan, resume runs
+directly inside the worktree. Otherwise, the plan's `work_branch` must match
+the current branch. If the plan hasn't been dispatched yet (no `work_branch`),
+use `orrery exec --plan` first.
 
 Example:
 
 ```bash
 orrery resume
 orrery resume --plan my-feature.yaml
+orrery resume --plan my-feature.yaml --background
 orrery resume --step step-2
 orrery resume --dry-run
 ```
@@ -264,16 +267,18 @@ max iteration limit is reached (default: 3).
 
 ### Background Execution
 
-Run orchestration as a detached background process:
+Run orchestration or resume as a detached background process:
 
 ```bash
 orrery exec --background
 orrery exec --plan my-feature.yaml --background
+orrery resume --plan my-feature.yaml --background
 ```
 
-The process runs detached and logs output to `<work-dir>/exec.log`. Use
-`orrery status` to check progress. A lock file prevents starting a second
-execution while one is already running.
+The process runs detached and logs output to `<work-dir>/exec.log` (or
+`exec-<planId>.log` for per-plan execution). Use `orrery status` to check
+progress. A lock file prevents starting a second execution while one is already
+running.
 
 ### Parallel Execution
 
@@ -393,11 +398,13 @@ Orrery maintains state in `.agent-work/` (configurable via `ORRERY_WORK_DIR`):
 
 ```
 .agent-work/
-  plans/        Active plan files (new and in-progress)
-  reports/      Step-level execution logs and outcomes
-  completed/    Successfully executed plans (archived)
-  exec.lock     Lock file when orchestration is running
-  exec.log      Output log for background execution
+  plans/                Active plan files (new and in-progress)
+  reports/              Step-level execution logs and outcomes
+  completed/            Successfully executed plans (archived)
+  exec.lock             Lock file when orchestration is running
+  exec-<planId>.lock    Per-plan lock file for concurrent execution
+  exec.log              Output log for background execution
+  exec-<planId>.log     Per-plan output log for concurrent background execution
 ```
 
 When `ORRERY_WORK_DIR` is set, Orrery automatically scopes to a project
