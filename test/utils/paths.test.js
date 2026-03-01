@@ -404,3 +404,99 @@ test("default behavior unchanged without env var", (t) => {
   // Should be .agent-work in cwd, no project scoping
   assert.equal(workDir, path.join(tempDir, ".agent-work"));
 });
+
+// ============================================================================
+// ORRERY_REPO_ROOT tests
+// ============================================================================
+
+test("getProjectId uses ORRERY_REPO_ROOT when set", (t) => {
+  const repoDir = createTempDir("paths-repo-");
+  const worktreeDir = createTempDir("paths-wt-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_REPO_ROOT;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_REPO_ROOT = originalEnv;
+    } else {
+      delete process.env.ORRERY_REPO_ROOT;
+    }
+    cleanupDir(repoDir);
+    cleanupDir(worktreeDir);
+  });
+
+  // Get project ID from repo dir
+  process.chdir(repoDir);
+  delete process.env.ORRERY_REPO_ROOT;
+  const idFromRepo = getProjectId();
+
+  // Now simulate being in worktree with ORRERY_REPO_ROOT pointing to repo
+  process.chdir(worktreeDir);
+  process.env.ORRERY_REPO_ROOT = repoDir;
+  const idFromWorktree = getProjectId();
+
+  // Should be the same
+  assert.equal(idFromRepo, idFromWorktree);
+});
+
+test("getWorkDir uses ORRERY_REPO_ROOT for .agent-work location", (t) => {
+  const repoDir = createTempDir("paths-repo-");
+  const worktreeDir = createTempDir("paths-wt-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_REPO_ROOT;
+  const originalWorkDir = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(worktreeDir);
+  delete process.env.ORRERY_WORK_DIR;
+  process.env.ORRERY_REPO_ROOT = repoDir;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_REPO_ROOT = originalEnv;
+    } else {
+      delete process.env.ORRERY_REPO_ROOT;
+    }
+    if (originalWorkDir !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalWorkDir;
+    } else {
+      delete process.env.ORRERY_WORK_DIR;
+    }
+    cleanupDir(repoDir);
+    cleanupDir(worktreeDir);
+  });
+
+  const workDir = getWorkDir();
+
+  // .agent-work should be in repoDir, not worktreeDir
+  assert.equal(workDir, path.join(repoDir, ".agent-work"));
+  assert.ok(fs.existsSync(workDir));
+});
+
+test("getWorkDir uses cwd when ORRERY_REPO_ROOT is not set", (t) => {
+  const tempDir = createTempDir("paths-");
+  const originalCwd = process.cwd();
+  const originalEnv = process.env.ORRERY_REPO_ROOT;
+  const originalWorkDir = process.env.ORRERY_WORK_DIR;
+
+  process.chdir(tempDir);
+  delete process.env.ORRERY_REPO_ROOT;
+  delete process.env.ORRERY_WORK_DIR;
+
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalEnv !== undefined) {
+      process.env.ORRERY_REPO_ROOT = originalEnv;
+    } else {
+      delete process.env.ORRERY_REPO_ROOT;
+    }
+    if (originalWorkDir !== undefined) {
+      process.env.ORRERY_WORK_DIR = originalWorkDir;
+    }
+    cleanupDir(tempDir);
+  });
+
+  const workDir = getWorkDir();
+  assert.equal(workDir, path.join(tempDir, ".agent-work"));
+});
