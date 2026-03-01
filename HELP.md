@@ -78,6 +78,7 @@ Options:
   --review        Enable code review loop after each step
   --parallel      Enable parallel execution with git worktrees for isolation
   --background    Run orchestration as a detached background process
+  --on-complete <command>  Run a shell command when the orchestrator finishes
 ```
 
 Only one `exec`/`resume` can run at a time per project. A lock file
@@ -104,6 +105,7 @@ Options:
   --all          Unblock all blocked steps (default behavior)
   --dry-run      Preview what would be unblocked without making changes
   --background   Run resume as a detached background process
+  --on-complete <command>  Run a shell command when the orchestrator finishes
 ```
 
 When `--plan` is provided and a worktree exists for the plan, resume runs
@@ -279,6 +281,31 @@ The process runs detached and logs output to `<work-dir>/exec.log` (or
 `exec-<planId>.log` for per-plan execution). Use `orrery status` to check
 progress. A lock file prevents starting a second execution while one is already
 running.
+
+### Completion Hook
+
+Run a shell command when the orchestrator finishes using `--on-complete`:
+
+```bash
+orrery exec --on-complete "notify-send 'Plan finished'"
+orrery resume --plan my-feature.yaml --on-complete "./scripts/on-done.sh"
+```
+
+The command receives plan context through environment variables:
+
+| Variable                 | Description                                    | Example                                                |
+| :----------------------- | :--------------------------------------------- | :----------------------------------------------------- |
+| `ORRERY_PLAN_NAME`       | Plan file name                                 | `my-feature.yaml`                                      |
+| `ORRERY_PLAN_FILE`       | Absolute path to the plan file                 | `/home/user/project/.agent-work/plans/my-feature.yaml` |
+| `ORRERY_PLAN_OUTCOME`    | Outcome: `success`, `partial`, or `incomplete` | `success`                                              |
+| `ORRERY_WORK_BRANCH`     | Work branch name                               | `plan/my-feature`                                      |
+| `ORRERY_SOURCE_BRANCH`   | Source branch name                             | `main`                                                 |
+| `ORRERY_PR_URL`          | PR URL (empty if not created)                  | `https://github.com/user/repo/pull/42`                 |
+| `ORRERY_STEPS_TOTAL`     | Total number of steps                          | `5`                                                    |
+| `ORRERY_STEPS_COMPLETED` | Number of completed steps                      | `4`                                                    |
+| `ORRERY_STEPS_BLOCKED`   | Number of blocked steps                        | `1`                                                    |
+
+Hook failures are logged but do not fail the orchestrator.
 
 ### Parallel Execution
 
