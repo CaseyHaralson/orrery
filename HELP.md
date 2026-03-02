@@ -81,8 +81,10 @@ Options:
   --on-complete <command>  Run a shell command when the orchestrator finishes
 ```
 
-Only one `exec`/`resume` can run at a time per project. A lock file
-(`exec.lock`) prevents concurrent runs and is automatically cleaned up.
+A lock file prevents concurrent runs and is automatically cleaned up. Without
+`--plan`, a global lock (`exec.lock`) allows only one execution at a time.
+With `--plan`, each plan gets its own lock (`exec-<planId>.lock`) and runs in
+an isolated worktree, so multiple plans can execute concurrently.
 
 Example:
 
@@ -279,8 +281,34 @@ orrery resume --plan my-feature.yaml --background
 
 The process runs detached and logs output to `<work-dir>/exec.log` (or
 `exec-<planId>.log` for per-plan execution). Use `orrery status` to check
-progress. A lock file prevents starting a second execution while one is already
-running.
+progress. Each execution acquires its own lock file — a global `exec.lock` for non-plan
+runs, or `exec-<planId>.lock` when `--plan` is used — so background per-plan
+executions can run concurrently.
+
+### Concurrent Plan Execution
+
+Run multiple plans at the same time by using `--plan` in separate terminals.
+Each plan executes in its own git worktree (`.worktrees/plan-<planId>`) with
+an independent lock file, so plans do not interfere with each other.
+
+```bash
+# Terminal 1
+orrery exec --plan auth-feature.yaml
+
+# Terminal 2
+orrery exec --plan search-feature.yaml
+
+# Or run both in the background from a single terminal
+orrery exec --plan auth-feature.yaml --background
+orrery exec --plan search-feature.yaml --background
+```
+
+Use `orrery status` to see all running plans at once. Resume a specific plan
+with `orrery resume --plan <file>`, which automatically re-enters the plan's
+existing worktree.
+
+Note: Without `--plan`, execution uses a global lock and only one run is
+allowed at a time.
 
 ### Completion Hook
 
