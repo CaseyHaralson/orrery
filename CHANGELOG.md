@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Failover now triggers on any agent error, not just specific error patterns
+
 ## [0.13.0] - 2026-03-01
 
 ### Added

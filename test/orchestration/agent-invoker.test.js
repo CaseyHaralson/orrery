@@ -3,7 +3,8 @@ const test = require("node:test");
 
 const {
   parseAgentResults,
-  createDefaultResult
+  createDefaultResult,
+  shouldTriggerFailover
 } = require("../../lib/orchestration/agent-invoker");
 
 // ============================================================================
@@ -248,4 +249,93 @@ test("parseAgentResults rejects blocked without blockedReason", () => {
 
   // Should be filtered out due to missing blockedReason
   assert.equal(results.length, 0);
+});
+
+// ============================================================================
+// shouldTriggerFailover
+// ============================================================================
+
+test("shouldTriggerFailover triggers on non-zero exit with no stdout", () => {
+  const result = { exitCode: 1, stdout: "", stderr: "" };
+  const { shouldFailover, reason } = shouldTriggerFailover(result, null, false);
+
+  assert.equal(shouldFailover, true);
+  assert.equal(reason, "agent_error");
+});
+
+test("shouldTriggerFailover triggers on usage limit error", () => {
+  const result = {
+    exitCode: 1,
+    stdout: "",
+    stderr: "ERROR: You've hit your usage limit. Upgrade to Pro..."
+  };
+  const { shouldFailover, reason } = shouldTriggerFailover(result, null, false);
+
+  assert.equal(shouldFailover, true);
+  assert.equal(reason, "agent_error");
+});
+
+test("shouldTriggerFailover triggers on arbitrary unknown error", () => {
+  const result = {
+    exitCode: 1,
+    stdout: "",
+    stderr: "Something completely unexpected happened"
+  };
+  const { shouldFailover, reason } = shouldTriggerFailover(result, null, false);
+
+  assert.equal(shouldFailover, true);
+  assert.equal(reason, "agent_error");
+});
+
+test("shouldTriggerFailover does NOT trigger when agent produced valid structured output", () => {
+  const result = {
+    exitCode: 1,
+    stdout:
+      '{"stepId": "step-1", "status": "blocked", "blockedReason": "Tests failing"}',
+    stderr: "Agent exited with error"
+  };
+  const { shouldFailover, reason } = shouldTriggerFailover(result, null, false);
+
+  assert.equal(shouldFailover, false);
+  assert.equal(reason, null);
+});
+
+test("shouldTriggerFailover does NOT trigger on exit code 0", () => {
+  const result = { exitCode: 0, stdout: "", stderr: "" };
+  const { shouldFailover, reason } = shouldTriggerFailover(result, null, false);
+
+  assert.equal(shouldFailover, false);
+  assert.equal(reason, null);
+});
+
+test("shouldTriggerFailover triggers on spawn ENOENT", () => {
+  const spawnError = new Error("spawn ENOENT");
+  spawnError.code = "ENOENT";
+  const { shouldFailover, reason } = shouldTriggerFailover(
+    null,
+    spawnError,
+    false
+  );
+
+  assert.equal(shouldFailover, true);
+  assert.equal(reason, "command_not_found");
+});
+
+test("shouldTriggerFailover triggers on generic spawn error", () => {
+  const spawnError = new Error("spawn failed");
+  const { shouldFailover, reason } = shouldTriggerFailover(
+    null,
+    spawnError,
+    false
+  );
+
+  assert.equal(shouldFailover, true);
+  assert.equal(reason, "spawn_error");
+});
+
+test("shouldTriggerFailover triggers on timeout", () => {
+  const { shouldFailover, reason } = shouldTriggerFailover(null, null, true);
+
+  assert.equal(shouldFailover, true);
+  assert.equal(reason, "timeout");
 });
