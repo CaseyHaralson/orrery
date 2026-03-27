@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `stop` command to halt running orchestrations (supports `--graceful` to finish current step first)
+
 ### Fixed
 
 - `resume --plan` no longer attempts to git-commit the plan file when using a worktree, fixing failures when the plan file lives outside the git tree
