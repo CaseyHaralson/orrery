@@ -50,9 +50,10 @@ When asked to create a release:
    - Add new empty `## [Unreleased]` section at top
    - Change previous `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`
 5. Update `version` in package.json to `X.Y.Z`
-6. Commit: `git commit -am "X.Y.Z"`
-7. Push and create PR: `git push -u origin release/X.Y.Z && gh pr create`
-8. After PR merges and user says "publish the release":
+6. Run `npm install` to sync package-lock.json
+7. Commit: `git commit -am "X.Y.Z"`
+8. Push and create PR: `git push -u origin release/X.Y.Z && gh pr create`
+9. After PR merges and user says "publish the release":
    - `git checkout main && git pull`
    - `git tag vX.Y.Z && git push --tags`
    - Create GitHub release: `gh release create vX.Y.Z --notes "..."`
