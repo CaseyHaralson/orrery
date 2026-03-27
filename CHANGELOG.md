@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-03-26
+
 ### Added
 
 - `stop` command to halt running orchestrations (supports `--graceful` to finish current step first)
