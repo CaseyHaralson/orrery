@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-03-26
+
 ### Fixed
 
 - Suppress noisy "Skipping unconfigured agents" warning when using default agent priority (only warn when `ORRERY_AGENT_PRIORITY` is explicitly set)
