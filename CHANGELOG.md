@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Resume mode was unreachable when all plans had `work_branch` set (regression from `4e0b8b8`)
+- Resume command now passes the resolved plan file to the orchestrator (fixes auto-detected plan forwarding)
+- Parallel step cherry-pick used wrong git context, silently losing changes from step worktrees
+
+### Added
+
+- Integration test sandbox for running real agents against a controlled target repo (`test/integration/`)
+
 ## [0.14.1] - 2026-03-26
 
 ### Fixed

@@ -1,0 +1,32 @@
+metadata:
+  name: resume-after-block-test
+  source_idea: Integration test - resume orchestration after unblocking a step
+
+steps:
+  - id: "1"
+    description: "Integrate with the FooBar external API"
+    status: pending
+    deps: []
+    parallel: false
+    requirements:
+      - "Create src/foobar-client.js that makes an HTTP GET request to https://api.foobar.invalid/v1/data"
+      - "The request must succeed with a 200 response for this step to be complete"
+      - "If the endpoint is unreachable or returns an error, report the step as blocked"
+    criteria:
+      - "HTTP 200 from https://api.foobar.invalid/v1/data, or blocked if unreachable"
+    files:
+      - src/foobar-client.js
+
+  - id: "2"
+    description: "Add divide function to the math module"
+    status: pending
+    deps: ["1"]
+    parallel: false
+    requirements:
+      - "Add a divide(a, b) function to src/math.js that returns a / b"
+      - "Export divide alongside the existing functions"
+    criteria:
+      - "src/math.js exports a divide function"
+      - "divide(10, 2) returns 5"
+    files:
+      - src/math.js

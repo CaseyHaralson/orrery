@@ -34,7 +34,8 @@
     "lint": "eslint .",
     "prepublishOnly": "npm run lint && npm run format:check && npm test",
     "release:prepare": "node scripts/prepare-release.js",
-    "test": "node --test",
+    "test": "node --test test/cli.test.js test/cli/*.test.js test/helpers/*.js test/orchestration/*.test.js test/utils/*.test.js",
+    "test:integration": "node --test --test-timeout=600000 test/integration/scenarios/*.test.js",
     "validate": "npm run format:check && npm run lint && npm test"
   },
   "files": [

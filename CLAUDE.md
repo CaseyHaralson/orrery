@@ -22,6 +22,19 @@
 - Push the branch to the remote.
 - Use `gh pr create` to create pull requests.
 
+## Testing
+
+- Unit tests: `npm test` (runs all tests in `test/`)
+- Unit tests cover CLI commands (`test/cli.test.js`), orchestration components
+  (`test/orchestration/`), and utilities (`test/utils/`).
+- Integration tests: `bash test/integration/run.sh` (runs real agents against a
+  sandbox target repo — costs API credits, takes 15-30 min).
+- After changing orchestration code in `lib/orchestration/`, add or update unit
+  tests in the matching `test/orchestration/*.test.js` file.
+- After changing integration-visible behavior, consider adding or updating a
+  scenario in `test/integration/scenarios/` and fixtures in
+  `test/integration/fixtures/plans/`.
+
 ## Working Agreement
 
 - After making changes, run `npm run fix`.

@@ -3,3 +3,4 @@ node_modules
 .claude
 .agent-work/temp/
 .worktrees/
+test/integration/fixtures/target-repo/node_modules/

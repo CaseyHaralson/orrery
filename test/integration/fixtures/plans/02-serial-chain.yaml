@@ -1,0 +1,33 @@
+metadata:
+  name: serial-chain-test
+  source_idea: Integration test - serial dependency chain
+
+steps:
+  - id: "1"
+    description: "Add a divide function to the math module"
+    status: pending
+    deps: []
+    parallel: false
+    requirements:
+      - "Add a divide(a, b) function to src/math.js that returns a / b"
+      - "Export divide alongside the existing functions"
+    criteria:
+      - "src/math.js exports a divide function"
+    files:
+      - src/math.js
+
+  - id: "2"
+    description: "Add tests for the divide function"
+    status: pending
+    deps: ["1"]
+    parallel: false
+    requirements:
+      - "Add test cases for divide in test/math.test.js"
+      - "Include a test for basic division (e.g., divide(10, 2) === 5)"
+    criteria:
+      - "test/math.test.js contains test cases for divide"
+      - "npm test passes"
+    files:
+      - test/math.test.js
+    context_files:
+      - src/math.js

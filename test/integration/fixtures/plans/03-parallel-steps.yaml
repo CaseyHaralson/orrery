@@ -1,0 +1,34 @@
+metadata:
+  name: parallel-steps-test
+  source_idea: Integration test - parallel step execution
+
+steps:
+  - id: "1"
+    description: "Add padLeft function to string-utils"
+    status: pending
+    deps: []
+    parallel: true
+    requirements:
+      - "Add a padLeft(str, len, char) function to src/string-utils.js"
+      - "It should pad the string on the left with the given character until it reaches the desired length"
+      - "Default pad character should be a space"
+      - "Export padLeft alongside the existing functions"
+    criteria:
+      - "src/string-utils.js exports a padLeft function"
+      - "padLeft('hi', 5, '0') returns '000hi'"
+    files:
+      - src/string-utils.js
+
+  - id: "2"
+    description: "Add divide function to math module"
+    status: pending
+    deps: []
+    parallel: true
+    requirements:
+      - "Add a divide(a, b) function to src/math.js that returns a / b"
+      - "Export divide alongside the existing functions"
+    criteria:
+      - "src/math.js exports a divide function"
+      - "divide(10, 2) returns 5"
+    files:
+      - src/math.js
