@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.2] - 2026-05-01
+
 ### Fixed
 
 - Resume mode was unreachable when all plans had `work_branch` set (regression from `4e0b8b8`)
