@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `.agent-work/exec.lock` being tracked caused "Uncommitted changes detected" on resume
+- Work directory now creates a `.gitignore` to prevent transient runtime files from being tracked
+
 ## [0.14.2] - 2026-05-01
 
 ### Fixed
