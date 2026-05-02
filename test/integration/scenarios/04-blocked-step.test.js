@@ -9,7 +9,8 @@ const {
   writePlan,
   loadFinalPlan,
   runOrrery,
-  assertStepStatus
+  assertStepStatus,
+  assertPlanNotArchived
 } = require("../helpers/sandbox");
 
 const PLAN_YAML = fs.readFileSync(
@@ -29,6 +30,7 @@ test("Scenario 4: step blocks on impossible requirement", async (t) => {
 
   const plan = loadFinalPlan(sandbox, "blocked-step-test.yaml");
   assertStepStatus(plan, "1", "blocked");
+  assertPlanNotArchived(sandbox, "blocked-step-test.yaml");
 
   const step = plan.steps.find((s) => s.id === "1");
   assert.ok(step.blocked_reason, 'Expected step "1" to have a blocked_reason');
