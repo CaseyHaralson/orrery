@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.3] - 2026-05-02
+
 ### Fixed
 
 - `.agent-work/exec.lock` being tracked caused "Uncommitted changes detected" on resume
