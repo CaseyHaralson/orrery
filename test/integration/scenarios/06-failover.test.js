@@ -11,7 +11,8 @@ const {
   runOrrery,
   assertAllStepsComplete,
   checkoutWorkBranch,
-  assertFileContains
+  assertFileContains,
+  assertReportContains
 } = require("../helpers/sandbox");
 
 const PLAN_YAML = fs.readFileSync(
@@ -66,6 +67,12 @@ test("Scenario 6: agent failover from nonexistent to real agent", async (t) => {
   // Switch to work branch to see the agent's changes
   checkoutWorkBranch(sandbox, "failover-test.yaml");
   assertFileContains(sandbox, "src/math.js", /divide/i);
+
+  // Verify report content
+  assertReportContains(sandbox, "failover-test", "1", {
+    step_id: "1",
+    outcome: "success"
+  });
 
   // Verify failover occurred — check for failover-related output
   const output = result.stdout + result.stderr;

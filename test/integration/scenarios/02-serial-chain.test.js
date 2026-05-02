@@ -13,7 +13,8 @@ const {
   checkoutWorkBranch,
   assertFileContains,
   assertGitCommits,
-  assertReportExists
+  assertReportExists,
+  assertReportContains
 } = require("../helpers/sandbox");
 
 const PLAN_YAML = fs.readFileSync(
@@ -49,4 +50,12 @@ test("Scenario 2: serial dependency chain", async (t) => {
   assertGitCommits(sandbox, 2);
   assertReportExists(sandbox, "serial-chain-test", "1");
   assertReportExists(sandbox, "serial-chain-test", "2");
+  assertReportContains(sandbox, "serial-chain-test", "1", {
+    step_id: "1",
+    outcome: "success"
+  });
+  assertReportContains(sandbox, "serial-chain-test", "2", {
+    step_id: "2",
+    outcome: "success"
+  });
 });

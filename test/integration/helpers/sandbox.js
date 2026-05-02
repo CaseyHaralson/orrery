@@ -232,6 +232,37 @@ function copyDirSync(src, dest) {
   }
 }
 
+/**
+ * Load a report YAML file for the given plan/step and assert that it contains
+ * the expected fields. `expectations` is an object of key-value pairs to match
+ * against the report's top-level fields (e.g., { outcome: "success" }).
+ */
+function assertReportContains(sandbox, planName, stepId, expectations) {
+  const reportsDir = path.join(sandbox.workDir, "reports");
+  assert.ok(
+    fs.existsSync(reportsDir),
+    `Reports directory does not exist: ${reportsDir}`
+  );
+
+  const files = fs.readdirSync(reportsDir);
+  const match = files.find((f) => f.includes(planName) && f.includes(stepId));
+  assert.ok(
+    match,
+    `No report found for plan "${planName}" step "${stepId}" in: ${files.join(", ") || "(empty)"}`
+  );
+
+  const content = fs.readFileSync(path.join(reportsDir, match), "utf8");
+  const report = YAML.parse(content);
+
+  for (const [key, expected] of Object.entries(expectations)) {
+    assert.equal(
+      report[key],
+      expected,
+      `Report field "${key}" expected "${expected}" but got "${report[key]}"`
+    );
+  }
+}
+
 module.exports = {
   createSandbox,
   destroySandbox,
@@ -244,5 +275,6 @@ module.exports = {
   assertFileContains,
   checkoutWorkBranch,
   assertGitCommits,
-  assertReportExists
+  assertReportExists,
+  assertReportContains
 };

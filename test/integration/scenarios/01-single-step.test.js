@@ -12,7 +12,8 @@ const {
   assertAllStepsComplete,
   checkoutWorkBranch,
   assertFileContains,
-  assertReportExists
+  assertReportExists,
+  assertReportContains
 } = require("../helpers/sandbox");
 
 const PLAN_YAML = fs.readFileSync(
@@ -45,4 +46,8 @@ test("Scenario 1: single step execution", async (t) => {
   checkoutWorkBranch(sandbox, "single-step-test.yaml");
   assertFileContains(sandbox, "src/math.js", /divide/i);
   assertReportExists(sandbox, "single-step-test", "1");
+  assertReportContains(sandbox, "single-step-test", "1", {
+    step_id: "1",
+    outcome: "success"
+  });
 });

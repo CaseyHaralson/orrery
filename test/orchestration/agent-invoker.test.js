@@ -255,6 +255,65 @@ test("parseAgentResults rejects blocked without blockedReason", () => {
 // shouldTriggerFailover
 // ============================================================================
 
+// ============================================================================
+// parseAgentResults - edge cases for balanced JSON extraction
+// ============================================================================
+
+test("parseAgentResults handles truncated/unbalanced JSON gracefully", () => {
+  const stdout = '{"stepId": "step-1", "status":';
+  const results = parseAgentResults(stdout);
+
+  assert.deepEqual(results, []);
+});
+
+test("parseAgentResults handles backslash-escaped paths in strings", () => {
+  const stdout =
+    '{"stepId": "step-1", "status": "complete", "summary": "Path is C:\\\\test\\\\file.js"}';
+  const results = parseAgentResults(stdout);
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].stepId, "step-1");
+});
+
+test("parseAgentResults handles empty code block and falls back to raw scan", () => {
+  const stdout = `\`\`\`json
+\`\`\`
+{"stepId": "step-1", "status": "complete"}`;
+
+  const results = parseAgentResults(stdout);
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].stepId, "step-1");
+});
+
+test("parseAgentResults handles code block with invalid JSON and falls back to raw scan", () => {
+  const stdout = `\`\`\`json
+this is not json at all
+\`\`\`
+{"stepId": "step-1", "status": "complete", "summary": "Done"}`;
+
+  const results = parseAgentResults(stdout);
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].stepId, "step-1");
+});
+
+test("parseAgentResults handles JSON array inside code block", () => {
+  const stdout = `\`\`\`json
+[{"stepId": "step-1", "status": "complete"}, {"stepId": "step-2", "status": "complete"}]
+\`\`\``;
+
+  const results = parseAgentResults(stdout);
+
+  assert.equal(results.length, 2);
+  assert.equal(results[0].stepId, "step-1");
+  assert.equal(results[1].stepId, "step-2");
+});
+
+// ============================================================================
+// shouldTriggerFailover
+// ============================================================================
+
 test("shouldTriggerFailover triggers on non-zero exit with no stdout", () => {
   const result = { exitCode: 1, stdout: "", stderr: "" };
   const { shouldFailover, reason } = shouldTriggerFailover(result, null, false);

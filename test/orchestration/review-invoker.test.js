@@ -71,6 +71,143 @@ test("parseReviewResults defaults to approved on malformed output", (t) => {
   assert.ok(result.error);
 });
 
+// ============================================================================
+// parseReviewResults - status normalization
+// ============================================================================
+
+test("parseReviewResults accepts changes_requested as alias for needs_changes", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '{"status":"changes_requested","feedback":[{"comment":"Fix it","severity":"blocking"}]}'
+  );
+
+  assert.equal(result.approved, false);
+  assert.equal(result.feedback.length, 1);
+});
+
+test("parseReviewResults returns approved with error for unrecognized status", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults('{"status":"maybe","feedback":[]}');
+
+  assert.equal(result.approved, true);
+  assert.ok(result.error);
+  assert.ok(result.error.includes("Unrecognized"));
+});
+
+test("parseReviewResults returns approved with error for null payload object", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults("null");
+
+  assert.equal(result.approved, true);
+  assert.ok(result.error);
+});
+
+// ============================================================================
+// parseReviewResults - feedback normalization
+// ============================================================================
+
+test("parseReviewResults uses comments field as fallback for feedback", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '{"status":"needs_changes","comments":[{"comment":"Use const","severity":"suggestion"}]}'
+  );
+
+  assert.equal(result.approved, false);
+  assert.equal(result.feedback.length, 1);
+  assert.equal(result.feedback[0].comment, "Use const");
+});
+
+test("parseReviewResults normalizes string feedback entries", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '{"status":"needs_changes","feedback":["Fix the import","Add a test"]}'
+  );
+
+  assert.equal(result.approved, false);
+  assert.equal(result.feedback.length, 2);
+  assert.equal(result.feedback[0].comment, "Fix the import");
+  assert.equal(result.feedback[0].severity, "suggestion");
+  assert.equal(result.feedback[1].comment, "Add a test");
+});
+
+test("parseReviewResults filters out feedback entries with empty comments", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '{"status":"needs_changes","feedback":[{"comment":""},{"comment":"Real feedback"}]}'
+  );
+
+  assert.equal(result.feedback.length, 1);
+  assert.equal(result.feedback[0].comment, "Real feedback");
+});
+
+test("parseReviewResults preserves file and line in feedback", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '{"status":"needs_changes","feedback":[{"file":"src/foo.js","line":42,"comment":"Fix","severity":"blocking"}]}'
+  );
+
+  assert.equal(result.feedback[0].file, "src/foo.js");
+  assert.equal(result.feedback[0].line, 42);
+  assert.equal(result.feedback[0].severity, "blocking");
+});
+
+test("parseReviewResults defaults severity to suggestion for non-blocking values", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '{"status":"needs_changes","feedback":[{"comment":"Nitpick","severity":"warning"}]}'
+  );
+
+  assert.equal(result.feedback[0].severity, "suggestion");
+});
+
+test("parseReviewResults ignores non-finite line numbers", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '{"status":"needs_changes","feedback":[{"comment":"Fix","line":"three","file":"a.js"}]}'
+  );
+
+  assert.equal(result.feedback[0].file, "a.js");
+  assert.equal(result.feedback[0].line, undefined);
+});
+
+// ============================================================================
+// parseReviewResults - JSON extraction
+// ============================================================================
+
+test("parseReviewResults handles array payload using first element", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    '[{"status":"approved","feedback":[]},{"status":"needs_changes"}]'
+  );
+
+  assert.equal(result.approved, true);
+  assert.deepEqual(result.feedback, []);
+});
+
+test("parseReviewResults extracts JSON from markdown code block", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    'Here is my review:\n```json\n{"status":"needs_changes","feedback":[{"comment":"Add tests"}]}\n```\nDone.'
+  );
+
+  assert.equal(result.approved, false);
+  assert.equal(result.feedback.length, 1);
+});
+
+test("parseReviewResults extracts JSON from raw balanced braces with surrounding text", (t) => {
+  const { parseReviewResults } = loadReviewInvoker(t);
+  const result = parseReviewResults(
+    'The review result is: {"status":"approved","feedback":[]} and that is all.'
+  );
+
+  assert.equal(result.approved, true);
+  assert.deepEqual(result.feedback, []);
+});
+
+// ============================================================================
+// invokeReviewAgent
+// ============================================================================
+
 test("invokeReviewAgent substitutes prompt placeholders", async (t) => {
   let capturedPrompt = "";
   const { invokeReviewAgent } = loadReviewInvoker(t, {
