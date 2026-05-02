@@ -162,6 +162,52 @@ test("hasUncommittedChanges returns true with staged changes", (t) => {
   assert.equal(hasChanges, true);
 });
 
+test("hasUncommittedChanges ignores tracked .agent-work files", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  // Commit an exec.lock file so it becomes tracked
+  const agentWorkDir = path.join(gitDir, ".agent-work");
+  fs.mkdirSync(agentWorkDir, { recursive: true });
+  const lockPath = path.join(agentWorkDir, "exec.lock");
+  fs.writeFileSync(lockPath, JSON.stringify({ pid: 1 }));
+  execFileSync("git", ["add", ".agent-work/exec.lock"], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
+  execFileSync("git", ["commit", "-m", "add lock"], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
+
+  // Modify the tracked lock file (simulates acquireLock on next run)
+  fs.writeFileSync(lockPath, JSON.stringify({ pid: 2 }));
+
+  const hasChanges = hasUncommittedChanges(gitDir);
+  assert.equal(hasChanges, false, ".agent-work changes should be excluded");
+});
+
+test("hasUncommittedChanges ignores staged .agent-work files", (t) => {
+  const gitDir = initTempGitRepo();
+  t.after(() => cleanupDir(gitDir));
+
+  // Create and stage an .agent-work file without committing
+  const agentWorkDir = path.join(gitDir, ".agent-work");
+  fs.mkdirSync(agentWorkDir, { recursive: true });
+  fs.writeFileSync(path.join(agentWorkDir, "exec.lock"), "{}");
+  execFileSync("git", ["add", ".agent-work/"], {
+    cwd: gitDir,
+    stdio: "ignore"
+  });
+
+  const hasChanges = hasUncommittedChanges(gitDir);
+  assert.equal(
+    hasChanges,
+    false,
+    "staged .agent-work changes should be excluded"
+  );
+});
+
 // ============================================================================
 // createBranch tests
 // ============================================================================
