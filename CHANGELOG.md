@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.4] - 2026-05-02
+
 ### Fixed
 
 - Plans with blocked steps were incorrectly archived as complete, preventing resume
