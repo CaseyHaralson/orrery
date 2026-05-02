@@ -86,14 +86,14 @@ test("loadPlan provides getBlockedSteps helper", (t) => {
   assert.ok(blocked.has("step-1"));
 });
 
-test("loadPlan provides isComplete helper", (t) => {
+test("loadPlan isComplete returns true when all steps complete", (t) => {
   const tempDir = createTempDir("plan-loader-");
   t.after(() => cleanupDir(tempDir));
 
   const planContent = createMinimalPlan({
     steps: [
       { id: "step-1", status: "complete" },
-      { id: "step-2", status: "blocked" }
+      { id: "step-2", status: "complete" }
     ]
   });
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
@@ -118,23 +118,7 @@ test("loadPlan isComplete returns false with pending steps", (t) => {
   assert.equal(plan.isComplete(), false);
 });
 
-test("loadPlan provides isSuccessful helper", (t) => {
-  const tempDir = createTempDir("plan-loader-");
-  t.after(() => cleanupDir(tempDir));
-
-  const planContent = createMinimalPlan({
-    steps: [
-      { id: "step-1", status: "complete" },
-      { id: "step-2", status: "complete" }
-    ]
-  });
-  const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
-
-  const plan = loadPlan(planPath);
-  assert.equal(plan.isSuccessful(), true);
-});
-
-test("loadPlan isSuccessful returns false with blocked steps", (t) => {
+test("loadPlan isComplete returns false with blocked steps", (t) => {
   const tempDir = createTempDir("plan-loader-");
   t.after(() => cleanupDir(tempDir));
 
@@ -147,7 +131,39 @@ test("loadPlan isSuccessful returns false with blocked steps", (t) => {
   const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
 
   const plan = loadPlan(planPath);
-  assert.equal(plan.isSuccessful(), false);
+  assert.equal(plan.isComplete(), false);
+});
+
+test("loadPlan hasBlockedSteps returns true with blocked steps", (t) => {
+  const tempDir = createTempDir("plan-loader-");
+  t.after(() => cleanupDir(tempDir));
+
+  const planContent = createMinimalPlan({
+    steps: [
+      { id: "step-1", status: "complete" },
+      { id: "step-2", status: "blocked" }
+    ]
+  });
+  const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
+
+  const plan = loadPlan(planPath);
+  assert.equal(plan.hasBlockedSteps(), true);
+});
+
+test("loadPlan hasBlockedSteps returns false with no blocked steps", (t) => {
+  const tempDir = createTempDir("plan-loader-");
+  t.after(() => cleanupDir(tempDir));
+
+  const planContent = createMinimalPlan({
+    steps: [
+      { id: "step-1", status: "complete" },
+      { id: "step-2", status: "complete" }
+    ]
+  });
+  const planPath = writeTempPlan(tempDir, "test.yaml", planContent);
+
+  const plan = loadPlan(planPath);
+  assert.equal(plan.hasBlockedSteps(), false);
 });
 
 // ============================================================================

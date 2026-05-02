@@ -81,13 +81,11 @@ function createMockPlan(steps = [], metadata = {}) {
     },
 
     isComplete() {
-      return this.steps.every(
-        (s) => s.status === "complete" || s.status === "blocked"
-      );
+      return this.steps.every((s) => s.status === "complete");
     },
 
-    isSuccessful() {
-      return this.steps.every((s) => s.status === "complete");
+    hasBlockedSteps() {
+      return this.steps.some((s) => s.status === "blocked");
     }
   };
 }
