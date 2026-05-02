@@ -28,7 +28,17 @@ test("Scenario 5: resume after blocked step", async (t) => {
   writePlan(sandbox, "resume-after-block-test.yaml", PLAN_YAML);
 
   // Phase 1: run exec — step 1 should block, step 2 stays pending
-  await runOrrery(sandbox, ["exec", "--plan", "resume-after-block-test.yaml"]);
+  const execResult = await runOrrery(sandbox, [
+    "exec",
+    "--plan",
+    "resume-after-block-test.yaml"
+  ]);
+
+  assert.equal(
+    execResult.code,
+    0,
+    `exec exited with code ${execResult.code}:\nstdout: ${execResult.stdout}\nstderr: ${execResult.stderr}`
+  );
 
   const planAfterExec = loadFinalPlan(sandbox, "resume-after-block-test.yaml");
   assertStepStatus(planAfterExec, "1", "blocked");

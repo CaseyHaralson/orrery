@@ -210,10 +210,40 @@ function checkoutWorkBranch(sandbox, filename) {
       `Plan "${filename}" has no work_branch in metadata — was it dispatched?`
     );
   }
-  execFileSync("git", ["checkout", workBranch], {
-    cwd: sandbox.dir,
-    stdio: "ignore"
-  });
+
+  // Prune stale worktree references so the branch can be checked out
+  try {
+    execFileSync("git", ["worktree", "prune"], {
+      cwd: sandbox.dir,
+      stdio: "ignore"
+    });
+  } catch {
+    // Ignore prune errors
+  }
+
+  try {
+    execFileSync("git", ["checkout", "--force", workBranch], {
+      cwd: sandbox.dir,
+      stdio: "ignore"
+    });
+  } catch (err) {
+    // Provide diagnostic info on failure
+    const branches = execFileSync("git", ["branch", "-a"], {
+      cwd: sandbox.dir,
+      encoding: "utf8"
+    }).trim();
+    const worktrees = execFileSync("git", ["worktree", "list"], {
+      cwd: sandbox.dir,
+      encoding: "utf8"
+    }).trim();
+    throw new Error(
+      `Failed to checkout "${workBranch}" for plan "${filename}".\n` +
+        `Branches:\n${branches}\n` +
+        `Worktrees:\n${worktrees}\n` +
+        `Original error: ${err.message}`,
+      { cause: err }
+    );
+  }
 }
 
 // ─── Internal helpers ───────────────────────────────────────────────
