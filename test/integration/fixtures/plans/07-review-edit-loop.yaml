@@ -1,0 +1,22 @@
+metadata:
+  name: review-edit-loop-test
+  source_idea: Integration test - review and edit loop
+
+steps:
+  - id: "1"
+    description: "Add a modulo function to the math module"
+    status: pending
+    deps: []
+    parallel: false
+    requirements:
+      - "Add a modulo(a, b) function to src/math.js that returns a % b"
+      - "Handle the edge case where b is zero (throw an Error)"
+      - "Add JSDoc documentation for the function"
+      - "Export modulo alongside the existing functions"
+    criteria:
+      - "src/math.js exports a modulo function"
+      - "modulo(10, 3) returns 1"
+      - "modulo(5, 0) throws an Error"
+      - "The function has a JSDoc comment"
+    files:
+      - src/math.js

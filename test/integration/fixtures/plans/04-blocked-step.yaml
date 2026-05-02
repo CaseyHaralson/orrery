@@ -1,0 +1,20 @@
+metadata:
+  name: blocked-step-test
+  source_idea: Integration test - step that blocks on impossible requirement
+
+steps:
+  - id: "1"
+    description: "Integrate with the FooBar external API"
+    status: pending
+    deps: []
+    parallel: false
+    requirements:
+      - "Create src/foobar-client.js that makes an HTTP GET request to https://api.foobar.invalid/v1/data"
+      - "The request must succeed with a 200 response for this step to be complete"
+      - "If the endpoint is unreachable or returns an error, report the step as blocked with a reason explaining the failure"
+    criteria:
+      - "A successful HTTP 200 response is received from https://api.foobar.invalid/v1/data"
+      - "If the endpoint cannot be reached, report blocked with the reason"
+    files:
+      - src/foobar-client.js
+    risk_notes: "The .invalid TLD is guaranteed to be unresolvable (RFC 6761). This step is expected to block."

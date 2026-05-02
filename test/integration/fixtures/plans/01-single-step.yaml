@@ -1,0 +1,20 @@
+metadata:
+  name: single-step-test
+  source_idea: Integration test - single step execution
+
+steps:
+  - id: "1"
+    description: "Add a divide function to the math module"
+    status: pending
+    deps: []
+    parallel: false
+    requirements:
+      - "Add a divide(a, b) function to src/math.js that returns a / b"
+      - "Export divide alongside the existing functions"
+    criteria:
+      - "src/math.js exports a divide function"
+      - "divide(10, 2) returns 5"
+    files:
+      - src/math.js
+    context_files:
+      - src/index.js
