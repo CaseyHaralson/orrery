@@ -293,6 +293,19 @@ function assertReportContains(sandbox, planName, stepId, expectations) {
   }
 }
 
+function assertPlanNotArchived(sandbox, filename) {
+  const plansPath = path.join(sandbox.workDir, "plans", filename);
+  const completedPath = path.join(sandbox.workDir, "completed", filename);
+  assert.ok(
+    fs.existsSync(plansPath),
+    `Expected plan "${filename}" to remain in plans/`
+  );
+  assert.ok(
+    !fs.existsSync(completedPath),
+    `Expected plan "${filename}" NOT to be in completed/`
+  );
+}
+
 module.exports = {
   createSandbox,
   destroySandbox,
@@ -306,5 +319,6 @@ module.exports = {
   checkoutWorkBranch,
   assertGitCommits,
   assertReportExists,
-  assertReportContains
+  assertReportContains,
+  assertPlanNotArchived
 };
