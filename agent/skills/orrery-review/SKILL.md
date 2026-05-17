@@ -1,7 +1,10 @@
 ---
 name: orrery-review
 description: >
-  Review code changes after each step execution and provide structured feedback.
+  Review changes made for a single step of an orrery plan (YAML file under
+  the orrery plans directory) when invoked by the orrery orchestrator, and
+  produce structured feedback for the editor agent. Do NOT use for general
+  code review outside of an orrery plan run.
 user-invocable: false
 ---
 

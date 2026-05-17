@@ -1,9 +1,11 @@
 ---
 name: discovery
 description: >
-  Create executable plans for building systems, features, or modules. Use for
-  planning requests, architectural decisions, or when decomposing big ideas
-  into concrete implementation steps.
+  Author an orrery plan — a YAML file under the orrery plans directory that
+  the orrery CLI executes step-by-step. Use ONLY when the user explicitly
+  asks to create an orrery plan (e.g., "make an orrery plan", "use orrery
+  discovery", "/discovery"). Do NOT use for general planning, architectural
+  discussion, or decomposing ideas unless the output is an orrery plan file.
 hooks:
   PostToolUse:
     - matcher: "Write"

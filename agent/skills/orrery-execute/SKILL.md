@@ -1,7 +1,10 @@
 ---
 name: orrery-execute
 description: >
-  Write or modify code according to a plan step. Handle implementation.
+  Implement a single step from an orrery plan (YAML file under the orrery
+  plans directory) when invoked by the orrery orchestrator. Do NOT use for
+  general coding, bug fixes, or implementation work outside of an orrery
+  plan run.
 user-invocable: false
 ---
 

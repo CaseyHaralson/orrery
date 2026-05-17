@@ -1,9 +1,11 @@
 ---
 name: orrery-verify
 description: >
-  Run tests, linting, and validation to verify changes work correctly.
-  Use after implementation to check acceptance criteria, run test suites,
-  and ensure nothing is broken.
+  Verify a single step from an orrery plan (YAML file under the orrery plans
+  directory) when invoked by the orrery orchestrator after orrery-execute.
+  Runs the plan step's acceptance criteria, tests, and linting. Do NOT use
+  for general test runs, linting, or verification work outside of an orrery
+  plan run.
 user-invocable: false
 ---
 
