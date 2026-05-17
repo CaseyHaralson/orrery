@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Tightened skill descriptions (`discovery`, `orrery-execute`, `orrery-verify`, `orrery-review`, `orrery-report`, `refine-plan`, `simulate-plan`) to explicitly scope them to orrery plans so non-orrery agents (e.g., codex) stop triggering them for generic coding/planning tasks
+
 ## [0.14.4] - 2026-05-02
 
 ### Fixed

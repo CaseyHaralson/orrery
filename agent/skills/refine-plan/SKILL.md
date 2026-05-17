@@ -1,10 +1,12 @@
 ---
 name: refine-plan
 description: >
-  Analyze and improve an existing plan file. Reviews plan structure, dependencies,
-  context quality, and acceptance criteria, then implements improvements directly.
-  Requires a plan file argument (e.g., /refine-plan my-plan.yaml).
-  Run `orrery plans-dir` to find the plans directory.
+  Analyze and improve an existing orrery plan (YAML file under the orrery
+  plans directory). Reviews plan structure, dependencies, context quality,
+  and acceptance criteria, then edits the plan file directly. Use ONLY when
+  the user explicitly asks to refine an orrery plan and provides a plan file
+  argument (e.g., /refine-plan my-plan.yaml). Run `orrery plans-dir` to find
+  the plans directory. Do NOT use for general plan or design-doc review.
 hooks:
   PostToolUse:
     - matcher: "Write"

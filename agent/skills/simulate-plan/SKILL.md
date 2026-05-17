@@ -1,10 +1,12 @@
 ---
 name: simulate-plan
 description: >
-  Explore a plan through conversational dialogue before committing to execution.
-  Requires a plan file argument (e.g., /simulate-plan my-plan.yaml, /simulate-plan my-plan).
-  Run `orrery plans-dir` to find the plans directory.
-  Ask "what if" questions, trace dependencies, and build intuition about what you're building.
+  Explore an existing orrery plan (YAML file under the orrery plans directory)
+  through conversational dialogue before committing to execution. Use ONLY
+  when the user explicitly asks to simulate an orrery plan and provides a
+  plan file argument (e.g., /simulate-plan my-plan.yaml, /simulate-plan
+  my-plan). Run `orrery plans-dir` to find the plans directory. Do NOT use
+  for general "what if" brainstorming outside of an orrery plan.
 ---
 
 # Simulate Skill

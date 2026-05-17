@@ -1,9 +1,11 @@
 ---
 name: orrery-report
 description: >
-  Final reporting phase for the orrery workflow. Outputs structured JSON
-  summarizing execution results, test outcomes, and status. Use after
-  orrery-verify completes or when reporting blocked status.
+  Final reporting phase for a single step of an orrery plan, invoked by the
+  orrery orchestrator after orrery-verify completes (or when reporting blocked
+  status). Outputs structured JSON consumed by the orrery orchestrator. Do
+  NOT use for general status summaries or reports outside of an orrery plan
+  run.
 user-invocable: false
 ---
 
