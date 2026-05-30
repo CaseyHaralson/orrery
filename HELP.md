@@ -266,8 +266,9 @@ export ORRERY_REVIEW_ENABLED=true
 ```
 
 The review agent inspects changes after each step. If issues are found, an edit
-agent applies fixes and verification re-runs, repeating until approval or the
-max iteration limit is reached (default: 3).
+agent applies fixes and verification re-runs, repeating until approval. If the
+max iteration limit is reached without approval, the step is blocked (default:
+3).
 
 ### Background Execution
 

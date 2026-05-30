@@ -172,7 +172,7 @@ When enabled:
 3. If changes are requested, an edit agent applies the fixes and verification runs again.
 4. The loop repeats until approved or the max iteration limit is reached.
 
-By default, the loop runs up to 3 iterations. If the maximum is reached without approval, Orrery logs a warning and proceeds with the step.
+By default, the loop runs up to 3 iterations. If the maximum is reached without approval, Orrery logs a warning and blocks the step.
 
 ---
 
