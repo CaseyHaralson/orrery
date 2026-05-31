@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Review loops now block a step when max iterations are reached without approval instead of marking the step complete.
+
 ## [0.15.0] - 2026-05-17
 
 ### Changed
